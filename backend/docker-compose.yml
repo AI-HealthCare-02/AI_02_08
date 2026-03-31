@@ -47,7 +47,7 @@ services:
   fastapi:
     container_name: fastapi
     build:
-      context: ..  # 프로젝트 루트를 빌드 컨텍스트로 지정
+      context: .  # 프로젝트 루트를 빌드 컨텍스트로 지정
       dockerfile: app/Dockerfile  # Dockerfile 위치 지정
       platforms:
         - linux/amd64
@@ -74,7 +74,7 @@ services:
   ai-worker:
     container_name: ai-worker
     build:
-      context: ..  # 프로젝트 루트를 빌드 컨텍스트로 지정
+      context: .  # 프로젝트 루트를 빌드 컨텍스트로 지정
       dockerfile: ai_worker/Dockerfile  # Dockerfile 위치 지정
       platforms:
         - linux/amd64

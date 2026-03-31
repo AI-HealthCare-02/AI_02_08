@@ -1,4 +1,4 @@
-# Frontend
+# Frontend.
 
 React + TypeScript + Vite 기반 프론트엔드 프로젝트
 
