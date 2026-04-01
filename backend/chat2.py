@@ -35,21 +35,18 @@ class Message:
 # --- 2. 비즈니스 로직 클래스 ---
 class PrescriptionService:
     def __init__(self):
-        # 채팅 초기 상태 (와이어프레임 반영)
         self.messages: list[Message] = [
             Message("1", "안녕하세요! 복약 관련 궁금한 점을 물어보세요.", False),
-            Message("2", "식후에 바로 먹어도 되나요?", True),
-            Message("3", "메트포르민과 타이레놀은 식후 30분 복용을 권장합니다.", False),
         ]
-        self.quick_replies = ["복약 방법이 있나요?", "주의사항 알려줘", "몇 번 먹어야 해요?"]
+        self.quick_replies = ["복약 방법이 있나요?", "주의사항 알려줘", "같이 먹으면 안 되는 약 있어?"]
 
     async def process_ocr(self, image_bytes: bytes) -> dict:
-        """이미지 분석 후 와이어프레임 결과 박스 데이터 반환"""
+        """이미지 분석 후 결과 반환 (e약은요 연동 전 임시 구조)"""
         return {
             "analysis_id": str(uuid.uuid4())[:8],
-            "medications": ["타이레놀 500mg", "아모잘탄 5/50mg"],
-            "warnings": "주의사항: 빈속에 복용 시 위장 장애 가능성",
-            "interactions": "성분 중복 주의: 기존 복용 약물과 확인 필요",
+            "medications": [],
+            "warnings": "",
+            "interactions": "",
             "status": "success"
         }
 
@@ -66,24 +63,27 @@ async def analyze_prescription(file: UploadFile = File(...)):
     image_data = await file.read()
     return await service.process_ocr(image_data)
 
-# 2단계: 분석 결과 확정 (실제 약 목록에 등록)
+class MedicationInput(BaseModel):
+    name: str
+    dosage: str = "미정"
+    frequency: str = "미정"
+
 @app.post("/api/ocr/confirm", status_code=status.HTTP_201_CREATED)
-async def confirm_prescription(medication_list: list[str]):
+async def confirm_prescription(medication_list: list[MedicationInput]):
     """
     와이어프레임의 '확인' 버튼 클릭 시 호출.
-    분석된 약물 이름을 받아 Medicine DB에 신규 등록함.
+    분석된 약물 정보를 받아 Medicine DB에 신규 등록함.
     """
     added_count = 0
-    for med_name in medication_list:
-        # Medicine.py의 규격에 맞춰 객체 생성
+    for med in medication_list:
         new_entry = {
             "id": str(uuid.uuid4())[:8],
-            "name": med_name,
+            "name": med.name,
             "category": "처방약(분석됨)",
             "englishName": "N/A",
             "description": f"{datetime.now().strftime('%Y-%m-%d')} OCR 분석 등록",
-            "dosage": "1회 1정",
-            "frequency": "1일 3회"
+            "dosage": med.dosage,
+            "frequency": med.frequency
         }
         medicine_db.append(new_entry)
         added_count += 1
