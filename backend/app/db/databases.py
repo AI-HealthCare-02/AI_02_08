@@ -2,7 +2,9 @@ from fastapi import FastAPI
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
 
-from app.core import config
+from app.core.config import Config
+
+config = Config()
 
 TORTOISE_APP_MODELS = [
     "aerich.models",
@@ -13,7 +15,6 @@ TORTOISE_ORM = {
     "connections": {
         "default": {
             "engine": "tortoise.backends.mysql",
-            "dialect": "asyncmy",
             "credentials": {
                 "host": config.DB_HOST,
                 "port": config.DB_PORT,

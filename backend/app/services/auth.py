@@ -18,30 +18,25 @@ class AuthService:
         self.jwt_service = JwtService()
 
     async def signup(self, data: SignUpRequest) -> User:
-        # 이메일 중복 체크
         await self.check_email_exists(data.email)
 
-        # 입력받은 휴대폰 번호를 노말라이즈
         normalized_phone_number = normalize_phone_number(data.phone_number)
-
-        # 휴대폰 번호 중복 체크
         await self.check_phone_number_exists(normalized_phone_number)
 
-        # 유저 생성
         async with in_transaction():
             user = await self.user_repo.create_user(
                 email=data.email,
-                hashed_password=hash_password(data.password),  # 해시화된 비밀번호를 사용
+                hashed_password=hash_password(data.password),
                 name=data.name,
                 phone_number=normalized_phone_number,
                 gender=data.gender,
-                birthday=data.birth_date,
+                birthday=data.birthday,        # birth_date → birthday 수정
+                agree_terms=data.agree_terms,  # 추가
+                agree_privacy=data.agree_privacy,  # 추가
             )
-
             return user
 
     async def authenticate(self, data: LoginRequest) -> User:
-        # 이메일로 사용자 조회
         email = str(data.email)
         user = await self.user_repo.get_user_by_email(email)
         if not user:
@@ -49,13 +44,11 @@ class AuthService:
                 status_code=status.HTTP_400_BAD_REQUEST, detail="이메일 또는 비밀번호가 올바르지 않습니다."
             )
 
-        # 비밀번호 검증
         if not verify_password(data.password, user.hashed_password):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="이메일 또는 비밀번호가 올바르지 않습니다."
             )
 
-        # 활성 사용자 체크
         if not user.is_active:
             raise HTTPException(status_code=status.HTTP_423_LOCKED, detail="비활성화된 계정입니다.")
 
@@ -70,5 +63,4 @@ class AuthService:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용중인 이메일입니다.")
 
     async def check_phone_number_exists(self, phone_number: str) -> None:
-        if await self.user_repo.exists_by_phone_number(phone_number):
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용중인 휴대폰 번호입니다.")
+        if await self.user_repo.ex
