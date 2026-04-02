@@ -22,9 +22,15 @@ class User(models.Model):
     is_admin = fields.BooleanField(default=False)
     is_verified = fields.BooleanField(default=False)
 
+    agree_terms = fields.BooleanField(default=False, description="이용약관 동의 여부")
+    agree_privacy = fields.BooleanField(default=False, description="개인정보 처리방침 동의 여부")
+
     last_login = fields.DatetimeField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
+
+    # 소프트 딜리트를 위한 필드 (null=True여야 탈퇴 안 한 상태를 표현 가능)
+    deleted_at = fields.DatetimeField(null=True, description="탈퇴 일시")
 
     class Meta:
         table = "users"
