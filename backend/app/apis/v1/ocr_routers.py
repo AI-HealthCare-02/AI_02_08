@@ -37,7 +37,7 @@ ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
     },
 )
 async def analyze_prescription(
-    image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 10MB"),
+    image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 10MB"),  # noqa: B008
     # TODO: JWT 인증 의존성 주입 (예: current_user = Depends(get_current_user))
 ):
     """
