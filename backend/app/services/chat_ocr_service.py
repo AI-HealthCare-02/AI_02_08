@@ -1,6 +1,6 @@
 import json
 import os
-import random
+
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -90,26 +90,40 @@ class ChatOcrService:
             raise Exception("e약은요 API 연결 실패 혹은 미구현")
         except Exception as e:
             print(e)
-            # fallback: userMedicationData.json 에서 임의 추출하여 분석 결과를 만듦
+            # fallback: userMedicationData.json 전체 데이터를 OCR 인식 결과 포맷으로 변환
             if self.medication_data:
-                sample_meds = random.sample(self.medication_data, min(2, len(self.medication_data)))
-                med_names = [med["name"] for med in sample_meds]
-                warnings = " / ".join([str(med.get("caution", "")) for med in sample_meds if med.get("caution")])
-                interactions = "성분 중복 주의 (userMedicationData 기반 분석 결과)"
+                # 전체 약 정보를 분석 포맷에 맞춰 구조화 (무작위 추출 아님)
+                medications_detail = []
+                for med in self.medication_data:
+                    medications_detail.append({
+                        "name": med.get("name", ""),
+                        "category": med.get("category", ""),
+                        "dosage": med.get("dosage", "미정"),
+                        "schedule": med.get("schedule", "미정"),
+                        "caution": med.get("caution", ""),
+                        "description": med.get("description", "").strip()
+                    })
+
+                med_names = [med["name"] for med in medications_detail]
+                warnings = " / ".join([med["caution"] for med in medications_detail if med["caution"]])
+                interactions = "userMedicationData 기반 전체 약물 분석 결과"
             else:
+                medications_detail = []
                 med_names = ["타이레놀 500mg", "아모잘탄 5/50mg"]
                 warnings = "주의사항: 빈속에 복용 시 위장 장애 가능성"
                 interactions = "기본 데이터 분석 결과"
-            
+
             self.analysis_data = {
                 "medications": med_names,
+                "medications_detail": medications_detail,
                 "warnings": warnings,
                 "interactions": interactions
             }
-            
+
             return {
                 "analysis_id": str(uuid.uuid4())[:8],
                 "medications": med_names,
+                "medications_detail": medications_detail,
                 "warnings": warnings,
                 "interactions": interactions,
                 "status": "success"
