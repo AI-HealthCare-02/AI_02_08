@@ -62,8 +62,11 @@ class Medication(models.Model):
         "models.OcrPrescription", related_name="medications", on_delete=fields.SET_NULL, null=True
     )
     drug: fields.ForeignKeyRelation = fields.ForeignKeyField(
-        "models.DrugInfo", related_name="medication_schedules", on_delete=fields.SET_NULL, null=True,
-        description="공공데이터(drugs)와 매칭된 경우 FK"
+        "models.DrugInfo",
+        related_name="medication_schedules",
+        on_delete=fields.SET_NULL,
+        null=True,
+        description="공공데이터(drugs)와 매칭된 경우 FK",
     )
     name = fields.CharField(max_length=200, description="약품명 (OCR 추출값 또는 사용자 입력)")
     ingredient = fields.CharField(max_length=200, null=True, description="성분명")
