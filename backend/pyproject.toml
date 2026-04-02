@@ -40,49 +40,15 @@ dev = [
     "types-python-dateutil>=2.9.0.20260124",
 ]
 
+[tool.uv]
+managed = true
+
 [tool.uv.sources]
-torch = [
-    { index = "pytorch-cpu" },
-]
+torch = [{ index = "pytorch-cpu" }]
+torchvision = [{ index = "pytorch-cpu" }]
+torchaudio = [{ index = "pytorch-cpu" }]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
-url = "https://download.pytorch.org/whl/cpu"
+url = "https://pytorch.org"
 explicit = true
-
-[tool.aerich]
-tortoise_orm = "app.db.databases.TORTOISE_ORM"
-location = "./app/db/migrations"
-src_folder = "./."
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "session"
-
-[tool.ruff]
-line-length = 120
-target-version = "py312"
-
-[tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "C90", # mccabe
-    "B",   # flake8-bugbear
-    "UP",  # pyupgrade
-    "N",   # pep8-naming
-]
-ignore = ["UP046", "E501"]
-
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-"db/migrations/*" = ["ALL"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
-
