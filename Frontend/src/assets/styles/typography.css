@@ -1,40 +1,97 @@
-/* 폰트 디자인 토큰 */
+/* ==============================================
+   typography.css — Design Tokens: Typography
+   Branch: feature/common-components
+
+   Font: Pretendard (한국어 최적화 고딕)
+   Import: https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css
+   ============================================== */
+
 :root {
-  /* Font Families */
-  --font-primary: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Liberation Mono', Menlo, Monaco, 'Courier New', monospace;
 
-  /* Font Sizes */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  --font-size-5xl: 3rem;      /* 48px */
+  /* ── Font Family ─────────────────────────────*/
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont,
+               'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 
-  /* Font Weights */
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
+  /* ── Font Size ───────────────────────────────
+     기준: 1rem = 16px
+  ─────────────────────────────────────────── */
+  --font-size-xs:   0.75rem;    /*  12px */
+  --font-size-sm:   0.875rem;   /*  14px */
+  --font-size-md:   1rem;       /*  16px — 본문 기본 */
+  --font-size-lg:   1.125rem;   /*  18px */
+  --font-size-xl:   1.25rem;    /*  20px */
+  --font-size-2xl:  1.5rem;     /*  24px */
+  --font-size-3xl:  1.875rem;   /*  30px */
+  --font-size-4xl:  2.25rem;    /*  36px */
+  --font-size-5xl:  3rem;       /*  48px */
+
+  /* ── Font Weight ─────────────────────────────*/
+  --font-weight-regular:   400;
+  --font-weight-medium:    500;
+  --font-weight-semibold:  600;
+  --font-weight-bold:      700;
   --font-weight-extrabold: 800;
 
-  /* Line Heights */
-  --line-height-tight: 1.25;
-  --line-height-snug: 1.375;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.625;
-  --line-height-loose: 2;
+  /* ── Line Height ─────────────────────────────*/
+  --line-height-tight:   1.25;   /* 제목, 헤더 */
+  --line-height-snug:    1.375;  /* 서브 헤더 */
+  --line-height-normal:  1.5;    /* 본문 기본 */
+  --line-height-relaxed: 1.625;  /* 긴 본문, 설명 */
+  --line-height-loose:   2;      /* 리스트, 가독성 강조 */
 
-  /* Letter Spacing */
-  --letter-spacing-tighter: -0.05em;
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: 0em;
-  --letter-spacing-wide: 0.025em;
-  --letter-spacing-wider: 0.05em;
-  --letter-spacing-widest: 0.1em;
+  /* ── Letter Spacing ──────────────────────────*/
+  --letter-spacing-tight:  -0.025em;  /* 큰 제목 */
+  --letter-spacing-normal:  0em;      /* 본문 기본 */
+  --letter-spacing-wide:    0.025em;  /* 캡션, 레이블 */
+  --letter-spacing-wider:   0.05em;   /* 배지, 태그 */
+  --letter-spacing-widest:  0.1em;    /* 버튼 텍스트 강조 */
+
+  /* ── Semantic Text Styles ────────────────────
+     용도별 조합 (font-size + weight + line-height)
+     사용법: 각 변수를 따로 적용하거나 컴포넌트에서 조합
+  ─────────────────────────────────────────── */
+
+  /* 페이지 타이틀 */
+  --text-heading-1-size:   var(--font-size-3xl);
+  --text-heading-1-weight: var(--font-weight-bold);
+  --text-heading-1-lh:     var(--line-height-tight);
+
+  /* 섹션 타이틀 */
+  --text-heading-2-size:   var(--font-size-2xl);
+  --text-heading-2-weight: var(--font-weight-semibold);
+  --text-heading-2-lh:     var(--line-height-tight);
+
+  /* 카드 타이틀 */
+  --text-heading-3-size:   var(--font-size-xl);
+  --text-heading-3-weight: var(--font-weight-semibold);
+  --text-heading-3-lh:     var(--line-height-snug);
+
+  /* 서브 헤더 */
+  --text-heading-4-size:   var(--font-size-lg);
+  --text-heading-4-weight: var(--font-weight-medium);
+  --text-heading-4-lh:     var(--line-height-snug);
+
+  /* 본문 */
+  --text-body-lg-size:   var(--font-size-lg);
+  --text-body-lg-weight: var(--font-weight-regular);
+  --text-body-lg-lh:     var(--line-height-relaxed);
+
+  --text-body-md-size:   var(--font-size-md);
+  --text-body-md-weight: var(--font-weight-regular);
+  --text-body-md-lh:     var(--line-height-normal);
+
+  --text-body-sm-size:   var(--font-size-sm);
+  --text-body-sm-weight: var(--font-weight-regular);
+  --text-body-sm-lh:     var(--line-height-normal);
+
+  /* 레이블 / 버튼 */
+  --text-label-size:   var(--font-size-sm);
+  --text-label-weight: var(--font-weight-medium);
+  --text-label-lh:     var(--line-height-normal);
+
+  /* 캡션 / 보조 정보 */
+  --text-caption-size:   var(--font-size-xs);
+  --text-caption-weight: var(--font-weight-regular);
+  --text-caption-lh:     var(--line-height-normal);
 }
