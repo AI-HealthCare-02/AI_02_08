@@ -1,7 +1,7 @@
 [project]
 name = "ai-health-example"
 version = "0.1.0"
-description = "AI ?¬ìŠ¤ì¼€???Œì´???„ë¡œ?íŠ¸ ?ˆì‹œ??
+description = "AI healthcare example project"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
