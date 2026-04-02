@@ -21,10 +21,10 @@ dependencies = [
 
 [dependency-groups]
 ai = [
-    "scikit-learn>=1.8.0",
     "torch",
     "torchvision",
     "torchaudio",
+    "scikit-learn>=1.8.0",
     "sentence-transformers>=5.2.0",
 ]
 app = [
@@ -45,9 +45,9 @@ managed = true
 index-strategy = "unsafe-best-match"
 
 [tool.uv.sources]
-torch = [{ index = "pytorch-cpu" }]
-torchvision = [{ index = "pytorch-cpu" }]
-torchaudio = [{ index = "pytorch-cpu" }]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+torchaudio = { index = "pytorch-cpu" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
