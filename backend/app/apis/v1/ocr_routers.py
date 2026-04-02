@@ -8,16 +8,15 @@ OCR 관련 API 라우터
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from app.dtos.medications import (
     OcrAnalyzeResponse,
-    OcrMedicationItem,
     OcrConfirmRequest,
     OcrConfirmResponse,
     PrescriptionAnalysisResponse,
 )
-from app.models.medications import OcrPrescription, OcrStatus, Medication
+from app.models.medications import Medication, OcrPrescription, OcrStatus
 
 ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
 

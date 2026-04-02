@@ -5,20 +5,19 @@ AI 복약 리포트 관련 API 라우터
 - GET  /api/v1/ai/reports            : 리포트 목록 조회
 """
 
-import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, status
 
 from app.dtos.medications import (
+    MedicationTakenRate,
+    ReportDetailResponse,
     ReportGenerateRequest,
     ReportGenerateResponse,
-    ReportDetailResponse,
-    ReportListResponse,
     ReportListItem,
-    MedicationTakenRate,
+    ReportListResponse,
 )
-from app.models.medications import AiReport, ReportPeriod, ReportStatus
+from app.models.medications import AiReport
 
 report_router = APIRouter(prefix="/ai/reports", tags=["AI 복약 리포트"])
 
