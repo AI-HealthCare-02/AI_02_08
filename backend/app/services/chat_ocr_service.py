@@ -1,6 +1,5 @@
 import json
 import os
-
 import re
 import uuid
 from dataclasses import asdict, dataclass, field
@@ -108,10 +107,16 @@ class ChatOcrService:
                 warnings = " / ".join([med["caution"] for med in medications_detail if med["caution"]])
                 interactions = "userMedicationData 기반 전체 약물 분석 결과"
             else:
-                medications_detail = []
-                med_names = ["타이레놀 500mg", "아모잘탄 5/50mg"]
-                warnings = "주의사항: 빈속에 복용 시 위장 장애 가능성"
-                interactions = "기본 데이터 분석 결과"
+                # 데이터 없음 → 사용자 직접 입력 요청
+                return {
+                    "analysis_id": str(uuid.uuid4())[:8],
+                    "medications": [],
+                    "medications_detail": [],
+                    "warnings": "",
+                    "interactions": "",
+                    "status": "manual_input_required",
+                    "message": "약물 데이터를 인식하지 못했습니다. 약물 정보를 직접 입력해 주세요."
+                }
 
             self.analysis_data = {
                 "medications": med_names,
@@ -169,7 +174,7 @@ class ChatOcrService:
             return {"user": asdict(user_msg), "ai": asdict(ai_msg)}
             
         # 불법 약물 관련 키워드 감지
-        if self._check_minor(content):
+        if self._check_illicit_drugs(content):
             self.is_blocked = True
             ai_content = "불법 약물 관련 키워드가 감지되었습니다.챗봇 접근이 금지되었습니다. 구체적이고 전문적인 상담을 원하신다면 보건복지콜센터(129)로 연락해 주세요."
             ai_msg = Message(id=str(uuid.uuid4())[:4], content=ai_content, is_user=False)
