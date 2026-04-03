@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 
 import uvicorn
-from fastapi import FastAPI, File, HTTPException, UploadFile, status
+from fastapi import FastAPI, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
 
