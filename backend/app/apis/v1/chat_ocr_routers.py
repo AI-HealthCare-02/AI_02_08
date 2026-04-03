@@ -9,7 +9,7 @@ chat_ocr_router = APIRouter(tags=["Chat & OCR"])
 
 
 @chat_ocr_router.post("/ocr/analyze", response_model=None)
-async def analyze_prescription(file: Any = Depends()): # UploadFile 대신 Any 사용
+async def analyze_prescription(file: Any = Depends()):  # UploadFile 대신 Any 사용
     """1 단계: 사진 분석 (e 약은요 연동 실패시 fallback 로직 포함)"""
     if not hasattr(file, "content_type") or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="이미지 파일만 가능합니다.")
