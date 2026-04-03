@@ -1,19 +1,19 @@
-# Frontend.
+# Frontend - React + TypeScript + Vite
 
-React + TypeScript + Vite 기반 프론트엔드 프로젝트
+이 프로젝트는 React, TypeScript, Vite, pnpm을 사용한 프론트엔드 애플리케이션입니다.
 
-## 시작하기
+## 기술 스택
 
-```bash
-cd Frontend
-npm install
-npm run dev
-```
+- **React 18** - UI 라이브러리
+- **TypeScript** - 타입 안전성
+- **Vite** - 빌드 도구 및 개발 서버
+- **pnpm** - 패키지 매니저
+- **ESLint** - 코드 품질 관리
 
 ## 프로젝트 구조
 
 ```
-Frontend/
+frontend/
 ├── public/                  # 정적 파일
 ├── src/
 │   ├── api/                 # 백엔드 API 호출 함수
@@ -21,11 +21,20 @@ Frontend/
 │   │   └── authApi.ts       # 인증 관련 API (로그인, 회원가입, 토큰 갱신)
 │   ├── assets/
 │   │   ├── images/          # 이미지 리소스
-│   │   └── styles/          # CSS 파일
-│   │       └── global.css   # 글로벌 스타일 리셋
+│   │   └── styles/          # CSS 파일 및 디자인 토큰
+│   │       ├── global.css   # 글로벌 스타일 리셋
+│   │       ├── colors.css   # 색상 변수
+│   │       ├── typography.css # 폰트 변수
+│   │       ├── spacing.css  # 스페이싱 변수
+│   │       └── components.css # 컴포넌트 스타일
 │   ├── components/
-│   │   ├── common/          # 재사용 공통 컴포넌트 (버튼, 인풋 등)
-│   │   └── layout/          # 레이아웃 컴포넌트 (헤더, 푸터, 사이드바)
+│   │   ├── common/          # 재사용 공통 컴포넌트
+│   │   │   ├── Button.tsx   # 버튼 컴포넌트
+│   │   │   ├── Input.tsx    # 인풋 컴포넌트
+│   │   │   ├── Modal.tsx    # 모달 컴포넌트
+│   │   │   ├── Loading.tsx  # 로딩 컴포넌트
+│   │   │   └── index.ts     # 컴포넌트 export
+│   │   └── layout/          # 레이아웃 컴포넌트
 │   │       └── MainLayout.tsx
 │   ├── hooks/               # 커스텀 훅 (useAuth, useFetch 등)
 │   ├── pages/               # 페이지 단위 컴포넌트
@@ -50,34 +59,109 @@ Frontend/
 └── vite.config.ts
 ```
 
-## 작업 가이드
+## 시작하기
 
-### 1. 페이지 추가
+### 필수 요구사항
 
-`src/pages/` 하위에 폴더/파일 생성 후 `src/routes/AppRouter.tsx`에 Route 등록
+- Node.js 18+
+- pnpm
 
-### 2. 공통 컴포넌트 추가
+### 설치 및 실행
 
-`src/components/common/`에 생성하여 여러 페이지에서 재사용
+```bash
+# 의존성 설치
+pnpm install
 
-### 3. API 연동
+# 개발 서버 실행
+pnpm dev
 
-`src/api/`에 도메인별 API 파일 추가 (예: `userApi.ts`), `apiClient.ts`의 axios 인스턴스 사용
+# 빌드
+pnpm build
 
-### 4. 전역 상태 관리
+# 빌드 결과 미리보기
+pnpm preview
+```
 
-`src/stores/`에 상태 관리 로직 추가
+## 환경 변수
 
-## 환경변수
+`.env` 파일에서 다음 환경 변수를 설정하세요:
 
-| 변수 | 설명 | 기본값 |
-|---|---|---|
-| `VITE_API_BASE_URL` | 백엔드 API 주소 | `http://localhost:8000/api` |
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+## 개발 가이드
+
+### 컴포넌트 작성
+
+#### 공통 컴포넌트
+`src/components/common/`에는 재사용 가능한 컴포넌트들이 있습니다:
+
+- **Button.tsx** - 다양한 변형과 크기를 지원하는 버튼
+- **Input.tsx** - 레이블, 에러 메시지를 지원하는 인풋
+- **Modal.tsx** - 다양한 크기를 지원하는 모달
+- **Loading.tsx** - 로딩 스피너 컴포넌트
+
+사용 예시:
+```tsx
+import { Button, Input, Modal } from '@/components/common';
+
+// 버튼 사용
+<Button variant="primary" size="md" onClick={handleClick}>
+  클릭
+</Button>
+
+// 인풋 사용
+<Input 
+  label="이메일" 
+  type="email" 
+  placeholder="이메일을 입력하세요"
+  error={emailError}
+/>
+```
+
+#### 레이아웃 컴포넌트
+- `src/components/layout/` - 레이아웃 관련 컴포넌트
+- `src/pages/` - 페이지별 컴포넌트
+
+### 디자인 시스템
+
+`src/assets/styles/`에는 디자인 토큰들이 정의되어 있습니다:
+
+#### 색상 시스템 (colors.css)
+- Primary, Gray, Semantic 색상
+- Background, Text, Border 색상
+- CSS 변수로 정의: `var(--color-primary-600)`
+
+#### 타이포그래피 (typography.css)
+- 폰트 패밀리, 크기, 가중치
+- 줄 간격, 자간 설정
+- 사용 예시: `var(--font-size-lg)`, `var(--font-weight-semibold)`
+
+#### 스페이싱 (spacing.css)
+- 마진, 패딩 값들
+- 보더 라디우스, 그림자
+- Z-index 값들
+- 사용 예시: `var(--spacing-4)`, `var(--radius-md)`
+
+### API 호출
+
+- `src/api/apiClient.ts` - axios 인스턴스 및 인터셉터 설정
+- `src/api/` - 도메인별 API 함수들
+
+### 상태 관리
+
+- `src/stores/` - 전역 상태 관리 (Zustand, Redux 등)
+- `src/hooks/` - 커스텀 훅
+
+### 타입 정의
+
+- `src/types/` - TypeScript 타입 및 인터페이스 정의
 
 ## 스크립트
 
-| 명령어 | 설명 |
-|---|---|
-| `npm run dev` | 개발 서버 실행 |
-| `npm run build` | 프로덕션 빌드 |
-| `npm run preview` | 빌드 결과 미리보기 |
+- `pnpm dev` - 개발 서버 실행 (포트 3000)
+- `pnpm build` - 프로덕션 빌드
+- `pnpm preview` - 빌드 결과 미리보기
+- `pnpm lint` - ESLint 실행
+- `pnpm lint:fix` - ESLint 자동 수정

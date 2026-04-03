@@ -1,0 +1,92 @@
+/* ==============================================
+   spacing.css — Design Tokens: Spacing System
+   Branch: feature/common-components
+   ============================================== */
+
+:root {
+
+  /* ── Spacing Scale ────────────────────────────
+     기준: 4px 베이스 그리드
+     사용: margin, padding, gap 등
+  ─────────────────────────────────────────── */
+  --spacing-0:   0;
+  --spacing-1:   0.25rem;   /*  4px */
+  --spacing-2:   0.5rem;    /*  8px */
+  --spacing-3:   0.75rem;   /* 12px */
+  --spacing-4:   1rem;      /* 16px */
+  --spacing-5:   1.25rem;   /* 20px */
+  --spacing-6:   1.5rem;    /* 24px */
+  --spacing-8:   2rem;      /* 32px */
+  --spacing-10:  2.5rem;    /* 40px */
+  --spacing-12:  3rem;      /* 48px */
+  --spacing-16:  4rem;      /* 64px */
+  --spacing-20:  5rem;      /* 80px */
+  --spacing-24:  6rem;      /* 96px */
+
+  /* ── Layout ──────────────────────────────────
+     페이지 레이아웃 관련 고정값
+  ─────────────────────────────────────────── */
+  --layout-page-padding-x:  var(--spacing-4);   /* 모바일 좌우 여백 */
+  --layout-page-padding-y:  var(--spacing-6);   /* 상하 여백 */
+  --layout-content-max-w:   480px;              /* 모바일 앱 최대 너비 */
+  --layout-navbar-height:   56px;               /* 하단 네비게이션 높이 */
+  --layout-header-height:   60px;               /* 상단 헤더 높이 */
+  --layout-card-padding:    var(--spacing-4);   /* 카드 내부 패딩 */
+  --layout-section-gap:     var(--spacing-6);   /* 섹션 간 간격 */
+
+  /* ── Border Radius ───────────────────────────*/
+  --radius-none:   0;
+  --radius-sm:     0.25rem;   /*  4px — 태그, 배지 */
+  --radius-md:     0.5rem;    /*  8px — 인풋, 소형 카드 */
+  --radius-lg:     0.75rem;   /* 12px — 카드, 버튼 */
+  --radius-xl:     1rem;      /* 16px — 모달, 바텀시트 */
+  --radius-2xl:    1.5rem;    /* 24px — 대형 카드 */
+  --radius-full:   9999px;    /* 완전 원형 — 칩, 아바타, FAB */
+
+  /* ── Box Shadow ──────────────────────────────
+     웰니스 톤에 맞춘 따뜻한 그림자 (약한 amber tint)
+  ─────────────────────────────────────────── */
+  --shadow-none: none;
+  --shadow-sm:   0 1px 3px rgba(71, 72, 56, 0.08),
+                 0 1px 2px rgba(71, 72, 56, 0.04);
+  --shadow-md:   0 4px 12px rgba(71, 72, 56, 0.10),
+                 0 2px 4px  rgba(71, 72, 56, 0.06);
+  --shadow-lg:   0 8px 24px rgba(71, 72, 56, 0.12),
+                 0 4px 8px  rgba(71, 72, 56, 0.06);
+  --shadow-xl:   0 16px 40px rgba(71, 72, 56, 0.14),
+                 0 8px 16px rgba(71, 72, 56, 0.08);
+
+  /* 경고/오류 요소용 그림자 */
+  --shadow-warning: 0 4px 12px rgba(246, 144, 108, 0.25);
+  --shadow-error:   0 4px 12px rgba(185, 92, 59, 0.20);
+
+  /* 브랜드 강조 그림자 (버튼 hover 등) */
+  --shadow-brand:   0 4px 14px rgba(120, 160, 133, 0.35);
+
+  /* ── Border Width ────────────────────────────*/
+  --border-width-thin:   1px;
+  --border-width-medium: 1.5px;
+  --border-width-thick:  2px;
+
+  /* ── Z-Index ─────────────────────────────────
+     레이어 관리 (낮을수록 아래, 높을수록 위)
+  ─────────────────────────────────────────── */
+  --z-index-hide:     -1;    /* 숨김 요소 */
+  --z-index-base:      0;    /* 기본 */
+  --z-index-raised:    10;   /* 카드, 드롭다운 트리거 */
+  --z-index-dropdown:  100;  /* 드롭다운 메뉴 */
+  --z-index-sticky:    200;  /* 스티키 헤더, 네비 */
+  --z-index-overlay:   300;  /* 딤 오버레이 */
+  --z-index-modal:     400;  /* 모달, 바텀시트 */
+  --z-index-popover:   500;  /* 팝오버, 툴팁 */
+  --z-index-toast:     600;  /* 토스트 알림 */
+  --z-index-top:       9999; /* 최상단 (경고 팝업 등) */
+
+  /* ── Transition ──────────────────────────────
+     애니메이션 속도 및 이징
+  ─────────────────────────────────────────── */
+  --transition-fast:   100ms ease;
+  --transition-base:   200ms ease;
+  --transition-slow:   300ms ease-in-out;
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
