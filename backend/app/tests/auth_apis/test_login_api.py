@@ -29,6 +29,7 @@ class TestLoginAPI(TestCase):
             response = await client.post("/api/v1/auth/login", json=login_data)
             if response.status_code != 200:
                 print(f"\n[DEBUG] Login Failed: {response.json()}")
+
     async def test_login_invalid_credentials(self):
         login_data = {"email": "nonexistent@example.com", "password": "WrongPassword123!"}
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
