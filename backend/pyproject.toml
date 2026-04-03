@@ -17,8 +17,13 @@ dependencies = [
     "redis>=7.1.0",
     "sqlalchemy>=2.0.48",
     "tomlkit>=0.14.0",
+<<<<<<< HEAD
     "tortoise-orm>=0.25.3",
     "uvicorn[standard]>=0.40.0",
+=======
+    "openai>=1.51.0",
+    "tzdata>=2025.3",
+>>>>>>> e909fb4 (feat: resolve merge conflicts and fix build errors (tzdata added))
 ]
 
 [dependency-groups]
