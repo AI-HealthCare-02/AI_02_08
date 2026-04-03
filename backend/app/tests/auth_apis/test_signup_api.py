@@ -14,6 +14,8 @@ class TestSignupAPI(TestCase):
             "gender": "MALE",
             "birth_date": "1990-01-01",
             "phone_number": "01012345678",
+            "agree_terms": True,
+            "agree_privacy": True,
         }
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -21,19 +23,15 @@ class TestSignupAPI(TestCase):
         assert response.status_code == status.HTTP_201_CREATED
         assert response.json() == {"detail": "회원가입이 성공적으로 완료되었습니다."}
 
-    async def test_signup_success(self):
+    async def test_signup_invalid_email(self):
         signup_data = {
-            "email": "test@example.com",
-            "password": "Password123!",
+            "email": "invalid-email",
+            "password": "password123!",
             "name": "테스터",
             "gender": "MALE",
             "birth_date": "1990-01-01",
             "phone_number": "01012345678",
-            "agree_terms": True,
-            "agree_privacy": True,
         }
-
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post("/api/v1/auth/signup", json=signup_data)
-        print(response.json())
-        assert response.status_code == status.HTTP_201_CREATED
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
