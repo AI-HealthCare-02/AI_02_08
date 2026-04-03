@@ -1,9 +1,7 @@
 from fastapi import APIRouter
 
 from app.apis.v1.auth_routers import auth_router
-
 from app.apis.v1.chat_ocr_routers import chat_ocr_router
-
 from app.apis.v1.ocr_routers import ocr_router
 from app.apis.v1.report_routers import report_router
 from app.apis.v1.user_routers import user_router
