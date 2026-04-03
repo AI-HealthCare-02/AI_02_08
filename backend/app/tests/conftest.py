@@ -9,8 +9,10 @@ from _pytest.fixtures import FixtureRequest
 from tortoise import generate_config
 from tortoise.contrib.test import finalizer, initializer
 
-from app.core import config
+from app.core.config import Config
 from app.db.databases import TORTOISE_APP_MODELS
+
+config = Config()
 
 TEST_BASE_URL = "http://test"
 TEST_DB_LABEL = "models"

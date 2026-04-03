@@ -30,7 +30,7 @@ class AuthService:
                 name=data.name,
                 phone_number=normalized_phone_number,
                 gender=data.gender,
-                birthday=data.birthday,  # birth_date → birthday 수정
+                birthday=data.birth_date,
                 agree_terms=data.agree_terms,  # 추가
                 agree_privacy=data.agree_privacy,  # 추가
             )

@@ -27,7 +27,7 @@ async def main():
         name="테스터",
         phone_number="01012345678",
         gender="MALE",
-        birthday="2000-01-01",
+        birth_date="2000-01-01",
         agree_terms=True,
         agree_privacy=True,
     )

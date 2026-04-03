@@ -10,9 +10,8 @@ class Gender(StrEnum):
 
 class User(models.Model):
     # 수정된 부분: pk=True와 generated=True를 확실히 명시합니다.
-    id = fields.BigIntField(pk=True, generated=True, description="고유 ID")
-
-    email = fields.CharField(max_length=255, unique=True, index=True)
+    id = fields.BigIntField(primary_key=True, generated=True)
+    email = fields.CharField(max_length=255, unique=True, db_index=True)
     hashed_password = fields.CharField(max_length=128)
     name = fields.CharField(max_length=20)
     gender = fields.CharEnumField(enum_type=Gender)

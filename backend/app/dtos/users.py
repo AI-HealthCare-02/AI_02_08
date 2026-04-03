@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.dtos.base import BaseSerializerModel
 from app.models.users import Gender
 from app.validators.common import optional_after_validator
-from app.validators.user_validators import validate_birthday, validate_phone_number
+from app.validators.user_validators import validate_birth_date, validate_phone_number
 
 
 # 1. 회원가입 요청 DTO (사용자가 보내는 데이터 검증)
@@ -19,7 +19,7 @@ class UserCreateRequest(BaseModel):
         Field(..., description="Available Format: 01011112222, 010-1111-2222"),
         validate_phone_number,
     ]
-    birthday: Annotated[date, Field(..., description="Date Format: YYYY-MM-DD"), validate_birthday]
+    birth_date: Annotated[date, Field(..., description="Date Format: YYYY-MM-DD"), validate_birth_date]
     gender: Annotated[Gender, Field(..., description="'MALE' or 'FEMALE'")]
 
     agree_terms: Annotated[bool, Field(..., description="이용약관 동의 여부")]
@@ -42,10 +42,10 @@ class UserUpdateRequest(BaseModel):
         Field(None, description="Available Format: +8201011112222, 01011112222, 010-1111-2222"),
         optional_after_validator(validate_phone_number),
     ]
-    birthday: Annotated[
+    birth_date: Annotated[
         date | None,
         Field(None, description="Date Format: YYYY-MM-DD"),
-        optional_after_validator(validate_birthday),
+        optional_after_validator(validate_birth_date),
     ]
     gender: Annotated[Gender | None, Field(None, description="'MALE' or 'FEMALE'")]
 
@@ -56,7 +56,7 @@ class UserInfoResponse(BaseSerializerModel):
     name: str
     email: str
     phone_number: str
-    birthday: date
+    birth_date: date
     gender: Gender
     agree_terms: bool
     agree_privacy: bool
