@@ -13,4 +13,3 @@ v1_routers.include_router(user_router)
 v1_routers.include_router(chat_ocr_router)
 v1_routers.include_router(ocr_router)
 v1_routers.include_router(report_router)
-
