@@ -70,4 +70,6 @@ $RECYCLE.BIN/
 *.msp
 
 # Windows shortcuts
-*.lnk
+*.lnkdata/
+
+data/

@@ -9,6 +9,8 @@ config = Config()
 TORTOISE_APP_MODELS = [
     "aerich.models",
     "app.models.users",
+    "app.models.drugs",
+    "app.models.medications",
 ]
 
 TORTOISE_ORM = {

@@ -36,3 +36,16 @@ class Config(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 14 * 24 * 60
     JWT_LEEWAY: int = 5
+
+    # Naver Clova OCR
+    CLOVA_OCR_SECRET: str = ""
+    CLOVA_OCR_URL: str = ""
+
+    # OpenAI (GPT-4o mini)
+    OPENAI_API_KEY: str = ""
+
+    # AWS S3 (이미지 저장)
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_S3_BUCKET: str = ""
+    AWS_S3_REGION: str = "ap-northeast-2"
