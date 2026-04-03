@@ -1,5 +1,7 @@
 import asyncio
+
 from tortoise import Tortoise
+
 from app.db.databases import TORTOISE_ORM
 from app.repositories.user_repository import UserRepository
 
@@ -16,6 +18,7 @@ async def main():
 
     # 기존 테스트 유저 있으면 삭제
     from app.models.users import User
+
     await User.filter(email=test_email).delete()
 
     user = await repo.create_user(

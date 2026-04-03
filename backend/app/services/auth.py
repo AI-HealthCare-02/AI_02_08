@@ -30,7 +30,7 @@ class AuthService:
                 name=data.name,
                 phone_number=normalized_phone_number,
                 gender=data.gender,
-                birthday=data.birthday,        # birth_date → birthday 수정
+                birthday=data.birthday,  # birth_date → birthday 수정
                 agree_terms=data.agree_terms,  # 추가
                 agree_privacy=data.agree_privacy,  # 추가
             )
@@ -63,4 +63,5 @@ class AuthService:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용중인 이메일입니다.")
 
     async def check_phone_number_exists(self, phone_number: str) -> None:
-        if await self.user_repo.ex
+        if await self.user_repo.exists_by_phone_number(phone_number):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="이미 사용중인 휴대폰 번호입니다.")

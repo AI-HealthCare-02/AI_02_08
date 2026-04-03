@@ -19,9 +19,7 @@ class UserCreateRequest(BaseModel):
         Field(..., description="Available Format: 01011112222, 010-1111-2222"),
         validate_phone_number,
     ]
-    birthday: Annotated[
-        date, Field(..., description="Date Format: YYYY-MM-DD"), validate_birthday
-    ]
+    birthday: Annotated[date, Field(..., description="Date Format: YYYY-MM-DD"), validate_birthday]
     gender: Annotated[Gender, Field(..., description="'MALE' or 'FEMALE'")]
 
     agree_terms: Annotated[bool, Field(..., description="이용약관 동의 여부")]
