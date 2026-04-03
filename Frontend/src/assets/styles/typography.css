@@ -6,12 +6,27 @@
    Import: https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css
    ============================================== */
 
+@font-face {
+    font-family: 'IsYun';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2202-2@1.0/LeeSeoyun.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+}
+
+
 :root {
 
   /* ── Font Family ─────────────────────────────*/
-  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont,
-               'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --font-sans: 'IsYun', 'Pretendard', -apple-system, 
+             'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+
+/* 폰트 역할 분담 정리
+이서윤체 (IsYun)   →  제목, 로고 주변, 포인트 텍스트
+Pretendard        →  본문, 버튼, 인풋 등 작은 텍스트
+
+
 
   /* ── Font Size ───────────────────────────────
      기준: 1rem = 16px
