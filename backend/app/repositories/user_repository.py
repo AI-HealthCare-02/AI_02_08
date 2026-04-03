@@ -3,8 +3,10 @@ from typing import Any
 
 from pydantic import EmailStr
 
-from app.core import config
+from app.core.config import Config
 from app.models.users import Gender, User
+
+config = Config()
 
 ALLOWED_UPDATE_FIELDS = ["name", "phone_number", "gender", "birthday"]
 UPDATED_AT_FIELD = "updated_at"
@@ -29,6 +31,8 @@ class UserRepository:
         gender: Gender,
         birthday: date,
         *,
+        agree_terms: bool,
+        agree_privacy: bool,
         is_active: bool = True,
         is_admin: bool = False,
     ) -> User:
@@ -39,6 +43,8 @@ class UserRepository:
             phone_number=phone_number,
             gender=gender,
             birthday=birthday,
+            agree_terms=agree_terms,
+            agree_privacy=agree_privacy,
             is_active=is_active,
             is_admin=is_admin,
         )
@@ -58,7 +64,7 @@ class UserRepository:
     async def update_instance(self, user: User, data: dict[str, Any]) -> None:
         update_fields = []
         for key, value in data.items():
-            if value is not None:
+            if value is not None and key in ALLOWED_UPDATE_FIELDS:
                 setattr(user, key, value)
                 update_fields.append(key)
         if update_fields:

@@ -14,6 +14,8 @@ class TestSignupAPI(TestCase):
             "gender": "MALE",
             "birth_date": "1990-01-01",
             "phone_number": "01012345678",
+            "agree_terms": True,
+            "agree_privacy": True,
         }
 
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
