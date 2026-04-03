@@ -6,7 +6,7 @@ from app.services.chat_ocr_service import chat_ocr_service
 chat_ocr_router = APIRouter(tags=["Chat & OCR"])
 
 
-@chat_ocr_router.post("/ocr/analyze")
+@chat_ocr_router.post("/ocr/analyze", response_model=None)
 async def analyze_prescription(file: UploadFile = Depends()):
     """1 단계: 사진 분석 (e 약은요 연동 실패시 fallback 로직 포함)"""
     if not file.content_type.startswith("image/"):
