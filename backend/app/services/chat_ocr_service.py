@@ -19,9 +19,7 @@ class Message:
 class ChatOcrService:
     def __init__(self):
         # 1. 채팅 초기 상태 간소화
-        self.messages: list[Message] = [
-            Message("1", "안녕하세요! 복약 관련 궁금한 점을 물어보세요.", False)
-        ]
+        self.messages: list[Message] = [Message("1", "안녕하세요! 복약 관련 궁금한 점을 물어보세요.", False)]
         # 빠른 답장 옵션
         self.quick_replies = ["복약 방법이 있나요?", "주의사항 알려줘", "같이 먹으면 안 되는 약 있어?"]
 
@@ -38,9 +36,7 @@ class ChatOcrService:
         self.last_warning_time = datetime.now()
 
     def reset_chat(self):
-        self.messages = [
-            Message("1", "안녕하세요! 복약 관련 궁금한 점을 물어보세요.", False)
-        ]
+        self.messages = [Message("1", "안녕하세요! 복약 관련 궁금한 점을 물어보세요.", False)]
         self.is_blocked = False
         self.last_warning_time = datetime.now()
         return {"status": "success", "message": "대화가 초기화되었습니다."}
@@ -51,19 +47,27 @@ class ChatOcrService:
         phone_pattern = r"\b\d{2,3}[-\.\s]?\d{3,4}[-\.\s]?\d{4}\b"
         ssn_pattern = r"\b\d{6}[-\s]?\d{7}\b"
 
-        if (
-            re.search(email_pattern, text)
-            or re.search(phone_pattern, text)
-            or re.search(ssn_pattern, text)
-        ):
+        if re.search(email_pattern, text) or re.search(phone_pattern, text) or re.search(ssn_pattern, text):
             return True
         return False
 
     def _check_illicit_drugs(self, text: str) -> bool:
         illicit_drugs = [
-            "대마", "코카인", "헤로인", "필로폰", "엑스터시",
-            "mdma", "lsd", "펜타닐", "ghb", "케타민", "졸피뎀",
-            "프로포폴", "히로뽕", "물뽕", "떨",
+            "대마",
+            "코카인",
+            "헤로인",
+            "필로폰",
+            "엑스터시",
+            "mdma",
+            "lsd",
+            "펜타닐",
+            "ghb",
+            "케타민",
+            "졸피뎀",
+            "프로포폴",
+            "히로뽕",
+            "물뽕",
+            "떨",
         ]
         for kw in illicit_drugs:
             if kw in text:
@@ -107,18 +111,18 @@ class ChatOcrService:
                 # 전체 약 정보를 분석 포맷에 맞춰 구조화 (무작위 추출 아님)
                 medications_detail = []
                 for med in self.medication_data:
-                    medications_detail.append({
-                        "name": med.get("name", ""),
-                        "category": med.get("category", ""),
-                        "dosage": med.get("dosage", "미정"),
-                        "schedule": med.get("schedule", "미정"),
-                        "caution": med.get("caution", ""),
-                        "description": med.get("description", "").strip(),
-                    })
+                    medications_detail.append(
+                        {
+                            "name": med.get("name", ""),
+                            "category": med.get("category", ""),
+                            "dosage": med.get("dosage", "미정"),
+                            "schedule": med.get("schedule", "미정"),
+                            "caution": med.get("caution", ""),
+                            "description": med.get("description", "").strip(),
+                        }
+                    )
                 med_names = [med["name"] for med in medications_detail]
-                warnings = " / ".join(
-                    [med["caution"] for med in medications_detail if med["caution"]]
-                )
+                warnings = " / ".join([med["caution"] for med in medications_detail if med["caution"]])
                 interactions = "userMedicationData 기반 전체 약물 분석 결과"
             else:
                 # 데이터 없음 → 사용자 직접 입력 요청
@@ -173,9 +177,7 @@ class ChatOcrService:
             return {"error": "내용이 없습니다."}
 
         if self.is_blocked:
-            return {
-                "error": "접근이 차단되었습니다. 보건복지콜센터(129) 등 전문 상담 서비스를 이용해주세요."
-            }
+            return {"error": "접근이 차단되었습니다. 보건복지콜센터(129) 등 전문 상담 서비스를 이용해주세요."}
 
         # 1. 유저 메시지 생성 및 저장
         user_msg = Message(id=str(uuid.uuid4())[:4], content=content, is_user=True)
@@ -201,7 +203,9 @@ class ChatOcrService:
 
         # OpenAI Moderation 검사
         if self._check_moderation(content):
-            ai_content = "민감한 키워드가 감지되었습니다. 전문 상담 서비스(보건복지상담센터 129 등)로 연결을 권장합니다."
+            ai_content = (
+                "민감한 키워드가 감지되었습니다. 전문 상담 서비스(보건복지상담센터 129 등)로 연결을 권장합니다."
+            )
             ai_msg = Message(id=str(uuid.uuid4())[:4], content=ai_content, is_user=False)
             self.messages.append(ai_msg)
             return {"user": asdict(user_msg), "ai": asdict(ai_msg)}
@@ -224,10 +228,7 @@ class ChatOcrService:
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    *[
-                        {"role": "user" if m.is_user else "assistant", "content": m.content}
-                        for m in self.messages[-5:]
-                    ],
+                    *[{"role": "user" if m.is_user else "assistant", "content": m.content} for m in self.messages[-5:]],
                 ],
                 temperature=0.7,
             )

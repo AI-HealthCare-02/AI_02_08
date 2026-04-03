@@ -37,17 +37,26 @@ class PrescriptionChat:
         email_pattern = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
         phone_pattern = r"\b\d{2,3}[-\.\s]?\d{3,4}[-\.\s]?\d{4}\b"
         ssn_pattern = r"\b\d{6}[-\s]?\d{7}\b"
-        return bool(
-            re.search(email_pattern, text)
-            or re.search(phone_pattern, text)
-            or re.search(ssn_pattern, text)
-        )
+        return bool(re.search(email_pattern, text) or re.search(phone_pattern, text) or re.search(ssn_pattern, text))
 
     def _check_illicit_drugs(self, text: str) -> bool:
         # 키워드를 셋(Set)으로 관리하고 영문은 소문자로 통일
         illicit_drugs = {
-            "대마", "코카인", "헤로인", "필로폰", "엑스터시",
-            "mdma", "lsd", "펜타닐", "ghb", "케타민", "졸피뎀", "프로포폴", "히로뽕", "물뽕", "떨",
+            "대마",
+            "코카인",
+            "헤로인",
+            "필로폰",
+            "엑스터시",
+            "mdma",
+            "lsd",
+            "펜타닐",
+            "ghb",
+            "케타민",
+            "졸피뎀",
+            "프로포폴",
+            "히로뽕",
+            "물뽕",
+            "떨",
         }
         # 입력 텍스트를 소문자로 변환 후 검사
         text_lower = text.lower()
@@ -64,7 +73,11 @@ class PrescriptionChat:
         if not content.strip():
             return None
         if self.is_blocked:
-            error_msg = Message(id="err", content="접근이 차단되었습니다. 보건복지콜센터(129) 등 전문 상담 서비스를 이용해주세요.", is_user=False)
+            error_msg = Message(
+                id="err",
+                content="접근이 차단되었습니다. 보건복지콜센터(129) 등 전문 상담 서비스를 이용해주세요.",
+                is_user=False,
+            )
             return error_msg
         user_msg = Message(id=f"u_{int(datetime.now().timestamp())}", content=content, is_user=True)
         self.messages.append(user_msg)
@@ -76,12 +89,20 @@ class PrescriptionChat:
         # 불법 약물 감지
         if self._check_illicit_drugs(content):
             self.is_blocked = True
-            ai_msg = Message(id="ai_block", content="불법 약물 관련 키워드가 감지되었습니다. 챗봇 접근이 금지되었습니다.", is_user=False)
+            ai_msg = Message(
+                id="ai_block",
+                content="불법 약물 관련 키워드가 감지되었습니다. 챗봇 접근이 금지되었습니다.",
+                is_user=False,
+            )
             self.messages.append(ai_msg)
             return ai_msg
         # Moderation 감지
         if self._check_moderation(content):
-            ai_msg = Message(id="ai_mod", content="민감한 키워드가 감지되었습니다. 전문 상담 서비스로 연결을 권장합니다.", is_user=False)
+            ai_msg = Message(
+                id="ai_mod",
+                content="민감한 키워드가 감지되었습니다. 전문 상담 서비스로 연결을 권장합니다.",
+                is_user=False,
+            )
             self.messages.append(ai_msg)
             return ai_msg
         try:
