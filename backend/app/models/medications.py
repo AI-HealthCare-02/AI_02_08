@@ -46,27 +46,24 @@ class OcrPrescription(models.Model):
 
 
 # ──────────────────────────────────────────────
-# 2. 복약 스케줄 (확정 후 등록)
+# 2. 복약 상세 및 스케줄 (확정 후 등록) - 기존 MEDICATIONS
 # ──────────────────────────────────────────────
-class Medication(models.Model):
+class MedicationLog(models.Model):
     """
     POST /api/v1/ai/ocr/prescription/{ocrId}/confirm 호출 시 생성.
-    사용자가 검토·수정 후 확정한 개별 약물의 복약 스케줄입니다.
+    사용자가 검토·수정 후 확정한 개별 약물의 복약 스케줄 정보입니다.
     """
 
     id = fields.BigIntField(primary_key=True)
     user: fields.ForeignKeyRelation = fields.ForeignKeyField(
-        "models.User", related_name="medications", on_delete=fields.CASCADE
+        "models.User", related_name="medication_logs", on_delete=fields.CASCADE
     )
     ocr_prescription: fields.ForeignKeyRelation = fields.ForeignKeyField(
-        "models.OcrPrescription", related_name="medications", on_delete=fields.SET_NULL, null=True
+        "models.OcrPrescription", related_name="medication_logs", on_delete=fields.SET_NULL, null=True
     )
     drug: fields.ForeignKeyRelation = fields.ForeignKeyField(
-        "models.DrugInfo",
-        related_name="medication_schedules",
-        on_delete=fields.SET_NULL,
-        null=True,
-        description="공공데이터(drugs)와 매칭된 경우 FK",
+        "models.DrugInfo", related_name="medication_logs", on_delete=fields.SET_NULL, null=True,
+        description="공공데이터(drugs)와 매칭된 경우 FK"
     )
     name = fields.CharField(max_length=200, description="약품명 (OCR 추출값 또는 사용자 입력)")
     ingredient = fields.CharField(max_length=200, null=True, description="성분명")
@@ -76,30 +73,30 @@ class Medication(models.Model):
     times = fields.IntField(null=True, description="총 투약 일수")
     stock = fields.IntField(null=True, description="잔여 수량")
     start_date = fields.DateField(null=True, description="복용 시작일")
-    caution = fields.CharField(max_length=500, null=True, description="주의사항 메모")
-    side_effects = fields.CharField(max_length=500, null=True, description="부작용 메모")
+    end_date = fields.DateField(null=True, description="복용 종료일")
+    caution = fields.TextField(null=True, description="주의사항 메모")
+    side_effects = fields.TextField(null=True, description="부작용 메모")
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
     class Meta:
-        table = "medications"
+        table = "medication_logs"
 
 
 # ──────────────────────────────────────────────
-# 3. 복약 로그 (실제 복용 기록)
+# 3. 실제 복용 기록 (Intake Record)
 # ──────────────────────────────────────────────
-class MedicationLog(models.Model):
+class MedicationIntakeLog(models.Model):
     """
     사용자가 실제로 약을 복용했는지 기록하는 테이블.
-    복약 준수율(adherenceRate) 산정의 기반 데이터가 됩니다.
     """
 
     id = fields.BigIntField(primary_key=True)
     medication: fields.ForeignKeyRelation = fields.ForeignKeyField(
-        "models.Medication", related_name="logs", on_delete=fields.CASCADE
+        "models.MedicationLog", related_name="intake_logs", on_delete=fields.CASCADE
     )
     user: fields.ForeignKeyRelation = fields.ForeignKeyField(
-        "models.User", related_name="medication_logs", on_delete=fields.CASCADE
+        "models.User", related_name="medication_intake_logs", on_delete=fields.CASCADE
     )
     scheduled_time = fields.DatetimeField(description="예정 복용 시각")
     taken_time = fields.DatetimeField(null=True, description="실제 복용 시각")
@@ -107,7 +104,7 @@ class MedicationLog(models.Model):
     opinion = fields.TextField(null=True, description="컨디션 또는 메모")
 
     class Meta:
-        table = "medication_logs"
+        table = "medication_intake_logs"
 
 
 # ──────────────────────────────────────────────

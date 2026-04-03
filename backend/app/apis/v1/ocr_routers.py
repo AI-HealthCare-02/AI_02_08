@@ -16,7 +16,7 @@ from app.dtos.medications import (
     OcrConfirmResponse,
     PrescriptionAnalysisResponse,
 )
-from app.models.medications import Medication, OcrPrescription, OcrStatus
+from app.models.medications import MedicationLog, OcrPrescription, OcrStatus
 
 ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
 
@@ -97,7 +97,7 @@ async def confirm_prescription(ocr_id: str, body: OcrConfirmRequest):
     created_ids: list[int] = []
     for med in body.medications:
         # TODO: DrugInfo 테이블과 이름매칭하여 drug_id FK 연결
-        medication = await Medication.create(
+        medication = await MedicationLog.create(
             user_id=ocr_record.user_id,
             ocr_prescription_id=ocr_id,
             name=med.name,
