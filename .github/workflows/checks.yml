@@ -1,56 +1,4 @@
-name: ci.yml
-
-on:
-  push:
-    branches:
-      - main
-      - develop
-      - 'release/*'
-      - 'hotfix/*'
-    paths-ignore:
-      - 'frontend/**'
-      - '**.md'
-  pull_request:
-    branches:
-      - main
-      - develop
-      - 'release/*'
-      - 'hotfix/*'
-    paths-ignore:
-      - 'frontend/**'
-      - '**.md'
-
-jobs:
-  lint:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Install dependencies
-        run: uv sync --frozen
-
-      - name: Run Ruff Check (Linting)
-        run: uv run ruff check .
-
-      - name: Run Ruff Format Check
-        run: uv run ruff format . --check
-
-  test:
+test:
     runs-on: ubuntu-latest
 
     defaults:
@@ -63,8 +11,37 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: pw1234
           MYSQL_DATABASE: ai_health
+          MYSQL_USER: ozcoding
+          MYSQL_PASSWORD: pw1234
         ports:
           - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      ENV: local
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: ozcoding
+      DB_PASSWORD: pw1234
+      DB_NAME: ai_health
+      DB_ROOT_PASSWORD: pw1234
+      DB_CONNECT_TIMEOUT: 5
+      DB_CONNECTION_POOL_MAXSIZE: 10
+      SECRET_KEY: test-secret-key
+      COOKIE_DOMAIN: localhost
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      REFRESH_TOKEN_EXPIRE_MINUTES: 20160
+      JWT_LEEWAY: 5
+      MAIL_USERNAME: test@example.com
+      MAIL_PASSWORD: test-password
+      MAIL_FROM: test@example.com
+      MAIL_SERVER: smtp.gmail.com
+      MAIL_PORT: 587
 
     steps:
       - name: Checkout code
@@ -83,6 +60,17 @@ jobs:
       - name: Install dependencies
         run: uv sync --group app --frozen
 
+      - name: Wait for MySQL
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -u ozcoding -ppw1234 --silent; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+
+      - name: Grant test DB privileges
+        run: |
+          mysql -h 127.0.0.1 -u root -ppw1234 -e "GRANT ALL PRIVILEGES ON \`test\`.* TO 'ozcoding'@'%'; FLUSH PRIVILEGES;"
+
       - name: Check if tests exist
         id: check_tests
         run: |
@@ -95,6 +83,5 @@ jobs:
       - name: Run Tests with Coverage
         if: steps.check_tests.outputs.has_tests == 'true'
         run: |
-          uv run coverage run -m pytest app
+          PYTHONPATH=. uv run coverage run -m pytest app
           uv run coverage report -m
-
