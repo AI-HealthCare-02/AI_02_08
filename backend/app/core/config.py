@@ -1,5 +1,4 @@
 import os
-import uuid
 import zoneinfo
 from enum import StrEnum
 from pathlib import Path
@@ -18,14 +17,14 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
 
     ENV: Env = Env.LOCAL
-    SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"
+    SECRET_KEY: str = Field(..., alias="SECRET_KEY")
     TIMEZONE: zoneinfo.ZoneInfo = Field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
     TEMPLATE_DIR: str = os.path.join(Path(__file__).resolve().parent.parent, "templates")
 
     DB_HOST: str = "localhost"
     DB_PORT: int = 3306
     DB_USER: str = "root"
-    DB_PASSWORD: str = "pw1234"
+    DB_PASSWORD: str = Field(..., alias="DB_PASSWORD")
     DB_NAME: str = "ai_health"
     DB_CONNECT_TIMEOUT: int = 5
     DB_CONNECTION_POOL_MAXSIZE: int = 10
@@ -49,3 +48,28 @@ class Config(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_S3_BUCKET: str = ""
     AWS_S3_REGION: str = "ap-northeast-2"
+
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: str = ""
+    MAIL_FROM: str = ""
+    MAIL_SERVER: str = "smtp.gmail.com"
+    MAIL_PORT: int = 587
+
+
+# 1. Config 인스턴스 생성
+settings = Config()
+
+# 2. Aerich 및 Tortoise-ORM을 위한 설정 딕셔너리 추가
+TORTOISE_ORM = {
+    "connections": {
+        "default": f"mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+    },
+    "apps": {
+        "models": {
+            "models": ["app.models.users", "aerich.models"],
+            "default_connection": "default",
+        },
+    },
+    "use_tz": True,
+    "timezone": "Asia/Seoul",
+}
