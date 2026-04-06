@@ -17,6 +17,7 @@ from app.dtos.medications import (
     PrescriptionAnalysisResponse,
 )
 from app.models.medications import MedicationLog, OcrPrescription, OcrStatus
+from app.services.ocr_service import analyze_prescription_via_clova, upload_image_to_s3
 
 ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
 
@@ -41,30 +42,35 @@ async def analyze_prescription(
     # TODO: JWT 인증 의존성 주입 (예: current_user = Depends(get_current_user))
 ):
     """
-    실제 Clova OCR 연동 로직은 서비스 레이어(service)에서 구현 예정.
-    현재는 DB 레코드 생성 및 응답 스켈레톤만 제공합니다.
+    업로드된 이미지를 S3에 보관하고 네이버 클로바 서버에 전송하여 OCR 결과를 반환.
     """
+    # 1) S3에 이미지 업로드 및 URL 확보
+    try:
+        s3_url = await upload_image_to_s3(image)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"이미지 스토리지 업로드 실패: {str(e)}") from e
+
     ocr_id = f"ocr_{datetime.now().strftime('%Y%m%d')}_{uuid.uuid4().hex[:6]}"
 
-    # TODO: 1) S3에 이미지 업로드
-    # TODO: 2) Clova OCR API 호출 → 파싱 로직
-    # TODO: 3) 파싱 결과를 extracted_data 필드에 저장
+    # 2) Clova OCR API 호줄 및 파싱 진행
+    try:
+        raw_json, parsed_medications = await analyze_prescription_via_clova(s3_url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"클로바 OCR 연동 실패: {str(e)}") from e
 
-    # 임시: DB 레코드 생성 (user_id는 인증 완성 후 교체)
-    # await OcrPrescription.create(
-    #     ocr_id=ocr_id,
-    #     user_id=<current_user.id>,
-    #     image_url=<s3_url>,
-    #     status=OcrStatus.PENDING,
-    #     extracted_data=<parsed_json>,
-    # )
+    # 3) 추출 결과 DB 보존 (추후 user_id 연동)
+    await OcrPrescription.create(
+        ocr_id=ocr_id,
+        user_id=None,  # <current_user.id>
+        image_url=s3_url,
+        status=OcrStatus.PENDING,
+        extracted_data=raw_json,
+    )
 
     return OcrAnalyzeResponse(
         ocrId=ocr_id,
         status="success",
-        medications=[
-            # 실제로는 파싱 결과가 채워집니다
-        ],
+        medications=parsed_medications,
     )
 
 
