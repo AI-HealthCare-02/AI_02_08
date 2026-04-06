@@ -4,8 +4,10 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
+    gcc \
     python3-dev \
     libffi-dev \
+    default-libmysqlclient-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 1. uv 설치 (공식 이미지에서 복사해오는 가장 깔끔한 방법)
