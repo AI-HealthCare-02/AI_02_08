@@ -47,3 +47,25 @@ class VerifyEmailRequest(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: Annotated[EmailStr, Field(..., description="인증 이메일 재발송할 이메일")]
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: Annotated[str, Field(..., description="로그아웃할 리프레시 토큰")]
+
+
+class PasswordResetEmailRequest(BaseModel):
+    email: Annotated[EmailStr, Field(..., description="비밀번호 재설정 이메일 발송할 이메일")]
+
+
+class PasswordResetRequest(BaseModel):
+    email: Annotated[EmailStr, Field(..., description="비밀번호 재설정할 이메일")]
+    code: Annotated[str, Field(..., min_length=6, max_length=6, description="6자리 인증 코드")]
+    new_password: Annotated[str, Field(..., min_length=8), AfterValidator(validate_password)]
+    new_password_confirm: Annotated[str, Field(..., min_length=8)]
+
+    @field_validator("new_password_confirm")
+    @classmethod
+    def passwords_match(cls, v: str, info) -> str:
+        if "new_password" in info.data and v != info.data["new_password"]:
+            raise ValueError("비밀번호가 일치하지 않습니다.")
+        return v
