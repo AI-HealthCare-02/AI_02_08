@@ -7,6 +7,9 @@ from app.core.config import Config, Env
 from app.dtos.auth import (
     LoginRequest,
     LoginResponse,
+    LogoutRequest,
+    PasswordResetEmailRequest,
+    PasswordResetRequest,
     ResendVerificationRequest,
     SignUpRequest,
     TokenRefreshResponse,
@@ -102,5 +105,47 @@ async def token_refresh(
     access_token = jwt_service.refresh_jwt(refresh_token)
     return Response(
         content=TokenRefreshResponse(access_token=str(access_token)).model_dump(),
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@auth_router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(
+    request: LogoutRequest,
+    auth_service: Annotated[AuthService, Depends(AuthService)],
+) -> Response:
+    await auth_service.logout(refresh_token=request.refresh_token)
+    resp = Response(
+        content={"detail": "로그아웃되었습니다."},
+        status_code=status.HTTP_200_OK,
+    )
+    resp.delete_cookie(key="refresh_token")
+    return resp
+
+
+@auth_router.post("/password/reset-request", status_code=status.HTTP_200_OK)
+async def password_reset_request(
+    request: PasswordResetEmailRequest,
+    auth_service: Annotated[AuthService, Depends(AuthService)],
+) -> Response:
+    await auth_service.send_password_reset_email(email=request.email)
+    return Response(
+        content={"detail": "비밀번호 재설정 링크를 이메일로 발송했습니다."},
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@auth_router.post("/password/reset", status_code=status.HTTP_200_OK)
+async def password_reset(
+    request: PasswordResetRequest,
+    auth_service: Annotated[AuthService, Depends(AuthService)],
+) -> Response:
+    await auth_service.reset_password(
+        email=request.email,
+        code=request.code,
+        new_password=request.new_password,
+    )
+    return Response(
+        content={"detail": "비밀번호가 재설정되었습니다."},
         status_code=status.HTTP_200_OK,
     )

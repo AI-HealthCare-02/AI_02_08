@@ -12,6 +12,7 @@ TORTOISE_APP_MODELS = [
     "app.models.drugs",
     "app.models.medications",
     "app.models.email_verification",
+    "app.models.refresh_token",
 ]
 
 TORTOISE_ORM = {
