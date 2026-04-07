@@ -1,10 +1,9 @@
-// 공통 컴포넌트 export
-export { Button } from './Button';
-export { Input } from './Input';
-export { Modal } from './Modal';
-export { Loading } from './Loading';
-
-export type { ButtonProps } from './Button';
-export type { InputProps } from './Input';
-export type { ModalProps } from './Modal';
-export type { LoadingProps } from './Loading';
+// ==============================================
+// index.ts — 공통 컴포넌트 export 정리
+// 이루도담 | Branch: feature/common-components
+// ==============================================
+ 
+export { default as Button } from './Button';
+export { default as Input } from './Input';
+export { default as Modal } from './Modal';
+export { default as Loading } from './Loading';

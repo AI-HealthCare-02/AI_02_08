@@ -1,10 +1,21 @@
-/* 글로벌 스타일 리셋 */
+/* ==============================================
+   global.css — Global Reset & Base Styles
+   이루도담 | Branch: feature/common-components
+   ============================================== */
+
+/* ── Import ───────────────────────────────────
+   디자인 토큰 파일들 불러오기
+   이 순서 바꾸면 안 됨!
+   ─────────────────────────────────────────── */
 @import './colors.css';
 @import './typography.css';
 @import './spacing.css';
 @import './components.css';
 
-/* CSS Reset */
+/* ── CSS Reset ────────────────────────────────
+   브라우저 기본 스타일 초기화
+   크롬/사파리/파이어폭스 간 차이 제거
+   ─────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -16,52 +27,137 @@
 html {
   line-height: 1.15;
   -webkit-text-size-adjust: 100%;
+  font-size: 16px;
 }
 
+/* ── Body ─────────────────────────────────────
+   앱 전체 기본 폰트/색상/배경 지정
+   ─────────────────────────────────────────── */
 body {
-  font-family: var(--font-primary);
-  font-size: var(--font-size-base);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
   line-height: var(--line-height-normal);
   color: var(--color-text-primary);
-  background-color: var(--color-bg-primary);
+  background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
-/* Typography */
+/* ── Typography ───────────────────────────────
+   h1~h6 기본 크기/굵기 지정
+   ─────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
   margin-bottom: var(--spacing-4);
+  color: var(--color-text-primary);
 }
 
-h1 { font-size: var(--font-size-4xl); }
-h2 { font-size: var(--font-size-3xl); }
-h3 { font-size: var(--font-size-2xl); }
-h4 { font-size: var(--font-size-xl); }
-h5 { font-size: var(--font-size-lg); }
-h6 { font-size: var(--font-size-base); }
+h1 { font-size: var(--font-size-3xl); }
+h2 { font-size: var(--font-size-2xl); }
+h3 { font-size: var(--font-size-xl); }
+h4 { font-size: var(--font-size-lg); }
+h5 { font-size: var(--font-size-md); }
+h6 { font-size: var(--font-size-sm); }
 
 p {
   margin-bottom: var(--spacing-4);
+  line-height: var(--line-height-relaxed);
 }
 
+/* ── 링크 ─────────────────────────────────────*/
 a {
-  color: var(--color-primary-600);
+  color: var(--color-text-brand);
   text-decoration: none;
+  transition: color var(--transition-base);
 }
 
 a:hover {
-  color: var(--color-primary-700);
+  color: var(--color-primary-400);
   text-decoration: underline;
 }
 
-/* Form Elements */
-input, textarea, select {
-  font-family: inherit;
+/* ── 이미지 ───────────────────────────────────*/
+img, svg {
+  display: block;
+  max-width: 100%;
 }
 
-/* Utility Classes */
+/* ── 버튼 기본 리셋 ───────────────────────────*/
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: inherit;
+  color: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ── Form Elements ────────────────────────────
+   input/textarea/select 기본 스타일 통일
+   ─────────────────────────────────────────── */
+input,
+textarea,
+select {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+/* ── 리스트 리셋 ──────────────────────────────*/
+ul, ol {
+  list-style: none;
+}
+
+/* ── 레이아웃 ─────────────────────────────────*/
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 스크롤바 ─────────────────────────────────*/
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-subtle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-neutral-300);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neutral-400);
+}
+
+/* ── 선택 텍스트 ──────────────────────────────*/
+::selection {
+  background-color: var(--color-primary-100);
+  color: var(--color-text-primary);
+}
+
+/* ── Utility Classes ──────────────────────────
+   sr-only: 화면엔 안 보이지만 스크린리더는
+   읽을 수 있는 접근성 클래스
+   ─────────────────────────────────────────── */
 .sr-only {
   position: absolute;
   width: 1px;

@@ -68,7 +68,7 @@
   --color-info-dark:  #474838;
 
   /* ── Background ──────────────────────────────*/
-  --color-bg-base:    var(--color-neutral-100);  /* 페이지 기본 배경 */
+  --color-bg-base:    var(--color-neutral-100);  /* 네비바, 카드 칩 배경용 */
   --color-bg-surface: #ffffff;                   /* 카드, 모달, 시트 */
   --color-bg-subtle:  var(--color-neutral-200);  /* 섹션 구분 배경 */
   --color-bg-inverse: var(--color-neutral-700);  /* 다크 네비, 헤더 */
