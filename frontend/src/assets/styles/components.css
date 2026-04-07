@@ -1,211 +1,378 @@
-/* 공통 컴포넌트 스타일 */
+/* ==============================================
+   components.css — 공통 컴포넌트 스타일
+   이루도담 | Branch: feature/common-components
+   ============================================== */
 
-/* Button Styles */
+/* ── Button Base ──────────────────────────────
+   모든 버튼 공통 스타일
+   ─────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: var(--radius-md);
-  font-family: var(--font-primary);
+  gap: var(--spacing-2);
+  font-family: var(--font-sans);
   font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all var(--transition-base);
+  white-space: nowrap;
   text-decoration: none;
 }
 
 .btn:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
-/* Button Sizes */
-.btn-sm {
-  padding: var(--spacing-2) var(--spacing-3);
-  font-size: var(--font-size-sm);
-  min-height: 2rem;
-}
+/* ── Button Variants ──────────────────────────*/
 
-.btn-md {
-  padding: var(--spacing-3) var(--spacing-4);
-  font-size: var(--font-size-base);
-  min-height: 2.5rem;
-}
-
-.btn-lg {
-  padding: var(--spacing-4) var(--spacing-6);
-  font-size: var(--font-size-lg);
-  min-height: 3rem;
-}
-
-/* Button Variants */
+/* Primary: 초록 채우기 버튼 */
 .btn-primary {
-  background-color: var(--color-primary-600);
-  color: white;
+  background-color: var(--color-primary-300);
+  color: #ffffff;
+  border-color: var(--color-primary-300);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-700);
+  background-color: var(--color-primary-400);
+  border-color: var(--color-primary-400);
+  box-shadow: var(--shadow-brand);
 }
 
+.btn-primary:active:not(:disabled) {
+  background-color: var(--color-primary-500);
+}
+
+/* Secondary: 테두리만 있는 버튼 */
 .btn-secondary {
-  background-color: var(--color-gray-200);
-  color: var(--color-gray-900);
+  background-color: transparent;
+  color: var(--color-primary-300);
+  border-color: var(--color-primary-300);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-gray-300);
+  background-color: var(--color-primary-100);
 }
 
-.btn-outline {
-  background-color: transparent;
-  color: var(--color-primary-600);
-  border: 1px solid var(--color-primary-600);
+.btn-secondary:active:not(:disabled) {
+  background-color: var(--color-primary-200);
 }
 
-.btn-outline:hover:not(:disabled) {
-  background-color: var(--color-primary-50);
+/* Warning: 경고 빨간 버튼 */
+.btn-warning {
+  background-color: var(--color-warning-dark);
+  color: #ffffff;
+  border-color: var(--color-warning-dark);
 }
 
-/* Input Styles */
+.btn-warning:hover:not(:disabled) {
+  background-color: var(--color-error-dark);
+  box-shadow: var(--shadow-warning);
+}
+
+/* ── Button Sizes ─────────────────────────────*/
+.btn-sm {
+  height: 32px;
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+}
+
+.btn-md {
+  height: 44px;
+  padding: 0 var(--spacing-6);
+  font-size: var(--font-size-md);
+}
+
+.btn-lg {
+  height: 52px;
+  padding: 0 var(--spacing-8);
+  font-size: var(--font-size-lg);
+}
+
+/* ── Button Utils ─────────────────────────────*/
+.btn-full {
+  width: 100%;
+}
+
+/* 로딩 스피너 */
+.btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+}
+
+.btn-text-loading {
+  opacity: 0.8;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Input ────────────────────────────────────
+   텍스트 인풋 컴포넌트 스타일
+   ─────────────────────────────────────────── */
 .input-wrapper {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-1);
+  gap: var(--spacing-2);
+  width: 100%;
 }
 
+/* 레이블 */
 .input-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }
 
-.input {
-  padding: var(--spacing-3);
-  border: 1px solid var(--color-border-primary);
+/* 인풋 컨테이너 */
+.input-container {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-neutral-100);
+  border: 1.5px solid var(--color-border-default);
   border-radius: var(--radius-md);
-  font-size: var(--font-size-base);
-  font-family: var(--font-primary);
-  transition: border-color 0.2s ease-in-out;
+  transition: border-color var(--transition-base);
+  overflow: hidden;
 }
 
-.input:focus {
+.input-container:focus-within {
+  border-color: var(--color-border-focus);
+  background-color: #ffffff;
+}
+
+/* 에러 상태 */
+.input-container.input-error {
+  border-color: var(--color-border-error);
+  background-color: #ffffff;
+}
+
+/* 인풋 필드 */
+.input-field {
+  flex: 1;
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
   outline: none;
-  border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+  width: 100%;
 }
 
-.input-error {
-  border-color: var(--color-error);
+.input-field::placeholder {
+  color: var(--color-text-placeholder);
 }
 
-.error-message {
-  font-size: var(--font-size-sm);
-  color: var(--color-error);
+.input-field:disabled {
+  cursor: not-allowed;
+  color: var(--color-text-disabled);
 }
 
-/* Modal Styles */
+/* 비밀번호 토글 버튼 */
+.input-toggle {
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-base);
+}
+
+.input-toggle:hover {
+  color: var(--color-text-brand);
+}
+
+/* 에러 메시지 */
+.input-error-msg {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-warning);
+}
+
+/* 힌트 텍스트 */
+.input-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ── Modal ────────────────────────────────────
+   모달/팝업 컴포넌트 스타일
+   ─────────────────────────────────────────── */
+ 
+/* 딤 배경 */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: var(--z-modal);
+  z-index: var(--z-index-modal);
+  padding: var(--spacing-4);
 }
-
-.modal-content {
-  background-color: var(--color-bg-primary);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
+ 
+/* 모달 카드 */
+.modal-card {
+  background-color: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 24px rgba(71, 72, 56, 0.15);
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
 }
-
-.modal-sm {
-  width: 90%;
-  max-width: 400px;
+ 
+/* 모달 사이즈 */
+.modal-sm { max-width: 400px; }
+.modal-md { max-width: 480px; }
+.modal-lg { max-width: 600px; }
+ 
+/* 경고 모달 */
+.modal-warning {
+  border-top: 3px solid var(--color-warning);
 }
-
-.modal-md {
-  width: 90%;
-  max-width: 600px;
-}
-
-.modal-lg {
-  width: 90%;
-  max-width: 800px;
-}
-
+ 
+/* 모달 헤더 */
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-6);
-  border-bottom: 1px solid var(--color-border-primary);
+  padding: var(--spacing-6) var(--spacing-6) 0;
 }
-
-.modal-header h2 {
-  margin: 0;
-  font-size: var(--font-size-xl);
+ 
+/* 모달 제목 */
+.modal-title {
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
-
+ 
+.modal-title-warning {
+  color: var(--color-warning-dark);
+}
+ 
+/* 닫기 버튼 */
 .modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
   background: none;
   border: none;
-  font-size: var(--font-size-2xl);
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  padding: var(--spacing-1);
+  margin-left: auto;
 }
-
+ 
+.modal-close:hover {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+}
+ 
+/* 모달 내용 */
 .modal-body {
   padding: var(--spacing-6);
 }
 
-/* Loading Styles */
-.loading-container {
+/* ── Loading ──────────────────────────────────
+   로딩 스피너 컴포넌트 스타일
+   ─────────────────────────────────────────── */
+
+/* 래퍼 */
+.loading-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-3);
+  gap: var(--spacing-4);
 }
 
+/* 전체화면 로딩 */
+.loading-fullscreen {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: var(--z-index-modal);
+}
+
+/* 원형 스피너 컨테이너 */
 .loading-spinner {
-  border: 2px solid var(--color-gray-200);
-  border-top: 2px solid var(--color-primary-600);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 스피너 사이즈 */
+.loading-sm { width: 32px;  height: 32px; }
+.loading-md { width: 56px;  height: 56px; }
+.loading-lg { width: 80px;  height: 80px; }
+
+/* 뒤 회색 트랙 원 */
+.loading-track {
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  border: 4px solid var(--color-primary-100);
 }
 
-.loading-sm {
-  width: 1rem;
-  height: 1rem;
+/* 앞 초록 돌아가는 원 */
+.loading-circle {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: var(--color-primary-300);
+  animation: loading-spin 0.8s linear infinite;
 }
 
-.loading-md {
-  width: 2rem;
-  height: 2rem;
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
 }
 
-.loading-lg {
-  width: 3rem;
-  height: 3rem;
-}
-
+/* 로딩 텍스트 */
 .loading-text {
-  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: 0;
+}
+
+/* 서브 텍스트 */
+.loading-subtext {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  margin-bottom: 0;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* 진행바 트랙 */
+.loading-progress-track {
+  width: 300px;
+  height: 6px;
+  background-color: var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+/* 진행바 */
+.loading-progress-bar {
+  height: 100%;
+  background-color: var(--color-primary-300);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
 }
