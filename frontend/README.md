@@ -15,12 +15,14 @@
 ```
 frontend/
 ├── public/                  # 정적 파일
+│   ├── favicon.svg
+│   └── icons.svg
 ├── src/
 │   ├── api/                 # 백엔드 API 호출 함수
 │   │   ├── apiClient.ts     # axios 인스턴스 + 토큰 인터셉터
 │   │   └── authApi.ts       # 인증 관련 API (로그인, 회원가입, 토큰 갱신)
 │   ├── assets/
-│   │   ├── images/          # 이미지 리소스
+│   │   ├── images/          # 이미지 리소스 (로고, 배경 등)
 │   │   └── styles/          # CSS 파일 및 디자인 토큰
 │   │       ├── global.css   # 글로벌 스타일 리셋
 │   │       ├── colors.css   # 색상 변수
@@ -36,7 +38,6 @@ frontend/
 │   │   │   └── index.ts     # 컴포넌트 export
 │   │   └── layout/          # 레이아웃 컴포넌트
 │   │       └── MainLayout.tsx
-│   ├── hooks/               # 커스텀 훅 (useAuth, useFetch 등)
 │   ├── pages/               # 페이지 단위 컴포넌트
 │   │   ├── auth/
 │   │   │   ├── LoginPage.tsx
@@ -45,18 +46,22 @@ frontend/
 │   │       └── HomePage.tsx
 │   ├── routes/              # 라우팅 설정
 │   │   └── AppRouter.tsx
-│   ├── stores/              # 전역 상태 관리
 │   ├── types/               # TypeScript 타입 정의
 │   │   └── index.ts
-│   ├── utils/               # 유틸리티 함수
+│   ├── App.css              # 앱 스타일
 │   ├── App.tsx              # 루트 컴포넌트
+│   ├── index.css            # 기본 스타일
 │   ├── main.tsx             # 앱 진입점
-│   └── vite-env.d.ts
-├── .env                     # 환경변수 (VITE_API_BASE_URL)
-├── index.html
-├── package.json
-├── tsconfig.json
-└── vite.config.ts
+│   └── vite-env.d.ts        # Vite 환경 타입
+├── .gitignore               # Git 무시 파일
+├── eslint.config.js         # ESLint 설정
+├── index.html               # HTML 템플릿
+├── package.json             # 패키지 정보
+├── package-lock.json        # npm 락 파일
+├── pnpm-lock.yaml           # pnpm 락 파일
+├── tsconfig.json            # TypeScript 설정
+├── tsconfig.node.json       # Node.js용 TypeScript 설정
+└── vite.config.ts           # Vite 설정
 ```
 
 ## 시작하기
@@ -82,14 +87,6 @@ pnpm build
 pnpm preview
 ```
 
-## 환경 변수
-
-`.env` 파일에서 다음 환경 변수를 설정하세요:
-
-```env
-VITE_API_BASE_URL=http://localhost:8000
-```
-
 ## 개발 가이드
 
 ### 컴포넌트 작성
@@ -104,7 +101,7 @@ VITE_API_BASE_URL=http://localhost:8000
 
 사용 예시:
 ```tsx
-import { Button, Input, Modal } from '@/components/common';
+import { Button, Input, Modal } from './components/common';
 
 // 버튼 사용
 <Button variant="primary" size="md" onClick={handleClick}>
@@ -149,19 +146,45 @@ import { Button, Input, Modal } from '@/components/common';
 - `src/api/apiClient.ts` - axios 인스턴스 및 인터셉터 설정
 - `src/api/` - 도메인별 API 함수들
 
-### 상태 관리
-
-- `src/stores/` - 전역 상태 관리 (Zustand, Redux 등)
-- `src/hooks/` - 커스텀 훅
-
 ### 타입 정의
 
 - `src/types/` - TypeScript 타입 및 인터페이스 정의
 
 ## 스크립트
 
-- `pnpm dev` - 개발 서버 실행 (포트 3000)
+- `pnpm dev` - 개발 서버 실행
 - `pnpm build` - 프로덕션 빌드
 - `pnpm preview` - 빌드 결과 미리보기
 - `pnpm lint` - ESLint 실행
 - `pnpm lint:fix` - ESLint 자동 수정
+
+## 추가 예정 기능
+
+다음 폴더들은 필요에 따라 추가될 예정입니다:
+- `src/hooks/` - 커스텀 훅
+- `src/stores/` - 전역 상태 관리
+- `src/utils/` - 유틸리티 함수
+
+## 아이콘 및 이미지 가이드
+
+### 브라우저 탭 아이콘 (Favicon)
+- **위치**: `public/favicon.ico` 또는 `public/favicon.svg`
+- **설명**: 브라우저 탭에 표시되는 아이콘
+- **권장 크기**: 16x16, 32x32, 48x48px
+
+### 앱 아이콘 (PWA/모바일)
+- **위치**: `public/` 폴더
+- **파일명**: 
+  - `icon-192x192.png` - Android 홈스크린
+  - `icon-512x512.png` - Android 스플래시
+  - `apple-touch-icon.png` - iOS 홈스크린
+
+### 앱 내부 이미지
+- **위치**: `src/assets/images/`
+- **용도**: 로고, 배경 이미지, UI 요소 등
+- **사용법**: 
+```tsx
+import logo from '../assets/images/logo.png';
+
+<img src={logo} alt="로고" />
+```
