@@ -13,6 +13,9 @@ TORTOISE_APP_MODELS = [
     "app.models.medications",
     "app.models.email_verification",
     "app.models.refresh_token",
+    "app.models.chat_session",
+    "app.models.chat_message",
+    "app.models.faq_item",
 ]
 
 TORTOISE_ORM = {
