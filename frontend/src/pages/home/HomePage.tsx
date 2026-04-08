@@ -93,7 +93,7 @@ const HomePage: React.FC = () => {
         <div className="home-page__right">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
-              <h2 className="home-page__section-title">🤖 약솔이 상담소</h2>
+              <h2 className="home-page__section-title">🤖 약속이 상담소</h2>
               <span className="home-page__chatbot-status">답변 중</span>
             </div>
             
