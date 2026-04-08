@@ -23,8 +23,8 @@ const LandingPage: React.FC = () => {
     {
       id: 'slide3',
       subtitle: 'AI CHATBOT', 
-      title: '약솔이가 답해드려요',
-      description: '복약 관련 궁금한 점을 AI 챗봇 약솔이에게 물어보세요'
+      title: '약속이가 답해드려요',
+      description: '복약 관련 궁금한 점을 AI 챗봇 약속이에게 물어보세요'
     }
   ];
 
