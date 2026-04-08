@@ -72,6 +72,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnkdata/
 
+# AI/Agent Rules
+.agents/
+.gemini/
+.cursorrules
+.clinerules
+.aierules
+
 data/
-
-
