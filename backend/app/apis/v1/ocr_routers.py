@@ -64,7 +64,10 @@ async def analyze_prescription(
         user_id=None,  # <current_user.id>
         image_url=s3_url,
         status=OcrStatus.PENDING,
-        extracted_data=raw_json,
+        extracted_data={
+            "raw_clova_response": raw_json,
+            "parsed_medications": [med.model_dump() for med in parsed_medications]
+        },
     )
 
     return OcrAnalyzeResponse(
