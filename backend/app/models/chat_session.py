@@ -13,6 +13,7 @@ class ChatSession(models.Model):
         related_name="chat_sessions",
         on_delete=fields.SET_NULL,
         null=True,
+        to_field="ocr_id",
     )
     message_count = fields.IntField(default=0)
     created_at = fields.DatetimeField(auto_now_add=True)

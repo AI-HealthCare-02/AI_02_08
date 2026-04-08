@@ -101,7 +101,7 @@ class ChatService:
         system_prompt = f"""당신은 복약 정보 전문 AI 어시스턴트입니다.
 약학 및 복약 관련 질문에만 답변하고, 그 외 질문은 정중히 거절하세요.
 답변 끝에 반드시 '[출처: 식품의약품안전처 e약은요]' 문구를 추가하세요.
-{f'참고 정보: {context}' if context else ''}"""
+{f"참고 정보: {context}" if context else ""}"""
 
         response = await client.chat.completions.create(
             model="gpt-4",

@@ -30,13 +30,15 @@ async def create_session(
         ocr_id=request.ocr_id,
     )
     return JSONResponse(
-        content=json.loads(ChatSessionResponse(
-            session_id=session.id,
-            user_id=session.user_id,
-            ocr_id=session.ocr_id,
-            message_count=session.message_count,
-            created_at=session.created_at,
-        ).model_dump_json()),
+        content=json.loads(
+            ChatSessionResponse(
+                session_id=session.id,
+                user_id=session.user_id,
+                ocr_id=session.ocr_id,
+                message_count=session.message_count,
+                created_at=session.created_at,
+            ).model_dump_json()
+        ),
         status_code=status.HTTP_201_CREATED,
     )
 
@@ -49,13 +51,15 @@ async def get_sessions(
     sessions = await chat_service.get_sessions(user_id=user.id)
     return JSONResponse(
         content=[
-            json.loads(ChatSessionResponse(
-                session_id=s.id,
-                user_id=s.user_id,
-                ocr_id=s.ocr_id,
-                message_count=s.message_count,
-                created_at=s.created_at,
-            ).model_dump_json())
+            json.loads(
+                ChatSessionResponse(
+                    session_id=s.id,
+                    user_id=s.user_id,
+                    ocr_id=s.ocr_id,
+                    message_count=s.message_count,
+                    created_at=s.created_at,
+                ).model_dump_json()
+            )
             for s in sessions
         ],
         status_code=status.HTTP_200_OK,
@@ -73,13 +77,15 @@ async def get_session(
         user_id=user.id,
     )
     return JSONResponse(
-        content=json.loads(ChatSessionResponse(
-            session_id=session.id,
-            user_id=session.user_id,
-            ocr_id=session.ocr_id,
-            message_count=session.message_count,
-            created_at=session.created_at,
-        ).model_dump_json()),
+        content=json.loads(
+            ChatSessionResponse(
+                session_id=session.id,
+                user_id=session.user_id,
+                ocr_id=session.ocr_id,
+                message_count=session.message_count,
+                created_at=session.created_at,
+            ).model_dump_json()
+        ),
         status_code=status.HTTP_200_OK,
     )
 
@@ -112,14 +118,16 @@ async def get_messages(
     )
     return JSONResponse(
         content=[
-            json.loads(ChatMessageResponse(
-                message_id=m.id,
-                session_id=m.session_id,
-                sender=m.sender,
-                content=m.content,
-                is_faq=m.is_faq,
-                created_at=m.created_at,
-            ).model_dump_json())
+            json.loads(
+                ChatMessageResponse(
+                    message_id=m.id,
+                    session_id=m.session_id,
+                    sender=m.sender,
+                    content=m.content,
+                    is_faq=m.is_faq,
+                    created_at=m.created_at,
+                ).model_dump_json()
+            )
             for m in messages
         ],
         status_code=status.HTTP_200_OK,
@@ -140,14 +148,16 @@ async def save_message(
         is_faq=request.is_faq,
     )
     return JSONResponse(
-        content=json.loads(ChatMessageResponse(
-            message_id=message.id,
-            session_id=message.session_id,
-            sender=message.sender,
-            content=message.content,
-            is_faq=message.is_faq,
-            created_at=message.created_at,
-        ).model_dump_json()),
+        content=json.loads(
+            ChatMessageResponse(
+                message_id=message.id,
+                session_id=message.session_id,
+                sender=message.sender,
+                content=message.content,
+                is_faq=message.is_faq,
+                created_at=message.created_at,
+            ).model_dump_json()
+        ),
         status_code=status.HTTP_201_CREATED,
     )
 
@@ -165,14 +175,16 @@ async def get_ai_response(
         user_message=request.user_message,
     )
     return JSONResponse(
-        content=json.loads(ChatMessageResponse(
-            message_id=message.id,
-            session_id=message.session_id,
-            sender=message.sender,
-            content=message.content,
-            is_faq=message.is_faq,
-            created_at=message.created_at,
-        ).model_dump_json()),
+        content=json.loads(
+            ChatMessageResponse(
+                message_id=message.id,
+                session_id=message.session_id,
+                sender=message.sender,
+                content=message.content,
+                is_faq=message.is_faq,
+                created_at=message.created_at,
+            ).model_dump_json()
+        ),
         status_code=status.HTTP_201_CREATED,
     )
 
