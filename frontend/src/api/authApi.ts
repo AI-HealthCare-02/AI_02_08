@@ -1,1 +1,51 @@
-// 인증 관련 API (로그인, 회원가입, 토큰 갱신)
+import apiClient from './apiClient';
+import { LoginData, SignupData, LoginResponse, ApiResponse } from '../types/auth';
+
+// 이메일 중복 확인 - GET 요청으로 변경
+export const checkEmailDuplicate = async (email: string): Promise<boolean> => {
+  const response = await apiClient.get(`/auth/check-email?email=${encodeURIComponent(email)}`);
+  return response.data.is_duplicate;
+};
+
+// 인증 이메일 재발솨 (인증코드 발송)
+export const sendVerificationCode = async (email: string): Promise<void> => {
+  await apiClient.post('/auth/resend-verification', { email });
+};
+
+// 이메일 인증 코드 확인 - GET 요청으로 변경
+export const verifyEmailCode = async (email: string, code: string): Promise<boolean> => {
+  try {
+    await apiClient.get(`/auth/verify-email?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// 회원가입
+export const signup = async (userData: SignupData): Promise<void> => {
+  await apiClient.post('/auth/signup', {
+    email: userData.email,
+    password: userData.password,
+    password_confirm: userData.passwordConfirm,
+    verification_code: userData.verificationCode
+  });
+};
+
+// 로그인
+export const login = async (loginData: LoginData): Promise<LoginResponse> => {
+  const response = await apiClient.post('/auth/login', loginData);
+  return response.data;
+};
+
+// 로그아웃
+export const logout = async (): Promise<void> => {
+  const refreshToken = localStorage.getItem('refreshToken');
+  await apiClient.post('/auth/logout', { refresh_token: refreshToken });
+};
+
+// 토큰 갱신
+export const refreshToken = async (): Promise<{ accessToken: string }> => {
+  const response = await apiClient.get('/auth/token/refresh');
+  return { accessToken: response.data.access_token };
+};

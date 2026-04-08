@@ -1,0 +1,198 @@
+/* SignupPage.css - LoginPage와 동일한 배경 디자인 */
+
+.signup-page {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4);
+}
+
+/* 배경 이미지 - LoginPage와 동일 */
+.signup-page__background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.62;
+}
+
+.signup-page__background-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #fdf5ee;
+  opacity: 0.28;
+}
+
+/* 회원가입 카드 - LoginPage와 동일한 스타일 */
+.signup-page__container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  min-height: 600px;
+  background-color: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+/* 카드 상단 라인 - LoginPage와 동일 */
+.signup-page__card-line {
+  height: 3px;
+  background-color: var(--color-primary-300);
+  border-radius: var(--radius-full);
+  width: 100%;
+  margin-bottom: var(--spacing-6);
+}
+
+.signup-page__header {
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.signup-page__title {
+  font-family: 'IsYun', var(--font-sans);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.signup-page__subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-2);
+}
+
+.signup-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+  flex: 1;
+}
+
+.signup-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.signup-page__email-group,
+.signup-page__code-group {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: flex-end;
+}
+
+.signup-page__email-group .input-wrapper,
+.signup-page__code-group .input-wrapper {
+  flex: 1;
+}
+
+.signup-page__email-group .btn,
+.signup-page__code-group .btn {
+  flex-shrink: 0;
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.signup-page__success {
+  color: var(--color-success, #22c55e);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  margin-top: var(--spacing-1);
+  text-align: center;
+}
+
+.signup-page__submit {
+  width: 100%;
+  max-width: 400px;
+  height: 48px;
+  background-color: var(--color-primary-300);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-base);
+  margin: var(--spacing-4) auto 0;
+}
+
+.signup-page__submit:hover:not(:disabled) {
+  background-color: var(--color-primary-400);
+  box-shadow: var(--shadow-brand);
+}
+
+.signup-page__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.signup-page__footer {
+  text-align: center;
+  margin-top: auto;
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.signup-page__footer p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.signup-page__link {
+  background: none;
+  border: none;
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  transition: var(--transition-base);
+}
+
+.signup-page__link:hover {
+  color: var(--color-primary-400);
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 768px) {
+  .signup-page__container {
+    max-width: 100%;
+    margin: var(--spacing-4);
+    padding: var(--spacing-6);
+    min-height: auto;
+  }
+  
+  .signup-page__title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .signup-page__email-group,
+  .signup-page__code-group {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    align-items: stretch;
+  }
+  
+  .signup-page__email-group .btn,
+  .signup-page__code-group .btn {
+    width: 100%;
+  }
+  
+  .signup-page__submit {
+    max-width: 100%;
+  }
+}

@@ -1,11 +1,12 @@
 import React from 'react'
 import './App.css'
+import AppRouter from './routes/AppRouter'
 
 const App: React.FC = () => {
   return (
-    <>
-      {/* 여기에 컴포넌트들을 추가하세요 */}
-    </>
+    <div className="App">
+      <AppRouter />
+    </div>
   )
 }
 

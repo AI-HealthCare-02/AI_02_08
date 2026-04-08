@@ -23,3 +23,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Amazon Q / AI 관련 폴더 (룰 설정)
+.amazonq/
+.amazonq/**
+rules/
+rules/**
+.ai-rules/
+.ai-rules/**
+prompts/
+prompts/**
