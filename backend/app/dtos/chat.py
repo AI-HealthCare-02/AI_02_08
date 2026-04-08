@@ -7,7 +7,7 @@ from app.models.chat_message import SenderType
 
 
 class ChatSessionCreateRequest(BaseModel):
-    ocr_id: Annotated[int | None, Field(None, description="OCR 처방전 ID")]
+    ocr_id: Annotated[str | None, Field(None, description="OCR 처방전 ID")]
 
 
 class ChatSessionResponse(BaseModel):
@@ -15,7 +15,7 @@ class ChatSessionResponse(BaseModel):
 
     session_id: int
     user_id: int
-    ocr_id: int | None
+    ocr_id: str | None
     message_count: int
     created_at: datetime
 

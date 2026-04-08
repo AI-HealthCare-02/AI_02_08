@@ -21,7 +21,7 @@ class ChatService:
     async def create_session(
         self,
         user_id: int,
-        ocr_id: int | None = None,
+        ocr_id: str | None = None,
     ) -> ChatSession:
         return await self.session_repo.create(
             user_id=user_id,
@@ -62,7 +62,6 @@ class ChatService:
     ) -> ChatMessage:
         session = await self.get_session(session_id=session_id, user_id=user_id)
 
-        # message_count 10회 초과 시 AI 호출 차단
         if not is_faq and session.message_count >= MAX_MESSAGE_COUNT:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -113,7 +112,6 @@ class ChatService:
 
         ai_content = response.choices[0].message.content
 
-        # AI 답변 저장
         async with in_transaction():
             message = await self.message_repo.create(
                 session_id=session_id,
