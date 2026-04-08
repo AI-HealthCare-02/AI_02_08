@@ -1,0 +1,323 @@
+.home-page {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* 인사말 섹션 */
+.home-page__greeting {
+  margin-bottom: 2rem;
+}
+
+.home-page__title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.home-page__subtitle {
+  font-size: 1rem;
+  color: #7f8c8d;
+}
+
+/* 메인 콘텐츠 레이아웃 */
+.home-page__content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+/* 왼쪽 OCR 섹션 */
+.home-page__left {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.home-page__section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+/* OCR 업로드 영역 */
+.home-page__ocr-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.home-page__ocr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.home-page__upload-status {
+  font-size: 0.9rem;
+  color: #9A8058;
+  margin: 0;
+}
+
+.home-page__upload-area {
+  border: 2px dashed #bdc3c7;
+  border-radius: 8px;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: #f8f9fa;
+}
+
+.home-page__file-input {
+  display: none;
+}
+
+.home-page__upload-label {
+  cursor: pointer;
+  display: block;
+}
+
+.home-page__upload-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.home-page__upload-text {
+  font-size: 1rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.home-page__upload-formats {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+/* OCR 결과 섹션 */
+.home-page__ocr-results {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.home-page__medicine-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.home-page__medicine-category h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.8rem;
+}
+
+.home-page__medicine-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.home-page__medicine-tag {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+}
+
+.home-page__medicine-tag--yellow {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.home-page__medicine-tag--orange {
+  background-color: #ffeaa7;
+  color: #d63031;
+}
+
+.home-page__medicine-tag--green {
+  background-color: #d1f2eb;
+  color: #00b894;
+}
+
+/* OCR 결과 빈 상태 */
+.home-page__empty-state {
+  color: #95a5a6;
+  font-size: 0.9rem;
+  font-style: italic;
+  padding: 1rem;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px dashed #dee2e6;
+}
+
+/* 오른쪽 챗봇 섹션 */
+.home-page__right {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-page__chatbot-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-page__chatbot-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #ecf0f1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.home-page__chatbot-status {
+  font-size: 0.9rem;
+  color: #e74c3c;
+}
+
+.home-page__chat-messages {
+  flex: 1;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.home-page__chat-message {
+  padding: 1rem;
+  border-radius: 12px;
+  max-width: 80%;
+}
+
+.home-page__chat-message--bot {
+  background-color: #e8f5e8;
+  color: #2d5a2d;
+  align-self: flex-start;
+}
+
+.home-page__chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.home-page__suggestion-btn {
+  padding: 0.5rem 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.home-page__suggestion-btn:hover {
+  background-color: #e9ecef;
+}
+
+.home-page__chat-input-area {
+  padding: 1.5rem;
+  border-top: 1px solid #ecf0f1;
+}
+
+.home-page__chat-input-wrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.home-page__chat-input {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.home-page__chat-input:focus {
+  border-color: #74b9ff;
+}
+
+.home-page__send-btn {
+  background-color: #00b894;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* 생활습관 가이드 섹션 */
+.home-page__lifestyle-guide {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.home-page__guide-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.home-page__guide-card {
+  background-color: #f1f3f4;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-page__guide-card h3 {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin: 0;
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+  .home-page__content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .home-page__right {
+    order: -1;
+  }
+  
+  .home-page__chatbot-section {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page {
+    padding: 1rem;
+  }
+  
+  .home-page__guide-cards {
+    grid-template-columns: 1fr;
+  }
+}
