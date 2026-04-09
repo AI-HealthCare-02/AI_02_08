@@ -13,6 +13,9 @@ const HomePage: React.FC = () => {
     interactions: string[];
   } | null>(null);
   const [showManualInput, setShowManualInput] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const [manualInputData, setManualInputData] = useState({
     name: '',
     dosage: '',
@@ -150,6 +153,76 @@ const HomePage: React.FC = () => {
     setOcrResults(null);
   };
 
+  // 카메라 모달 열기
+  const openCameraModal = () => {
+    setShowCameraModal(true);
+    startCamera();
+  };
+
+  // 카메라 시작
+  const startCamera = async () => {
+    try {
+      setCameraError(null);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment', // 후면 카메라 (모바일)
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      });
+      setCameraStream(stream);
+    } catch (error) {
+      console.error('카메라 접근 오류:', error);
+      setCameraError('카메라에 접근할 수 없습니다. 권한을 확인해주세요.');
+    }
+  };
+
+  // 카메라 정지
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+  };
+
+  // 카메라 모달 닫기
+  const closeCameraModal = () => {
+    stopCamera();
+    setShowCameraModal(false);
+    setCameraError(null);
+  };
+
+  // 사진 촬영
+  const capturePhoto = () => {
+    const video = document.getElementById('camera-video') as HTMLVideoElement;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    if (video && context) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+      
+      // Canvas를 Blob으로 변환
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+          setSelectedImage(file);
+          
+          // 미리보기 URL 생성
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            setPreviewUrl(e.target?.result as string);
+            closeCameraModal();
+            setOcrStatus('uploading');
+            simulateUploadProgress();
+          };
+          reader.readAsDataURL(file);
+        }
+      }, 'image/jpeg', 0.9);
+    }
+  };
+
   const handleChatSubmit = () => {
     if (chatMessage.trim()) {
       // TODO: 챗봇 API 연결
@@ -215,14 +288,30 @@ const HomePage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <label htmlFor="prescription-upload" className="home-page__upload-label">
-                  <div className="home-page__upload-icon">📷</div>
-                  <p className="home-page__upload-text">
-                    처방전 이미지를 업로드 하거나<br />
-                    드래그 & 드롭하세요
-                  </p>
-                  <p className="home-page__upload-formats">JPG, PNG, PDF 최대 10MB</p>
-                </label>
+                <div>
+                  <label htmlFor="prescription-upload" className="home-page__upload-label">
+                    <div className="home-page__upload-icon">📷</div>
+                    <p className="home-page__upload-text">
+                      처방전 이미지를 업로드 하거나<br />
+                      드래그 & 드롭하세요
+                    </p>
+                    <p className="home-page__upload-formats">JPG, PNG, PDF 최대 10MB</p>
+                  </label>
+                  
+                  {/* 카메라 촬영 버튼 */}
+                  <div className="home-page__camera-section">
+                    <div className="home-page__divider">
+                      <span>또는</span>
+                    </div>
+                    <button 
+                      onClick={openCameraModal}
+                      className="home-page__camera-btn"
+                      type="button"
+                    >
+                      📸 카메라로 촬영하기
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </div>
@@ -371,6 +460,12 @@ const HomePage: React.FC = () => {
       {ocrStatus === 'error' && (
         <div className="home-page__modal-overlay">
           <div className="home-page__modal">
+            <button 
+              onClick={() => setOcrStatus('idle')}
+              className="home-page__modal-close"
+            >
+              ✕
+            </button>
             <div className="home-page__error-icon"></div>
             <h3 className="home-page__modal-title home-page__modal-title--error">
               처방전 인식에 실패 했습니다.
@@ -401,7 +496,7 @@ const HomePage: React.FC = () => {
 
       {/* 수동 입력 모달 */}
       {showManualInput && (
-        <div className="home-page__modal-overlay">
+        <div className="home-page__modal-overlay home-page__modal-overlay--light">
           <div className="home-page__modal home-page__modal--large">
             <div className="home-page__modal-header">
               <h3 className="home-page__modal-title">복용 정보 입력</h3>
@@ -449,13 +544,16 @@ const HomePage: React.FC = () => {
               
               <div className="home-page__form-group">
                 <label>식후 ❓</label>
-                <input 
-                  type="text"
-                  placeholder="식후 30분"
+                <select 
                   value={manualInputData.timing}
                   onChange={(e) => setManualInputData({...manualInputData, timing: e.target.value})}
-                  className="home-page__form-input"
-                />
+                  className="home-page__form-select"
+                >
+                  <option value="">선택해주세요</option>
+                  <option value="식전">식전</option>
+                  <option value="식후">식후</option>
+                  <option value="취침전">취침전</option>
+                </select>
               </div>
             </div>
             
@@ -474,6 +572,80 @@ const HomePage: React.FC = () => {
                 확인
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 카메라 촬영 모달 */}
+      {showCameraModal && (
+        <div className="home-page__modal-overlay">
+          <div className="home-page__modal home-page__modal--camera">
+            <div className="home-page__modal-header">
+              <h3 className="home-page__modal-title">처방전 촬영</h3>
+              <button 
+                onClick={closeCameraModal}
+                className="home-page__modal-close"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="home-page__camera-container">
+              {cameraError ? (
+                <div className="home-page__camera-error">
+                  <div className="home-page__error-icon-small">⚠️</div>
+                  <p>{cameraError}</p>
+                  <button 
+                    onClick={startCamera}
+                    className="home-page__retry-btn"
+                  >
+                    다시 시도
+                  </button>
+                </div>
+              ) : cameraStream ? (
+                <div className="home-page__camera-preview">
+                  <video 
+                    id="camera-video"
+                    autoPlay 
+                    playsInline 
+                    muted
+                    className="home-page__camera-video"
+                    ref={(video) => {
+                      if (video && cameraStream) {
+                        video.srcObject = cameraStream;
+                      }
+                    }}
+                  />
+                  <div className="home-page__camera-overlay">
+                    <div className="home-page__camera-frame"></div>
+                    <p className="home-page__camera-guide">처방전을 프레임 안에 맞춰주세요</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="home-page__camera-loading">
+                  <div className="home-page__loading-spinner"></div>
+                  <p>카메라를 준비하고 있습니다...</p>
+                </div>
+              )}
+            </div>
+            
+            {cameraStream && !cameraError && (
+              <div className="home-page__camera-controls">
+                <button 
+                  onClick={closeCameraModal}
+                  className="home-page__modal-btn home-page__modal-btn--secondary"
+                >
+                  취소
+                </button>
+                <button 
+                  onClick={capturePhoto}
+                  className="home-page__camera-capture-btn"
+                >
+                  📸
+                </button>
+                <div className="home-page__camera-spacer"></div>
+              </div>
+            )}
           </div>
         </div>
       )}
