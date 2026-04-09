@@ -41,7 +41,7 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav className="navbar">
       <div className="navbar__container">
         {/* 로고 - 항상 표시 */}
-        <Link to="/landing" className="navbar__logo">
+        <Link to="/" className="navbar__logo">
           <img 
             src="/logo.png" 
             alt="이루도담" 
@@ -52,8 +52,8 @@ const Navbar: React.FC<NavbarProps> = ({
         {/* 네비게이션 메뉴 - 항상 표시 */}
         <div className="navbar__nav">
           <Link 
-            to="/" 
-            className={`navbar__nav-item ${isActive('/') ? 'navbar__nav-item--active' : ''}`}
+            to="/home" 
+            className={`navbar__nav-item ${isActive('/home') ? 'navbar__nav-item--active' : ''}`}
           >
             홈
           </Link>
@@ -77,26 +77,40 @@ const Navbar: React.FC<NavbarProps> = ({
             // 로그인 후 - 사용자 아이콘 + 로그아웃 버튼
             <div className="navbar__user">
               <div className="navbar__user-avatar">
-                <div 
-                  className="navbar__user-avatar-default"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    color: 'white',
-                    backgroundColor: '#78a085',
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%'
-                  }}
-                >
-                  U
-                </div>
+                {user?.profileImage ? (
+                  <img 
+                    src={user.profileImage} 
+                    alt="프로필" 
+                    className="navbar__user-avatar-image"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                ) : (
+                  <div 
+                    className="navbar__user-avatar-default"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      color: 'white',
+                      backgroundColor: '#78a085',
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%'
+                    }}
+                  >
+                    {(user?.nickname || user?.name)?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                )}
               </div>
               <span className="navbar__user-name">
-                {user?.name || '사용자'}님
+                {user?.nickname || user?.name || '사용자'}님
               </span>
               <button 
                 onClick={handleLogout}

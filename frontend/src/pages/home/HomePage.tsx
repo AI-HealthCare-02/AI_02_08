@@ -643,7 +643,6 @@ const HomePage: React.FC = () => {
                 >
                   📸
                 </button>
-                <div className="home-page__camera-spacer"></div>
               </div>
             )}
           </div>

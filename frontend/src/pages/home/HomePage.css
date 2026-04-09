@@ -571,9 +571,10 @@
 .home-page__camera-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 1.5rem;
   background-color: white;
+  gap: 2rem;
 }
 
 .home-page__camera-capture-btn {
@@ -594,7 +595,7 @@
 }
 
 .home-page__camera-spacer {
-  width: 100px;
+  /* 더 이상 필요하지 않음 - 중앙 정렬로 변경 */
 }
 
 /* OCR 결과 섹션 */

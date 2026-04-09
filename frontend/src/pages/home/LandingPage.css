@@ -149,7 +149,7 @@
 }
 
 .landing-page__cta-logo {
-  height: 80px;
+  height: 140px; /* 100px에서 140px로 대폭 증가 */
   width: auto;
   filter: brightness(0) invert(1);
 }
@@ -297,7 +297,7 @@
   }
   
   .landing-page__cta-logo {
-    height: 60px;
+    height: 110px; /* 모바일에서도 훨씬 크게 */
   }
   
   .landing-page__cta-title {

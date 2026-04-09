@@ -9,7 +9,7 @@
 .navbar__container {
   max-width: 1440px; /* 피그마 프레임 기준 */
   margin: 0 auto;
-  height: 60px; /* 피그마 디자인 기준 w1440 h60 */
+  height: 80px; /* 60px에서 80px로 증가 */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -26,8 +26,8 @@
 }
 
 .navbar__logo-image {
-  height: 50px; /* 97x97 비율로 네비바 높이에 맞게 조정 */
-  width: 50px;
+  height: 64px; /* 50px에서 64px로 증가 */
+  width: 64px;
   object-fit: contain;
 }
 

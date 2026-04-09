@@ -56,6 +56,12 @@
   margin-bottom: var(--spacing-4);
 }
 
+.signup-page__logo {
+  height: 120px; /* 80px에서 120px로 대폭 증가 */
+  width: auto;
+  margin: 0 auto var(--spacing-4);
+}
+
 .signup-page__title {
   font-family: 'IsYun', var(--font-sans);
   font-size: var(--font-size-2xl);
@@ -178,6 +184,10 @@
   
   .signup-page__title {
     font-size: var(--font-size-xl);
+  }
+  
+  .signup-page__logo {
+    height: 90px; /* 모바일에서도 훨씬 크게 */
   }
   
   .signup-page__email-group,

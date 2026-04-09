@@ -45,6 +45,11 @@ body {
   min-height: 100vh;
 }
 
+/* 이서윤체 강제 적용 */
+* {
+  font-family: 'LeeSeoyun', 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif !important;
+}
+
 /* ── Typography ───────────────────────────────
    h1~h6 기본 크기/굵기 지정
    ─────────────────────────────────────────── */

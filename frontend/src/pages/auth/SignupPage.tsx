@@ -193,6 +193,11 @@ const SignupPage: React.FC = () => {
         <div className="signup-page__card-line" />
 
         <div className="signup-page__header">
+          <img 
+            src="/logo.png" 
+            alt="이루도담 로고" 
+            className="signup-page__logo"
+          />
           <h1 className="signup-page__title">이루도담</h1>
           <p className="signup-page__subtitle">처음 만나서 반가워요 🌿</p>
         </div>
