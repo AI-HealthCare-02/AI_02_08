@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import { checkEmailDuplicate, sendVerificationCode, verifyEmailCode } from '../../api/authApi';
+import { sendVerificationCode, verifyEmailCode, signup } from '../../api/authApi';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import './SignupPage.css';
@@ -12,6 +11,12 @@ interface FormData {
   password: string;
   passwordConfirm: string;
   verificationCode: string;
+  name: string;
+  gender: 'MALE' | 'FEMALE' | '';
+  birthDate: string;
+  phoneNumber: string;
+  agreeTerms: boolean;
+  agreePrivacy: boolean;
 }
 
 interface FormErrors {
@@ -19,26 +24,37 @@ interface FormErrors {
   password?: string;
   passwordConfirm?: string;
   verificationCode?: string;
+  name?: string;
+  gender?: string;
+  birthDate?: string;
+  phoneNumber?: string;
+  agreeTerms?: string;
+  agreePrivacy?: string;
 }
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signup } = useAuth();
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
     passwordConfirm: '',
-    verificationCode: ''
+    verificationCode: '',
+    name: '',
+    gender: '',
+    birthDate: '',
+    phoneNumber: '',
+    agreeTerms: false,
+    agreePrivacy: false,
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
+  const [signupCompleted, setSignupCompleted] = useState(false);
   const [timer, setTimer] = useState(0);
 
-  // 타이머 시작
   const startTimer = () => {
-    setTimer(300); // 5분
+    setTimer(300);
     const interval = setInterval(() => {
       setTimer(prev => {
         if (prev <= 1) {
@@ -50,53 +66,91 @@ const SignupPage: React.FC = () => {
     }, 1000);
   };
 
-  // 입력 값 변경
-  const handleInputChange = (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleInputChange = (field: keyof FormData) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const value = e.target.type === 'checkbox'
+      ? (e.target as HTMLInputElement).checked
+      : e.target.value;
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
+    if (errors[field as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
   };
 
-  // 이메일 유효성 검사
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  // 회원가입 버튼 활성화 조건
+  const isFormValid = () => {
+    return (
+      formData.email &&
+      formData.password &&
+      formData.passwordConfirm &&
+      formData.name &&
+      formData.gender &&
+      formData.birthDate &&
+      formData.phoneNumber &&
+      formData.agreeTerms &&
+      formData.agreePrivacy &&
+      formData.password === formData.passwordConfirm
+    );
   };
 
-  // 비밀번호 유효성 검사
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 8;
-  };
+  // 회원가입 제출
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  // 이메일 중복 확인 및 인증코드 발송 (Mock)
-  const handleSendCode = async () => {
-    if (!validateEmail(formData.email)) {
-      setErrors(prev => ({ ...prev, email: '올바른 이메일 형식을 입력해주세요.' }));
+    const newErrors: FormErrors = {};
+    if (formData.password.length < 8) newErrors.password = '비밀번호는 8자 이상이어야 합니다.';
+    if (formData.password !== formData.passwordConfirm) newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+    if (!formData.name) newErrors.name = '이름을 입력해주세요.';
+    if (!formData.gender) newErrors.gender = '성별을 선택해주세요.';
+    if (!formData.birthDate) newErrors.birthDate = '생년월일을 입력해주세요.';
+    if (!formData.phoneNumber) newErrors.phoneNumber = '전화번호를 입력해주세요.';
+    if (!formData.agreeTerms) newErrors.agreeTerms = '이용약관에 동의해주세요.';
+    if (!formData.agreePrivacy) newErrors.agreePrivacy = '개인정보 처리방침에 동의해주세요.';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     setIsLoading(true);
     try {
-      // Mock: 항상 성공으로 처리
-      console.log('Mock: 이메일 중복 확인 및 인증코드 발송:', formData.email);
-      
-      // 임시 로딩 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await signup({
+        email: formData.email,
+        password: formData.password,
+        passwordConfirm: formData.passwordConfirm,
+        name: formData.name,
+        gender: formData.gender as 'MALE' | 'FEMALE',
+        birthDate: formData.birthDate,
+        phoneNumber: formData.phoneNumber,
+        agreeTerms: formData.agreeTerms,
+        agreePrivacy: formData.agreePrivacy,
+      });
+      setSignupCompleted(true);
+    } catch (error: any) {
+      const message = error.response?.data?.detail || '회원가입에 실패했습니다.';
+      alert(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 인증코드 발송
+  const handleSendCode = async () => {
+    setIsLoading(true);
+    try {
+      await sendVerificationCode(formData.email);
       setCodeSent(true);
       startTimer();
-      alert('인증코드가 발송되었습니다. (Mock: 123456 입력하세요)');
+      alert('인증코드가 발송되었습니다. 이메일을 확인해주세요.');
     } catch (error) {
-      console.error('에러 발생:', error);
       alert('인증코드 발송에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 인증코드 확인 (Mock)
+  // 인증코드 확인
   const handleVerifyCode = async () => {
     if (!formData.verificationCode) {
       setErrors(prev => ({ ...prev, verificationCode: '인증코드를 입력해주세요.' }));
@@ -105,58 +159,16 @@ const SignupPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      console.log('Mock: 인증코드 확인:', formData.verificationCode);
-      
-      // Mock: 123456이면 성공
-      if (formData.verificationCode === '123456') {
+      const verified = await verifyEmailCode(formData.email, formData.verificationCode);
+      if (verified) {
         setEmailVerified(true);
-        alert('이메일 인증이 완료되었습니다.');
+        alert('이메일 인증이 완료되었습니다!');
+        navigate('/login');
       } else {
-        setErrors(prev => ({ ...prev, verificationCode: '잘못된 인증코드입니다. (Mock: 123456 입력하세요)' }));
+        setErrors(prev => ({ ...prev, verificationCode: '잘못된 인증코드입니다.' }));
       }
     } catch (error) {
-      console.error('인증 에러:', error);
       alert('인증코드 확인에 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // 회원가입 제출
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // 유효성 검사
-    const newErrors: FormErrors = {};
-    
-    if (!emailVerified) {
-      newErrors.email = '이메일 인증을 완료해주세요.';
-    }
-    
-    if (!validatePassword(formData.password)) {
-      newErrors.password = '비밀번호는 8자 이상이어야 합니다.';
-    }
-    
-    if (formData.password !== formData.passwordConfirm) {
-      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
-    }
-    
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const success = await signup(formData.email.split('@')[0], formData.email, formData.password);
-      if (success) {
-        alert('회원가입이 완료되었습니다!');
-        navigate('/'); // 회원가입 성공 시 홈으로 이동
-      } else {
-        alert('회원가입에 실패했습니다.');
-      }
-    } catch (error) {
-      alert('회원가입에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -170,18 +182,16 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="signup-page">
-      {/* 배경 이미지 */}
-      <div 
+      <div
         className="signup-page__background"
         style={{ backgroundImage: `url(${bgLandingImage})` }}
       >
         <div className="signup-page__background-overlay" />
       </div>
-      
+
       <div className="signup-page__container">
-        {/* 카드 상단 라인 */}
         <div className="signup-page__card-line" />
-        
+
         <div className="signup-page__header">
           <h1 className="signup-page__title">이루도담</h1>
           <p className="signup-page__subtitle">처음 만나서 반가워요 🌿</p>
@@ -189,56 +199,15 @@ const SignupPage: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="signup-page__form">
           {/* 이메일 */}
-          <div className="signup-page__field">
-            <div className="signup-page__email-group">
-              <Input
-                label="이메일"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange('email')}
-                placeholder="이메일을 입력하세요"
-                disabled={emailVerified}
-                error={errors.email}
-              />
-              <Button
-                type="button"
-                onClick={handleSendCode}
-                disabled={isLoading || emailVerified || !formData.email}
-                variant="secondary"
-                size="sm"
-              >
-                중복확인
-              </Button>
-            </div>
-            {emailVerified && (
-              <p className="signup-page__success">✓ 이메일 인증 완료</p>
-            )}
-          </div>
-
-          {/* 인증번호 - 항상 표시 */}
-          <div className="signup-page__field">
-            <div className="signup-page__code-group">
-              <Input
-                label={`인증번호${timer > 0 ? ` (${formatTime(timer)})` : ''}`}
-                type="text"
-                value={formData.verificationCode}
-                onChange={handleInputChange('verificationCode')}
-                placeholder="인증번호를 입력하세요"
-                maxLength={6}
-                disabled={!codeSent || emailVerified}
-                error={errors.verificationCode}
-              />
-              <Button
-                type="button"
-                onClick={handleVerifyCode}
-                disabled={isLoading || !codeSent || !formData.verificationCode || timer === 0 || emailVerified}
-                variant="secondary"
-                size="sm"
-              >
-                인증하기
-              </Button>
-            </div>
-          </div>
+          <Input
+            label="이메일"
+            type="email"
+            value={formData.email}
+            onChange={handleInputChange('email')}
+            placeholder="이메일을 입력하세요"
+            disabled={signupCompleted}
+            error={errors.email}
+          />
 
           {/* 비밀번호 */}
           <Input
@@ -246,7 +215,8 @@ const SignupPage: React.FC = () => {
             type="password"
             value={formData.password}
             onChange={handleInputChange('password')}
-            placeholder="비밀번호를 입력하세요"
+            placeholder="영문 대소문자, 숫자, 특수문자 포함 8자 이상"
+            disabled={signupCompleted}
             error={errors.password}
             showPasswordToggle
           />
@@ -258,23 +228,128 @@ const SignupPage: React.FC = () => {
             value={formData.passwordConfirm}
             onChange={handleInputChange('passwordConfirm')}
             placeholder="비밀번호를 다시 입력하세요"
+            disabled={signupCompleted}
             error={errors.passwordConfirm}
             showPasswordToggle
           />
 
-          {/* 제출 버튼 */}
+          {/* 이름 */}
+          <Input
+            label="이름"
+            type="text"
+            value={formData.name}
+            onChange={handleInputChange('name')}
+            placeholder="이름을 입력하세요"
+            disabled={signupCompleted}
+            error={errors.name}
+          />
+
+          {/* 성별 */}
+          <div className="signup-page__field">
+            <label className="signup-page__label">성별</label>
+            <select
+              value={formData.gender}
+              onChange={handleInputChange('gender')}
+              disabled={signupCompleted}
+              className="signup-page__select"
+            >
+              <option value="">성별을 선택하세요</option>
+              <option value="MALE">남성</option>
+              <option value="FEMALE">여성</option>
+            </select>
+            {errors.gender && <p className="signup-page__error">{errors.gender}</p>}
+          </div>
+
+          {/* 생년월일 */}
+          <Input
+            label="생년월일"
+            type="date"
+            value={formData.birthDate}
+            onChange={handleInputChange('birthDate')}
+            disabled={signupCompleted}
+            error={errors.birthDate}
+          />
+
+          {/* 전화번호 */}
+          <Input
+            label="전화번호"
+            type="tel"
+            value={formData.phoneNumber}
+            onChange={handleInputChange('phoneNumber')}
+            placeholder="01012345678"
+            disabled={signupCompleted}
+            error={errors.phoneNumber}
+          />
+
+          {/* 약관 동의 */}
+          <div className="signup-page__field">
+            <label className="signup-page__checkbox">
+              <input
+                type="checkbox"
+                checked={formData.agreeTerms}
+                onChange={handleInputChange('agreeTerms')}
+                disabled={signupCompleted}
+              />
+              이용약관에 동의합니다 (필수)
+            </label>
+            {errors.agreeTerms && <p className="signup-page__error">{errors.agreeTerms}</p>}
+          </div>
+
+          <div className="signup-page__field">
+            <label className="signup-page__checkbox">
+              <input
+                type="checkbox"
+                checked={formData.agreePrivacy}
+                onChange={handleInputChange('agreePrivacy')}
+                disabled={signupCompleted}
+              />
+              개인정보 처리방침에 동의합니다 (필수)
+            </label>
+            {errors.agreePrivacy && <p className="signup-page__error">{errors.agreePrivacy}</p>}
+          </div>
+
+          {/* 회원가입 버튼 */}
           <Button
             type="submit"
-            disabled={isLoading || !emailVerified}
+            disabled={isLoading || !isFormValid() || signupCompleted}
             isLoading={isLoading}
             fullWidth
             className="signup-page__submit"
           >
             회원가입
           </Button>
+
+          {/* 인증번호 - 회원가입 완료 후 활성화 */}
+          <div className="signup-page__field">
+            <div className="signup-page__code-group">
+              <Input
+                label={`인증번호${timer > 0 ? ` (${formatTime(timer)})` : ''}`}
+                type="text"
+                value={formData.verificationCode}
+                onChange={handleInputChange('verificationCode')}
+                placeholder="인증번호를 입력하세요"
+                maxLength={6}
+                disabled={!signupCompleted || emailVerified}
+                error={errors.verificationCode}
+              />
+              <Button
+                type="button"
+                onClick={codeSent ? handleVerifyCode : handleSendCode}
+                disabled={
+                  isLoading ||
+                  !signupCompleted ||
+                  emailVerified ||
+                  (codeSent && !formData.verificationCode)
+                }
+                variant="secondary"
+                size="sm"
+              >
+                {codeSent ? '인증하기' : '인증코드 발송'}
+              </Button>
+            </div>
+          </div>
         </form>
 
-        {/* 로그인 링크 */}
         <div className="signup-page__footer">
           <p>
             이미 회원이신가요?{' '}
