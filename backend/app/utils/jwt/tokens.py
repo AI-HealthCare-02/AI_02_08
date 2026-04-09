@@ -3,13 +3,15 @@ from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Self
 from uuid import uuid4
 
-from app.core import config
+from app.core.config import Config
 from app.models.users import User
 from app.utils.jwt.exceptions import ExpiredTokenError, TokenBackendError, TokenBackendExpiredError, TokenError
 from app.utils.jwt.state import token_backend
 
 if TYPE_CHECKING:
     from app.utils.jwt.backends import TokenBackend
+
+config = Config()
 
 
 class Token:
@@ -55,9 +57,6 @@ class Token:
         return key in self.payload
 
     def __str__(self) -> str:
-        """
-        Signs and returns a token as a base64 encoded string.
-        """
         return self._token_backend.encode(self.payload)
 
     def set_exp(self, from_time: datetime | None = None, lifetime: timedelta | None = None) -> None:
@@ -89,7 +88,7 @@ class AccessToken(Token):
 
 class RefreshToken(Token):
     token_type = "refresh"
-    lifetime = timedelta(days=config.REFRESH_TOKEN_EXPIRE_MINUTES)
+    lifetime = timedelta(minutes=config.REFRESH_TOKEN_EXPIRE_MINUTES)  # days → minutes 수정
     no_copy_claims = ("type", "exp", "jti")
 
     @property

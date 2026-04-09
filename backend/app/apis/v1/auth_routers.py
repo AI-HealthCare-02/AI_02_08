@@ -1,4 +1,5 @@
 import json
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Query, status
@@ -93,9 +94,8 @@ async def login(
         httponly=True,
         secure=True if config.ENV == Env.PROD else False,
         domain=config.COOKIE_DOMAIN or None,
-        expires=tokens["access_token"].payload["exp"],
+        expires=datetime.fromtimestamp(tokens["refresh_token"].payload["exp"], tz=UTC),
     )
-    print("쿠키 설정됨:", resp.headers)
     return resp
 
 
