@@ -12,15 +12,13 @@ import SignupPage from '../pages/auth/SignupPage';
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* 홈 페이지 (메인 화면) - 로그인 필요 */}
+      {/* 홈 페이지 (메인 화면) - 임시로 로그인 없이 접근 가능 */}
       <Route 
         path="/" 
         element={
-          <ProtectedRoute>
-            <MainLayout>
-              <HomePage />
-            </MainLayout>
-          </ProtectedRoute>
+          <MainLayout>
+            <HomePage />
+          </MainLayout>
         } 
       />
       

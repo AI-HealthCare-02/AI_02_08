@@ -100,6 +100,503 @@
   color: #7f8c8d;
 }
 
+/* 이미지 미리보기 */
+.home-page__image-preview {
+  position: relative;
+  max-width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.home-page__preview-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.home-page__preview-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.home-page__remove-btn {
+  background-color: rgba(231, 76, 60, 0.9);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.home-page__remove-btn:hover {
+  background-color: rgba(231, 76, 60, 1);
+  transform: scale(1.1);
+}
+
+.home-page__change-btn {
+  background-color: rgba(52, 152, 219, 0.9);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.home-page__change-btn:hover {
+  background-color: rgba(52, 152, 219, 1);
+  transform: translateY(-1px);
+}
+
+/* 버튼 비활성화 상태 */
+.home-page__remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.home-page__remove-btn:disabled:hover {
+  background-color: rgba(231, 76, 60, 0.9);
+  transform: none;
+}
+
+/* OCR 처리 모달 */
+.home-page__modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+/* 연한 딤 처리 (수동 입력용) */
+.home-page__modal-overlay--light {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.home-page__modal {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem 2rem;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.home-page__loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #e3e3e3;
+  border-top: 4px solid #78a085;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.home-page__modal-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+}
+
+.home-page__modal-subtitle {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin: 0 0 2rem 0;
+}
+
+.home-page__modal-progress {
+  width: 100%;
+}
+
+.home-page__modal-progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.home-page__modal-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #78a085, #9bb89a);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* OCR 실패 모달 */
+.home-page__error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  width: 80px;
+  height: 80px;
+  background-color: #B95C3B;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.home-page__error-icon::before {
+  content: '⚠';
+  font-size: 2.5rem;
+  color: white;
+}
+
+.home-page__modal-title--error {
+  color: #e74c3c;
+}
+
+.home-page__modal-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0 2rem 2rem;
+}
+
+.home-page__modal-btn {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.home-page__modal-btn--primary {
+  background-color: #B95C3B;
+  color: white;
+}
+
+.home-page__modal-btn--primary:hover:not(:disabled) {
+  background-color: #a04f32;
+  transform: translateY(-1px);
+}
+
+.home-page__modal-btn--primary:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.home-page__modal-btn--secondary {
+  background-color: white;
+  color: #B95C3B;
+  border: 2px solid #B95C3B;
+}
+
+.home-page__modal-btn--secondary:hover {
+  background-color: #f8f9fa;
+}
+
+/* 수동 입력 모달 */
+.home-page__modal--large {
+  max-width: 500px;
+  padding: 0;
+}
+
+.home-page__modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.home-page__modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.home-page__modal-close:hover {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+}
+
+.home-page__modal-form {
+  padding: 1.5rem 2rem 1rem;
+}
+
+.home-page__form-group {
+  margin-bottom: 1.2rem;
+}
+
+.home-page__form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.home-page__form-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  transition: all 0.2s;
+}
+
+.home-page__form-input:focus {
+  outline: none;
+  border-color: #78a085;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(120, 160, 133, 0.1);
+}
+
+.home-page__form-input::placeholder {
+  color: #95a5a6;
+}
+
+.home-page__form-select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  transition: all 0.2s;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23666" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px;
+}
+
+.home-page__form-select:focus {
+  outline: none;
+  border-color: #78a085;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(120, 160, 133, 0.1);
+}
+
+.home-page__form-select option {
+  padding: 0.5rem;
+  background-color: white;
+  color: #2c3e50;
+}
+
+/* 카메라 섹션 */
+.home-page__camera-section {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.home-page__divider {
+  position: relative;
+  margin: 1rem 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-page__divider::before {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: #dee2e6;
+  margin-right: 1rem;
+}
+
+.home-page__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: #dee2e6;
+  margin-left: 1rem;
+}
+
+.home-page__divider span {
+  background-color: #f8f9fa;
+  padding: 0 0.5rem;
+  color: #95a5a6;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.home-page__camera-btn {
+  background-color: #78a085;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.home-page__camera-btn:hover {
+  background-color: #6a8f77;
+  transform: translateY(-1px);
+}
+
+/* 카메라 모달 */
+.home-page__modal--camera {
+  max-width: 600px;
+  width: 95%;
+  max-height: 90vh;
+  padding: 0;
+  overflow: hidden;
+}
+
+.home-page__camera-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-page__camera-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.home-page__camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-page__camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.home-page__camera-frame {
+  width: 90%;
+  height: 75%;
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.home-page__camera-guide {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.home-page__camera-error {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+}
+
+.home-page__error-icon-small {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.home-page__retry-btn {
+  background-color: #B95C3B;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.home-page__camera-loading {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+}
+
+.home-page__camera-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  background-color: white;
+}
+
+.home-page__camera-capture-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: #B95C3B;
+  color: white;
+  border: 4px solid white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.home-page__camera-capture-btn:hover {
+  transform: scale(1.1);
+}
+
+.home-page__camera-spacer {
+  width: 100px;
+}
+
 /* OCR 결과 섹션 */
 .home-page__ocr-results {
   background: white;
@@ -116,9 +613,22 @@
 
 .home-page__medicine-category h3 {
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 400;
   color: #2c3e50;
   margin-bottom: 0.8rem;
+}
+
+/* 카테고리 소제목 색상 */
+.home-page__category-title--blue {
+  color: #1565c0 !important;
+}
+
+.home-page__category-title--orange {
+  color: #d63031 !important;
+}
+
+.home-page__category-title--teal {
+  color: #00695c !important;
 }
 
 .home-page__medicine-tags {
@@ -141,13 +651,29 @@
 }
 
 .home-page__medicine-tag--orange {
-  background-color: #ffeaa7;
+  background-color: #ffe4d6;
   color: #d63031;
 }
 
 .home-page__medicine-tag--green {
-  background-color: #d1f2eb;
-  color: #00b894;
+  background-color: #e8f5e8;
+  color: #2d5a2d;
+}
+
+/* 새로운 색상 조합 */
+.home-page__medicine-tag--blue {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.home-page__medicine-tag--purple {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.home-page__medicine-tag--teal {
+  background-color: #e0f2f1;
+  color: #00695c;
 }
 
 /* OCR 결과 빈 상태 */
