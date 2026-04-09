@@ -1,18 +1,18 @@
 import apiClient from './apiClient';
-import { LoginData, SignupData, LoginResponse, ApiResponse } from '../types/auth';
+import { LoginData, SignupData, LoginResponse } from '../types/auth';
 
-// 이메일 중복 확인 - GET 요청으로 변경
+// 이메일 중복 확인
 export const checkEmailDuplicate = async (email: string): Promise<boolean> => {
   const response = await apiClient.get(`/auth/check-email?email=${encodeURIComponent(email)}`);
   return response.data.is_duplicate;
 };
 
-// 인증 이메일 재발솨 (인증코드 발송)
+// 인증 이메일 재발송
 export const sendVerificationCode = async (email: string): Promise<void> => {
   await apiClient.post('/auth/resend-verification', { email });
 };
 
-// 이메일 인증 코드 확인 - GET 요청으로 변경
+// 이메일 인증 코드 확인
 export const verifyEmailCode = async (email: string, code: string): Promise<boolean> => {
   try {
     await apiClient.get(`/auth/verify-email?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`);
@@ -27,8 +27,12 @@ export const signup = async (userData: SignupData): Promise<void> => {
   await apiClient.post('/auth/signup', {
     email: userData.email,
     password: userData.password,
-    password_confirm: userData.passwordConfirm,
-    verification_code: userData.verificationCode
+    name: userData.name,
+    gender: userData.gender,
+    birth_date: userData.birthDate,
+    phone_number: userData.phoneNumber,
+    agree_terms: userData.agreeTerms,
+    agree_privacy: userData.agreePrivacy,
   });
 };
 
@@ -40,7 +44,7 @@ export const login = async (loginData: LoginData): Promise<LoginResponse> => {
 
 // 로그아웃
 export const logout = async (): Promise<void> => {
-  const refreshToken = localStorage.getItem('refreshToken');
+  const refreshToken = localStorage.getItem('accessToken');
   await apiClient.post('/auth/logout', { refresh_token: refreshToken });
 };
 
