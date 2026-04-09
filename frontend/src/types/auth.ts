@@ -15,7 +15,12 @@ export interface SignupData {
   email: string;
   password: string;
   passwordConfirm: string;
-  verificationCode: string;
+  name: string;
+  gender: 'MALE' | 'FEMALE';
+  birthDate: string;        // (YYYY-MM-DD)
+  phoneNumber: string;
+  agreeTerms: boolean;
+  agreePrivacy: boolean;
 }
 
 export interface AuthContextType {
@@ -35,7 +40,5 @@ export interface ApiResponse<T> {
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: User;
+  access_token: string;  // accessToken → access_token (백엔드 기준)
 }
