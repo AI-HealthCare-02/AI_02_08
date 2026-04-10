@@ -55,12 +55,13 @@ async def seed() -> None:
     await Tortoise.init(config=TORTOISE_ORM)
     await Tortoise.generate_schemas(safe=True)
 
-    # 2) 중복 방어: 이미 데이터가 있으면 스킵
+    # 2) 기존 데이터 초기화 (멱등성 보장 - 기존 데이터가 불안정할 수 있으므로 모두 삭제 후 재적재)
     existing_count = await DrugInfo.all().count()
     if existing_count > 0:
-        print(f"⚠️  DrugInfo 테이블에 이미 {existing_count}건의 데이터가 존재합니다. 시딩을 건너뜁니다.")
-        await Tortoise.close_connections()
-        return
+        print(
+            f"⚠️  DrugInfo 테이블에 이미 {existing_count}건의 데이터가 존재합니다. 기존 데이터를 삭제하고 다시 시딩합니다..."
+        )
+        await DrugInfo.all().delete()
 
     # 3) CSV 파일 읽기
     csv_path = os.path.abspath(CSV_PATH)

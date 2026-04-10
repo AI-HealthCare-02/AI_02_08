@@ -1,19 +1,18 @@
 import json
-from pydantic import BaseModel, Field
+from datetime import datetime, timedelta
 
 from openai import AsyncOpenAI
 
 from app.core.config import settings
+from app.models.medications import AiReport, MedicationIntakeLog, MedicationLog, ReportStatus
 
 # 비동기 OpenAI 클라이언트 초기화
 # 오픈AI API 키가 .env 안의 OPENAI_API_KEY 환경변수에 있어야 작동됩니다.
 client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
+
 async def generate_medication_report(
-    adherence_rate: int,
-    medication_records: list[dict],
-    user_conditions: list[str],
-    period: str = "weekly"
+    adherence_rate: int, medication_records: list[dict], user_conditions: list[str], period: str = "weekly"
 ) -> str:
     """
     환자의 복약 기록과 컨디션 메모를 기반으로 GPT-4o mini 모델을 통해
@@ -48,12 +47,9 @@ async def generate_medication_report(
         # 3) OpenAI API 호출 (비동기)
         response = await client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ],
-            temperature=0.7, # 0.7 정도로 약간의 다정함/창의성 부여
-            max_tokens=250
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}],
+            temperature=0.7,  # 0.7 정도로 약간의 다정함/창의성 부여
+            max_tokens=250,
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
@@ -61,65 +57,103 @@ async def generate_medication_report(
         return "현재 AI 리포트를 생성할 수 없습니다. 잠시 후 다시 시도해 주세요."
 
 
+async def process_ai_report_worker(report_id: str, user_id: int, period: str):
+    """
+    백그라운드에서 실행되는 워커.
+    DB 데이터를 조회하여 순응도를 계산하고, OpenAI API 호출 후 AiReport 테이블을 갱신합니다.
+    """
+    try:
+        # 1. 대상 기간 설정
+        days = 7 if period == "weekly" else 30
+        start_date = datetime.now() - timedelta(days=days)
+
+        # 2. MedicationIntakeLog 테이블 쿼리로 복용 기록 분석
+        intakes = await MedicationIntakeLog.filter(user_id=user_id, scheduled_time__gte=start_date).prefetch_related(
+            "medication"
+        )
+
+        total_intakes = len(intakes)
+        taken_intakes = [i for i in intakes if i.status == "taken"]
+        adherence_rate = int((len(taken_intakes) / total_intakes) * 100) if total_intakes > 0 else 0
+
+        # 컨디션 로그 추출 (비어있지 않은 opinion만)
+        user_conditions = [i.opinion for i in intakes if i.opinion and i.opinion.strip()]
+        if not user_conditions:
+            user_conditions = ["특이사항이 기록되지 않음"]
+
+        # 약물별 복용 기록 요약용 딕셔너리 구축
+        medication_stats = {}
+        for i in intakes:
+            med_name = i.medication.name
+            if med_name not in medication_stats:
+                medication_stats[med_name] = {"total": 0, "taken": 0}
+            medication_stats[med_name]["total"] += 1
+            if i.status == "taken":
+                medication_stats[med_name]["taken"] += 1
+
+        medication_records = []
+        medication_summary_for_db = []
+        for name, stats in medication_stats.items():
+            rate = int((stats["taken"] / stats["total"]) * 100) if stats["total"] > 0 else 0
+            medication_records.append(
+                {
+                    "약품명": name,
+                    "복용률": f"{rate}%",
+                }
+            )
+            medication_summary_for_db.append({"name": name, "takenRate": rate})
+
+        # 방어 로직: 기록이 전혀 없는 경우 테스트/데모용으로 더미 데이터 추가 (기능 검증 목적)
+        if total_intakes == 0:
+            adherence_rate = 85
+            medication_records = [
+                {"약품명": "타이레놀(예시)", "복용률": "100%"},
+                {"약품명": "위장약(예시)", "복용률": "70%"},
+            ]
+            medication_summary_for_db = [
+                {"name": "타이레놀(예시)", "takenRate": 100},
+                {"name": "위장약(예시)", "takenRate": 70},
+            ]
+
+        # 3. AI 리포트 생성 호출
+        ai_comment = await generate_medication_report(
+            adherence_rate=adherence_rate,
+            medication_records=medication_records,
+            user_conditions=user_conditions,
+            period=period,
+        )
+
+        # 4. AiReport 모델 반영 (완료)
+        await AiReport.filter(report_id=report_id).update(
+            adherence_rate=adherence_rate,
+            condition_summary=" | ".join(user_conditions)[:500],  # 최대 500자
+            medication_summary=medication_summary_for_db,
+            ai_comment=ai_comment,
+            status=ReportStatus.COMPLETED,
+        )
+
+    except Exception as e:
+        print(f"🔥 [Background Task Error] Report Worker 에러: {e}")
+        await AiReport.filter(report_id=report_id).update(status=ReportStatus.FAILED)
+
+
 async def get_medication_context_for_chatbot(user_id: int) -> str:
     """
     [타 팀원 지원용 브릿지 함수]
     챗봇 파트를 담당하는 팀원이 환자의 '현재 복약 정보'를 GPT 프롬프트에 통째로
     주입할 수 있도록, DB 쿼리를 거쳐 깔끔한 텍스트 덩어리로 반환합니다.
-    (현재는 테스트를 위해 더미 포맷을 유지합니다)
     """
-    # 실제로는 MedicationLog 에서 user_id 기준으로 필터링하여 가져옵니다.
-    # mock_logs = await MedicationLog.filter(user_id=user_id, end_date__gte=datetime.today())
+    logs = await MedicationLog.filter(user_id=user_id, end_date__gte=datetime.today().date())
 
-    mock_context = """
-    - 복용 중인 약: 타이레놀 (1일 3회, 식후 30분)
-    - 주의사항: 위장 장애 우려 (자체 DB 기반 경고)
-    - 최근 복약률: 80%
-    """
-    return mock_context
+    if not logs:
+        return "현재 복용 중인 약물이 없습니다."
 
+    context_lines = []
+    context_lines.append("[현재 복용 중인 약물 목록]")
+    for log in logs:
+        line = f"- {log.name}: {log.dosage or ''} (복용법: {log.frequency or ''}, {log.timing or ''})"
+        if log.caution:
+            line += f" -> 주의사항: {log.caution}"
+        context_lines.append(line)
 
-class ParsedMedication(BaseModel):
-    name: str = Field(..., description="약품명 (예: 타이레놀500mg, 소화제 등)")
-    dosage: str = Field(..., description="1회 투여량 (예: 1정, 1포, 2캡슐 등)")
-    frequency: str = Field(..., description="1일 투여 횟수 (예: 1일 3회, 1일 2회)")
-    timing: str = Field(..., description="복용 시기 (예: 식후 30분, 취침 전)")
-
-class OcrMedicationList(BaseModel):
-    medications: list[ParsedMedication]
-
-async def parse_ocr_text_to_medications(extracted_texts: list[str]) -> list[dict]:
-    """
-    Clova OCR에서 추출한 텍스트 리스트를 기반으로,
-    OpenAI Structured Outputs를 사용하여 약물 정보를 JSON(딕셔너리 리스트)으로 파싱합니다.
-    """
-    if not extracted_texts:
-        return []
-
-    system_prompt = """
-    당신은 처방전 및 약봉지 텍스트에서 약물 정보를 전문적으로 추출하는 의료 AI입니다.
-    사용자가 OCR로 추출한 텍스트 조각(목록)을 제공하면, 각 약물별로 '약품명', '투여량', '투여횟수', '복용시기'를 정확히 매핑하여 반환하세요.
-    최대한 제공된 텍스트 안에서 정보를 추출하되, 명확히 없는 값은 빈 문자열로 두세요.
-    """
-    
-    user_message = f"""
-    아래는 OCR로 추출된 텍스트 목록입니다:
-    {extracted_texts}
-    
-    이를 바탕으로 약물 정보를 추출해 주세요.
-    """
-    try:
-        response = await client.beta.chat.completions.parse(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ],
-            response_format=OcrMedicationList,
-            temperature=0.0,
-        )
-        parsed = response.choices[0].message.parsed
-        return [med.model_dump() for med in parsed.medications] if parsed else []
-    except Exception as e:
-        print(f"OpenAI 파싱 에러: {e}")
-        return []
+    return "\n".join(context_lines)

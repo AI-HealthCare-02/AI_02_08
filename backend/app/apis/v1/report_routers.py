@@ -7,7 +7,7 @@ AI 복약 리포트 관련 API 라우터
 
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, status
 
 from app.dtos.medications import (
     MedicationTakenRate,
@@ -17,7 +17,9 @@ from app.dtos.medications import (
     ReportListItem,
     ReportListResponse,
 )
-from app.models.medications import AiReport
+from app.models.medications import AiReport, ReportStatus
+from app.models.users import User
+from app.services.openai_service import process_ai_report_worker
 
 report_router = APIRouter(prefix="/ai/reports", tags=["AI 복약 리포트"])
 
@@ -37,28 +39,46 @@ report_router = APIRouter(prefix="/ai/reports", tags=["AI 복약 리포트"])
         500: {"description": "GPT-4o mini 서비스 연동 오류"},
     },
 )
-async def generate_report(body: ReportGenerateRequest):
-    report_id = f"rpt_{datetime.now().strftime('%Y%m%d')}_{body.period[0]}"
+async def generate_report(body: ReportGenerateRequest, background_tasks: BackgroundTasks):
+    try:
+        report_id = f"rpt_{datetime.now().strftime('%Y%m%d%H%M%S')}_{body.period[0]}"
 
-    # TODO: 백그라운드 태스크로 GPT-4o mini 호출
-    # 1) MedicationLog에서 해당 기간의 복약 기록 조회
-    # 2) adherence_rate 계산
-    # 3) OpenAI API 호출 (프롬프트 + 복약 데이터 컨텍스트)
-    # 4) 결과를 AiReport 테이블에 저장 (status → COMPLETED)
+        # 임시: 실제 서버 인증 적용 전까지는 user_id=1로 가정합니다.
+        user_id = 1
 
-    # 임시: generating 상태로 레코드 생성
-    # await AiReport.create(
-    #     report_id=report_id,
-    #     user_id=<current_user.id>,
-    #     period=body.period,
-    #     status=ReportStatus.GENERATING,
-    # )
+        # User 1 존재 여부 검증 및 부트스트랩
+        user = await User.get_or_none(id=user_id)
+        if not user:
+            await User.create(
+                id=user_id,
+                email="test_user@example.com",
+                hashed_password="dummy_password",
+                name="Test User",
+                gender="MALE",
+                birthday="1990-01-01",
+                phone_number="010-1234-5678",
+            )
 
-    return ReportGenerateResponse(
-        reportId=report_id,
-        status="generating",
-        estimatedSeconds=10,
-    )
+        # generating 상태로 먼저 레코드 생성 (클라이언트 응답용)
+        await AiReport.create(
+            report_id=report_id,
+            user_id=user_id,
+            period=body.period,
+            status=ReportStatus.GENERATING,
+        )
+
+        # 비동기로 OpenAI API 호출 및 DB 갱신 작업 큐 할당
+        background_tasks.add_task(process_ai_report_worker, report_id, user_id, body.period)
+
+        return ReportGenerateResponse(
+            reportId=report_id,
+            status="generating",
+            estimatedSeconds=10,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"서버 내부 오류가 발생했습니다: {str(e)}"
+        ) from e
 
 
 # ──────────────────────────────────────────────

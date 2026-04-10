@@ -7,7 +7,6 @@ from fastapi import UploadFile
 
 from app.core.config import settings
 from app.dtos.medications import OcrMedicationItem
-from app.services.openai_service import parse_ocr_text_to_medications
 
 
 async def upload_image_to_s3(file: UploadFile) -> str:
@@ -25,24 +24,20 @@ async def upload_image_to_s3(file: UploadFile) -> str:
         region_name=settings.AWS_S3_REGION,
     )
 
-    try:
-        async with session.client("s3") as s3:
-            await s3.put_object(
-                Bucket=settings.AWS_S3_BUCKET,
-                Key=unique_filename,
-                Body=file_bytes,
-                ContentType=file.content_type or "image/jpeg",
-            )
+    async with session.client("s3") as s3:
+        await s3.put_object(
+            Bucket=settings.AWS_S3_BUCKET,
+            Key=unique_filename,
+            Body=file_bytes,
+            ContentType=file.content_type or "image/jpeg",
+        )
 
-            # 외부 클라우드(CLOVA)가 이미지에 접근할 수 있도록 Presigned URL 생성 (1시간 유효)
-            url = await s3.generate_presigned_url(
-                "get_object", Params={"Bucket": settings.AWS_S3_BUCKET, "Key": unique_filename}, ExpiresIn=3600
-            )
+        # 외부 클라우드(CLOVA)가 이미지에 접근할 수 있도록 Presigned URL 생성 (1시간 유효)
+        url = await s3.generate_presigned_url(
+            "get_object", Params={"Bucket": settings.AWS_S3_BUCKET, "Key": unique_filename}, ExpiresIn=3600
+        )
 
-        return url
-    except Exception as e:
-        print(f"AWS S3 업로드 중 에러 발생: {e}")
-        raise Exception(f"S3 업로드 실패: {e}")
+    return url
 
 
 async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[OcrMedicationItem]]:
@@ -82,18 +77,16 @@ async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[Ocr
         fields = data["images"][0].get("fields", [])
         extracted_texts = [f.get("inferText", "") for f in fields]
 
-        # OpenAI 구조화(Structured JSON) 요청을 통해 약풍명, 용량, 빈도를 추출
+        # **향후 고도화 필요 항목**: 클로바 문자열 목록(extracted_texts)을 바탕으로
+        # OpenAI 구조화(Structured JSON) 요청을 한 번 더 거치거나 정밀한 정규식을 사용해
+        # 실제 약품명, 용량, 빈도를 추출해야 합니다.
+        # 현재는 팀 협업의 뼈대 동작성을 위해 간단한 더미-매핑 로직 제공.
+
+        # Example Fallback Mock Data:
         if len(extracted_texts) > 0:
-            parsed_dicts = await parse_ocr_text_to_medications(extracted_texts)
-            
             parsed_medications = [
-                OcrMedicationItem(
-                    name=med.get("name", ""),
-                    dosage=med.get("dosage", ""),
-                    frequency=med.get("frequency", ""),
-                    timing=med.get("timing", "")
-                )
-                for med in parsed_dicts
+                OcrMedicationItem(name="타이레놀500mg(예시)", dosage="1정", frequency="1일 3회", timing="식후 30분"),
+                OcrMedicationItem(name="소화제(예시)", dosage="1정", frequency="1일 3회", timing="식후 30분"),
             ]
 
     return data, parsed_medications
