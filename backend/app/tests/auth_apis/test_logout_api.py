@@ -53,8 +53,6 @@ class TestLogoutAPI(TestCase):
 
     async def test_logout_invalid_token(self):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            response = await client.post(
-                "/api/v1/auth/logout",
-                json={"refresh_token": "invalid_token"},
-            )
+            client.cookies["refresh_token"] = "invalid_token"
+            response = await client.post("/api/v1/auth/logout")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
