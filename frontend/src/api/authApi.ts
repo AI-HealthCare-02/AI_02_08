@@ -42,14 +42,51 @@ export const login = async (loginData: LoginData): Promise<LoginResponse> => {
   return response.data;
 };
 
-// 로그아웃
+// 로그아웃 - refresh_token은 쿠키로 자동 전송
 export const logout = async (): Promise<void> => {
-  const refreshToken = localStorage.getItem('accessToken');
-  await apiClient.post('/auth/logout', { refresh_token: refreshToken });
+  await apiClient.post('/auth/logout');
 };
 
 // 토큰 갱신
 export const refreshToken = async (): Promise<{ accessToken: string }> => {
   const response = await apiClient.get('/auth/token/refresh');
   return { accessToken: response.data.access_token };
+};
+
+// 비밀번호 재설정 이메일 발송
+export const sendPasswordResetEmail = async (email: string): Promise<void> => {
+  await apiClient.post('/auth/password/reset-request', { email });
+};
+
+// 비밀번호 재설정
+export const resetPassword = async (
+  email: string,
+  code: string,
+  newPassword: string,
+  newPasswordConfirm: string
+): Promise<void> => {
+  await apiClient.post('/auth/password/reset', {
+    email,
+    code,
+    new_password: newPassword,
+    new_password_confirm: newPasswordConfirm,
+  });
+};
+
+// 비밀번호 변경 (로그인 상태)
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+  newPasswordConfirm: string
+): Promise<void> => {
+  await apiClient.patch('/auth/password/change', {
+    current_password: currentPassword,
+    new_password: newPassword,
+    new_password_confirm: newPasswordConfirm,
+  });
+};
+
+// 회원탈퇴
+export const deleteAccount = async (): Promise<void> => {
+  await apiClient.delete('/users/me');
 };

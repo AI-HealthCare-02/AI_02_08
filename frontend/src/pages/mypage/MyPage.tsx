@@ -2,50 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
+import { changePassword, deleteAccount } from '../../api/authApi';
 import './MyPage.css';
 
 type TabType = 'profile' | 'report' | 'history' | 'account';
 
 const MyPage: React.FC = () => {
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout } = useAuth();
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
-  
-  // URL 파라미터로 탭 설정
+
   useEffect(() => {
     const tab = searchParams.get('tab') as TabType;
     if (tab && ['profile', 'report', 'history', 'account'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
-  
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
-  
+
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
     nickname: user?.nickname || '',
     email: user?.email || '',
-    phone: '010-1234-5678',
-    birthDate: '1994.04.17',
+    phone: user?.phoneNumber || '',
+    birthDate: user?.birthday || '',
     profileImage: user?.profileImage || ''
   });
 
-  // user가 변경될 때마다 profileData 업데이트
   React.useEffect(() => {
     setProfileData({
       name: user?.name || '',
       nickname: user?.nickname || '',
       email: user?.email || '',
-      phone: '010-1234-5678',
-      birthDate: '1994.04.17',
+      phone: user?.phoneNumber || '',
+      birthDate: user?.birthday || '',
       profileImage: user?.profileImage || ''
     });
   }, [user]);
@@ -66,36 +65,41 @@ const MyPage: React.FC = () => {
     setProfileData({...profileData, profileImage: ''});
   };
 
-  const handlePasswordChange = () => {
-    if (passwordData.newPassword === passwordData.confirmPassword) {
-      console.log('비밀번호 변경:', passwordData);
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      showToast({
+        type: 'error',
+        title: '비밀번호 불일치',
+        message: '새 비밀번호가 일치하지 않습니다.',
+      });
+      return;
+    }
+
+    try {
+      await changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword,
+        passwordData.confirmPassword,
+      );
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordModal(false);
       showToast({
         type: 'success',
         title: '비밀번호 변경 완료',
-        message: '비밀번호가 성공적으로 변경되었습니다.'
+        message: '비밀번호가 성공적으로 변경되었습니다.',
       });
-    } else {
+    } catch (error: any) {
+      const message = error.response?.data?.detail || '비밀번호 변경에 실패했습니다.';
       showToast({
         type: 'error',
-        title: '비밀번호 불일치',
-        message: '새 비밀번호가 일치하지 않습니다.'
+        title: '비밀번호 변경 실패',
+        message,
       });
     }
   };
 
   const handleProfileUpdate = () => {
-    console.log('프로필 업데이트:', profileData);
-    
-    // 실제 user 객체 업데이트
-    updateUser({
-      name: profileData.name,
-      nickname: profileData.nickname,
-      email: profileData.email,
-      profileImage: profileData.profileImage
-    });
-    
+    // TODO: 프로필 수정 API 연동 예정
     setShowProfileEditModal(false);
     showToast({
       type: 'success',
@@ -104,10 +108,20 @@ const MyPage: React.FC = () => {
     });
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (confirm('정말로 회원탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      console.log('회원탈퇴 처리');
-      logout();
+      try {
+        await deleteAccount();
+        logout();
+        window.location.href = '/login';
+      } catch (error: any) {
+        const message = error.response?.data?.detail || '회원탈퇴에 실패했습니다.';
+        showToast({
+          type: 'error',
+          title: '회원탈퇴 실패',
+          message,
+        });
+      }
     }
     setShowDeleteModal(false);
   };
@@ -115,10 +129,10 @@ const MyPage: React.FC = () => {
   const handleLogout = () => {
     if (confirm('정말 로그아웃하시겠습니까?')) {
       logout();
+      window.location.href = '/landing';
     }
   };
 
-  // 가짜 데이터
   const reportData = {
     completionRate: 87,
     streakDays: 14,
@@ -168,7 +182,7 @@ const MyPage: React.FC = () => {
             </div>
           </div>
         );
-      
+
       case 'report':
         return (
           <div className="mypage__tab-content">
@@ -186,22 +200,17 @@ const MyPage: React.FC = () => {
                 <span className="mypage__report-value">{reportData.totalMedications}</span>
               </div>
             </div>
-            
             <div className="mypage__chart-section">
               <h4>복약 준수율 (최근 7일)</h4>
               <div className="mypage__chart">
                 {reportData.weeklyData.map((value, index) => (
                   <div key={index} className="mypage__chart-bar">
-                    <div 
-                      className="mypage__chart-fill" 
-                      style={{ height: `${value}%` }}
-                    ></div>
+                    <div className="mypage__chart-fill" style={{ height: `${value}%` }}></div>
                     <span className="mypage__chart-label">{index + 1}</span>
                   </div>
                 ))}
               </div>
             </div>
-            
             <div className="mypage__medication-list">
               <h4>복용 중인 약물</h4>
               <div className="mypage__med-item">
@@ -213,7 +222,6 @@ const MyPage: React.FC = () => {
                 <span className="mypage__med-status">복용중</span>
               </div>
             </div>
-            
             <div className="mypage__tips">
               <h4>건강 관리 팁</h4>
               <ul>
@@ -224,7 +232,7 @@ const MyPage: React.FC = () => {
             </div>
           </div>
         );
-      
+
       case 'history':
         return (
           <div className="mypage__tab-content">
@@ -243,7 +251,7 @@ const MyPage: React.FC = () => {
             </div>
           </div>
         );
-      
+
       case 'account':
         return (
           <div className="mypage__tab-content">
@@ -253,30 +261,23 @@ const MyPage: React.FC = () => {
                   <span className="mypage__account-title">비밀번호 변경</span>
                   <span className="mypage__account-desc">계정 보안을 위해 정기적으로 변경하세요</span>
                 </div>
-                <button 
-                  onClick={() => setShowPasswordModal(true)}
-                  className="mypage__account-btn"
-                >
+                <button onClick={() => setShowPasswordModal(true)} className="mypage__account-btn">
                   변경
                 </button>
               </div>
-              
               <div className="mypage__account-item mypage__account-item--danger">
                 <div className="mypage__account-info">
                   <span className="mypage__account-title">회원탈퇴</span>
                   <span className="mypage__account-desc">계정과 모든 데이터가 영구적으로 삭제됩니다</span>
                 </div>
-                <button 
-                  onClick={() => setShowDeleteModal(true)}
-                  className="mypage__account-btn mypage__account-btn--danger"
-                >
+                <button onClick={() => setShowDeleteModal(true)} className="mypage__account-btn mypage__account-btn--danger">
                   탈퇴
                 </button>
               </div>
             </div>
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -284,17 +285,12 @@ const MyPage: React.FC = () => {
 
   return (
     <div className="mypage">
-      {/* 사이드바 */}
       <div className="mypage__sidebar">
         <div className="mypage__profile">
           <div className="mypage__avatar">
             <div className="mypage__avatar-circle">
               {user?.profileImage ? (
-                <img 
-                  src={user.profileImage} 
-                  alt="프로필" 
-                  className="mypage__avatar-image"
-                />
+                <img src={user.profileImage} alt="프로필" className="mypage__avatar-image" />
               ) : (
                 <span className="mypage__avatar-text">
                   {(user?.nickname || user?.name)?.charAt(0).toUpperCase() || 'U'}
@@ -307,45 +303,19 @@ const MyPage: React.FC = () => {
             <p className="mypage__user-email">{user?.email || 'user@example.com'}</p>
           </div>
         </div>
-        
+
         <nav className="mypage__nav">
-          <button 
-            className={`mypage__nav-item ${activeTab === 'profile' ? 'mypage__nav-item--active' : ''}`}
-            onClick={() => setActiveTab('profile')}
-          >
-            프로필
-          </button>
-          <button 
-            className={`mypage__nav-item ${activeTab === 'report' ? 'mypage__nav-item--active' : ''}`}
-            onClick={() => setActiveTab('report')}
-          >
-            내 리포트
-          </button>
-          <button 
-            className={`mypage__nav-item ${activeTab === 'history' ? 'mypage__nav-item--active' : ''}`}
-            onClick={() => setActiveTab('history')}
-          >
-            복약 히스토리
-          </button>
-          <button 
-            className={`mypage__nav-item ${activeTab === 'account' ? 'mypage__nav-item--active' : ''}`}
-            onClick={() => setActiveTab('account')}
-          >
-            보안 / 계정
-          </button>
+          <button className={`mypage__nav-item ${activeTab === 'profile' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('profile')}>프로필</button>
+          <button className={`mypage__nav-item ${activeTab === 'report' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('report')}>내 리포트</button>
+          <button className={`mypage__nav-item ${activeTab === 'history' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('history')}>복약 히스토리</button>
+          <button className={`mypage__nav-item ${activeTab === 'account' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('account')}>보안 / 계정</button>
         </nav>
-        
+
         <div className="mypage__sidebar-footer">
-          <button 
-            onClick={handleLogout}
-            className="mypage__logout-btn"
-          >
-            로그아웃
-          </button>
+          <button onClick={handleLogout} className="mypage__logout-btn">로그아웃</button>
         </div>
       </div>
 
-      {/* 메인 컨텐츠 */}
       <div className="mypage__main">
         <div className="mypage__header">
           <h2 className="mypage__page-title">
@@ -355,15 +325,9 @@ const MyPage: React.FC = () => {
             {activeTab === 'account' && '보안 / 계정'}
           </h2>
           {activeTab === 'profile' && (
-            <button 
-              onClick={() => setShowProfileEditModal(true)}
-              className="mypage__edit-btn"
-            >
-              수정
-            </button>
+            <button onClick={() => setShowProfileEditModal(true)} className="mypage__edit-btn">수정</button>
           )}
         </div>
-        
         {renderTabContent()}
       </div>
 
@@ -373,25 +337,15 @@ const MyPage: React.FC = () => {
           <div className="mypage__modal">
             <div className="mypage__modal-header">
               <h3>프로필 편집</h3>
-              <button 
-                onClick={() => setShowProfileEditModal(false)}
-                className="mypage__modal-close"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowProfileEditModal(false)} className="mypage__modal-close">✕</button>
             </div>
-            
             <div className="mypage__modal-form">
               <div className="mypage__form-group">
                 <label>프로필 사진</label>
                 <div className="mypage__profile-image-section">
                   <div className="mypage__profile-image-preview">
                     {profileData.profileImage ? (
-                      <img 
-                        src={profileData.profileImage} 
-                        alt="프로필 미리보기" 
-                        className="mypage__profile-image"
-                      />
+                      <img src={profileData.profileImage} alt="프로필 미리보기" className="mypage__profile-image" />
                     ) : (
                       <div className="mypage__profile-image-placeholder">
                         {(profileData.nickname || profileData.name)?.charAt(0).toUpperCase() || 'U'}
@@ -399,97 +353,38 @@ const MyPage: React.FC = () => {
                     )}
                   </div>
                   <div className="mypage__profile-image-actions">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleImageUpload}
-                      className="mypage__file-input"
-                      id="profile-image-upload"
-                    />
-                    <label 
-                      htmlFor="profile-image-upload" 
-                      className="mypage__image-btn mypage__image-btn--upload"
-                    >
-                      사진 선택
-                    </label>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="mypage__file-input" id="profile-image-upload" />
+                    <label htmlFor="profile-image-upload" className="mypage__image-btn mypage__image-btn--upload">사진 선택</label>
                     {profileData.profileImage && (
-                      <button 
-                        type="button"
-                        onClick={handleImageRemove}
-                        className="mypage__image-btn mypage__image-btn--remove"
-                      >
-                        사진 제거
-                      </button>
+                      <button type="button" onClick={handleImageRemove} className="mypage__image-btn mypage__image-btn--remove">사진 제거</button>
                     )}
                   </div>
                 </div>
               </div>
-              
               <div className="mypage__form-group">
                 <label>이름</label>
-                <input 
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                  className="mypage__form-input"
-                />
+                <input type="text" value={profileData.name} onChange={(e) => setProfileData({...profileData, name: e.target.value})} className="mypage__form-input" />
               </div>
-              
               <div className="mypage__form-group">
                 <label>닉네임</label>
-                <input 
-                  type="text"
-                  value={profileData.nickname}
-                  onChange={(e) => setProfileData({...profileData, nickname: e.target.value})}
-                  className="mypage__form-input"
-                  placeholder="닉네임을 입력하세요"
-                />
+                <input type="text" value={profileData.nickname} onChange={(e) => setProfileData({...profileData, nickname: e.target.value})} className="mypage__form-input" placeholder="닉네임을 입력하세요" />
               </div>
-              
               <div className="mypage__form-group">
                 <label>이메일</label>
-                <input 
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                  className="mypage__form-input"
-                />
+                <input type="email" value={profileData.email} onChange={(e) => setProfileData({...profileData, email: e.target.value})} className="mypage__form-input" />
               </div>
-              
               <div className="mypage__form-group">
                 <label>연락처</label>
-                <input 
-                  type="tel"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                  className="mypage__form-input"
-                />
+                <input type="tel" value={profileData.phone} onChange={(e) => setProfileData({...profileData, phone: e.target.value})} className="mypage__form-input" />
               </div>
-              
               <div className="mypage__form-group">
                 <label>생년월일</label>
-                <input 
-                  type="text"
-                  value={profileData.birthDate}
-                  onChange={(e) => setProfileData({...profileData, birthDate: e.target.value})}
-                  className="mypage__form-input"
-                />
+                <input type="text" value={profileData.birthDate} onChange={(e) => setProfileData({...profileData, birthDate: e.target.value})} className="mypage__form-input" />
               </div>
             </div>
-            
             <div className="mypage__modal-buttons">
-              <button 
-                onClick={() => setShowProfileEditModal(false)}
-                className="mypage__modal-btn mypage__modal-btn--secondary"
-              >
-                취소
-              </button>
-              <button 
-                onClick={handleProfileUpdate}
-                className="mypage__modal-btn mypage__modal-btn--primary"
-              >
-                저장
-              </button>
+              <button onClick={() => setShowProfileEditModal(false)} className="mypage__modal-btn mypage__modal-btn--secondary">취소</button>
+              <button onClick={handleProfileUpdate} className="mypage__modal-btn mypage__modal-btn--primary">저장</button>
             </div>
           </div>
         </div>
@@ -501,63 +396,25 @@ const MyPage: React.FC = () => {
           <div className="mypage__modal">
             <div className="mypage__modal-header">
               <h3>비밀번호 변경</h3>
-              <button 
-                onClick={() => setShowPasswordModal(false)}
-                className="mypage__modal-close"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowPasswordModal(false)} className="mypage__modal-close">✕</button>
             </div>
-            
             <div className="mypage__modal-form">
               <div className="mypage__form-group">
                 <label>현재 비밀번호</label>
-                <input 
-                  type="password"
-                  placeholder="현재 비밀번호를 입력하세요"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                  className="mypage__form-input"
-                />
+                <input type="password" placeholder="현재 비밀번호를 입력하세요" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} className="mypage__form-input" />
               </div>
-              
               <div className="mypage__form-group">
                 <label>새 비밀번호</label>
-                <input 
-                  type="password"
-                  placeholder="새 비밀번호를 입력하세요"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                  className="mypage__form-input"
-                />
+                <input type="password" placeholder="새 비밀번호를 입력하세요" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="mypage__form-input" />
               </div>
-              
               <div className="mypage__form-group">
                 <label>새 비밀번호 확인</label>
-                <input 
-                  type="password"
-                  placeholder="새 비밀번호를 다시 입력하세요"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                  className="mypage__form-input"
-                />
+                <input type="password" placeholder="새 비밀번호를 다시 입력하세요" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} className="mypage__form-input" />
               </div>
             </div>
-            
             <div className="mypage__modal-buttons">
-              <button 
-                onClick={() => setShowPasswordModal(false)}
-                className="mypage__modal-btn mypage__modal-btn--secondary"
-              >
-                취소
-              </button>
-              <button 
-                onClick={handlePasswordChange}
-                className="mypage__modal-btn mypage__modal-btn--primary"
-                disabled={!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-              >
-                변경
-              </button>
+              <button onClick={() => setShowPasswordModal(false)} className="mypage__modal-btn mypage__modal-btn--secondary">취소</button>
+              <button onClick={handlePasswordChange} className="mypage__modal-btn mypage__modal-btn--primary" disabled={!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}>변경</button>
             </div>
           </div>
         </div>
@@ -569,32 +426,15 @@ const MyPage: React.FC = () => {
           <div className="mypage__modal">
             <div className="mypage__modal-header">
               <h3>회원탈퇴</h3>
-              <button 
-                onClick={() => setShowDeleteModal(false)}
-                className="mypage__modal-close"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowDeleteModal(false)} className="mypage__modal-close">✕</button>
             </div>
-            
             <div className="mypage__modal-content">
               <p>정말로 회원탈퇴하시겠습니까?</p>
               <p>탈퇴 시 모든 데이터가 영구적으로 삭제되며, 복구할 수 없습니다.</p>
             </div>
-            
             <div className="mypage__modal-buttons">
-              <button 
-                onClick={() => setShowDeleteModal(false)}
-                className="mypage__modal-btn mypage__modal-btn--secondary"
-              >
-                취소
-              </button>
-              <button 
-                onClick={handleDeleteAccount}
-                className="mypage__modal-btn mypage__modal-btn--danger"
-              >
-                탈퇴하기
-              </button>
+              <button onClick={() => setShowDeleteModal(false)} className="mypage__modal-btn mypage__modal-btn--secondary">취소</button>
+              <button onClick={handleDeleteAccount} className="mypage__modal-btn mypage__modal-btn--danger">탈퇴하기</button>
             </div>
           </div>
         </div>
