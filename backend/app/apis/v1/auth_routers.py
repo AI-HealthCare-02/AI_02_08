@@ -10,7 +10,6 @@ from app.core.config import Config, Env
 from app.dtos.auth import (
     LoginRequest,
     LoginResponse,
-    LogoutRequest,
     PasswordResetEmailRequest,
     PasswordResetRequest,
     ResendVerificationRequest,
@@ -115,10 +114,11 @@ async def token_refresh(
 
 @auth_router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(
-    request: LogoutRequest,
     auth_service: Annotated[AuthService, Depends(AuthService)],
+    refresh_token: Annotated[str | None, Cookie()] = None,
 ) -> Response:
-    await auth_service.logout(refresh_token=request.refresh_token)
+    if refresh_token:
+        await auth_service.logout(refresh_token=refresh_token)
     resp = Response(
         content=json.dumps({"detail": "로그아웃되었습니다."}),
         media_type="application/json",
