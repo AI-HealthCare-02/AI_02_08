@@ -61,7 +61,7 @@ const LoginPage: React.FC = () => {
     try {
       const success = await login(formData.email, formData.password);
       if (success) {
-        navigate('/'); // 로그인 성공 시 홈으로 이동
+        navigate('/home'); // 로그인 성공 시 실제 홈페이지로 이동
       } else {
         setErrors({ general: '이메일 또는 비밀번호를 확인해주세요.' });
       }

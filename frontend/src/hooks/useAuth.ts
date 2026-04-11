@@ -4,7 +4,9 @@ interface User {
   id: string;
   name: string;
   email: string;
+  nickname?: string;
   avatar?: string;
+  profileImage?: string;
 }
 
 interface AuthState {
@@ -13,6 +15,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   signup: (name: string, email: string, password: string) => Promise<boolean>;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 export const useAuth = (): AuthState => {
@@ -74,11 +77,20 @@ export const useAuth = (): AuthState => {
     return false;
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem('mockUser', JSON.stringify(updatedUser));
+    }
+  };
+
   return {
     isLoggedIn,
     user,
     login,
     logout,
-    signup
+    signup,
+    updateUser
   };
 };
