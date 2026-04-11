@@ -109,22 +109,20 @@ const MyPage: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (confirm('정말로 회원탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      try {
-        await deleteAccount();
-        logout();
-        window.location.href = '/login';
-      } catch (error: any) {
-        const message = error.response?.data?.detail || '회원탈퇴에 실패했습니다.';
-        showToast({
-          type: 'error',
-          title: '회원탈퇴 실패',
-          message,
-        });
-      }
-    }
-    setShowDeleteModal(false);
-  };
+  try {
+    await deleteAccount();
+    logout();
+    window.location.href = '/';
+  } catch (error: any) {
+    const message = error.response?.data?.detail || '회원탈퇴에 실패했습니다.';
+    showToast({
+      type: 'error',
+      title: '회원탈퇴 실패',
+      message,
+    });
+  }
+  setShowDeleteModal(false);
+};
 
   const handleLogout = () => {
     if (confirm('정말 로그아웃하시겠습니까?')) {

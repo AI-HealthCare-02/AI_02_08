@@ -36,7 +36,7 @@ const ForgotPasswordPage: React.FC = () => {
   const [timer, setTimer] = useState(0);
 
   const startTimer = () => {
-    setTimer(1800); // 30분
+    setTimer(300); // 5분
     const interval = setInterval(() => {
       setTimer(prev => {
         if (prev <= 1) {

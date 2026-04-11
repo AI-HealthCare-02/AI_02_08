@@ -143,7 +143,7 @@ class AuthService:
             email=email,
             verification_type=VerificationType.PASSWORD_RESET,
             expire_hours=0,
-            expire_minutes=30,
+            expire_minutes=5,
         )
 
     async def reset_password(self, email: str, code: str, new_password: str) -> None:

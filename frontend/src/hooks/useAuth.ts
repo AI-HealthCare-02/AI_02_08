@@ -36,10 +36,10 @@ export const useAuth = (): AuthState => {
   });
 
   useEffect(() => {
-    if (isLoggedIn && !user) {
-      fetchUserInfo();
-    }
-  }, [isLoggedIn]);
+  if (isLoggedIn) {
+    fetchUserInfo();
+  }
+}, [isLoggedIn]);
 
   const fetchUserInfo = async () => {
     try {
