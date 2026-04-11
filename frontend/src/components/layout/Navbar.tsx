@@ -20,18 +20,15 @@ const Navbar: React.FC<NavbarProps> = ({
   onLogout
 }) => {
   const location = useLocation();
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // 로그아웃 핸들러
   const handleLogout = () => {
-    if (confirm('정말 로그아웃하시겠습니까?')) {
-      logout();
-      if (onLogout) {
-        onLogout();
-      }
-    }
-  };
+  if (onLogout) {
+    onLogout();
+  }
+};
 
   const isActive = (path: string) => {
     return location.pathname === path;

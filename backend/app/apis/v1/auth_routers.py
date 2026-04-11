@@ -7,7 +7,9 @@ from fastapi.responses import JSONResponse
 from starlette.responses import Response
 
 from app.core.config import Config, Env
+from app.dependencies.security import get_request_user
 from app.dtos.auth import (
+    ChangePasswordRequest,
     LoginRequest,
     LoginResponse,
     PasswordResetEmailRequest,
@@ -16,6 +18,7 @@ from app.dtos.auth import (
     SignUpRequest,
     TokenRefreshResponse,
 )
+from app.models.users import User
 from app.services.auth import AuthService
 from app.services.jwt import JwtService
 
@@ -152,5 +155,22 @@ async def password_reset(
     )
     return JSONResponse(
         content={"detail": "비밀번호가 재설정되었습니다."},
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@auth_router.patch("/password/change", status_code=status.HTTP_200_OK)
+async def change_password(
+    request: ChangePasswordRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    auth_service: Annotated[AuthService, Depends(AuthService)],
+) -> JSONResponse:
+    await auth_service.change_password(
+        user=user,
+        current_password=request.current_password,
+        new_password=request.new_password,
+    )
+    return JSONResponse(
+        content={"detail": "비밀번호가 변경되었습니다."},
         status_code=status.HTTP_200_OK,
     )
