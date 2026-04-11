@@ -78,6 +78,72 @@ const SignupPage: React.FC = () => {
     }
   };
 
+  // 비밀번호 유효성 검사
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return '비밀번호는 최소 8자 이상이어야 합니다.';
+    }
+    
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    if (!hasUpperCase) {
+      return '비밀번호에 대문자가 포함되어야 합니다.';
+    }
+    if (!hasLowerCase) {
+      return '비밀번호에 소문자가 포함되어야 합니다.';
+    }
+    if (!hasNumbers) {
+      return '비밀번호에 숫자가 포함되어야 합니다.';
+    }
+    if (!hasSpecialChar) {
+      return '비밀번호에 특수문자가 포함되어야 합니다.';
+    }
+    
+    return null;
+  };
+
+  // 생년월일 유효성 검사 (만 14세 이상)
+  const validateBirthDate = (birthDate: string): string | null => {
+    if (!birthDate) {
+      return '생년월일을 입력해주세요.';
+    }
+    
+    const today = new Date();
+    const birth = new Date(birthDate);
+    const age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      const actualAge = age - 1;
+      if (actualAge < 14) {
+        return '만 14세 이상만 가입할 수 있습니다.';
+      }
+    } else if (age < 14) {
+      return '만 14세 이상만 가입할 수 있습니다.';
+    }
+    
+    return null;
+  };
+
+  // 전화번호 유효성 검사
+  const validatePhoneNumber = (phoneNumber: string): string | null => {
+    if (!phoneNumber) {
+      return '전화번호를 입력해주세요.';
+    }
+    
+    // 01012345678 또는 010-1234-5678 형식
+    const phoneRegex = /^010[0-9]{8}$|^010-[0-9]{4}-[0-9]{4}$/;
+    
+    if (!phoneRegex.test(phoneNumber)) {
+      return '올바른 전화번호 형식이 아닙니다. (010XXXXXXXX 또는 010-XXXX-XXXX)';
+    }
+    
+    return null;
+  };
+
   // 회원가입 버튼 활성화 조건
   const isFormValid = () => {
     return (
@@ -99,14 +165,41 @@ const SignupPage: React.FC = () => {
     e.preventDefault();
 
     const newErrors: FormErrors = {};
-    if (formData.password.length < 8) newErrors.password = '비밀번호는 8자 이상이어야 합니다.';
-    if (formData.password !== formData.passwordConfirm) newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
-    if (!formData.name) newErrors.name = '이름을 입력해주세요.';
-    if (!formData.gender) newErrors.gender = '성별을 선택해주세요.';
-    if (!formData.birthDate) newErrors.birthDate = '생년월일을 입력해주세요.';
-    if (!formData.phoneNumber) newErrors.phoneNumber = '전화번호를 입력해주세요.';
-    if (!formData.agreeTerms) newErrors.agreeTerms = '이용약관에 동의해주세요.';
-    if (!formData.agreePrivacy) newErrors.agreePrivacy = '개인정보 처리방침에 동의해주세요.';
+    
+    // 비밀번호 검증
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) newErrors.password = passwordError;
+    
+    // 비밀번호 확인
+    if (formData.password !== formData.passwordConfirm) {
+      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+    }
+    
+    // 이름 검증
+    if (!formData.name.trim()) {
+      newErrors.name = '이름을 입력해주세요.';
+    }
+    
+    // 성별 검증
+    if (!formData.gender) {
+      newErrors.gender = '성별을 선택해주세요.';
+    }
+    
+    // 생년월일 검증
+    const birthDateError = validateBirthDate(formData.birthDate);
+    if (birthDateError) newErrors.birthDate = birthDateError;
+    
+    // 전화번호 검증
+    const phoneError = validatePhoneNumber(formData.phoneNumber);
+    if (phoneError) newErrors.phoneNumber = phoneError;
+    
+    // 약관 동의 검증
+    if (!formData.agreeTerms) {
+      newErrors.agreeTerms = '이용약관에 동의해주세요.';
+    }
+    if (!formData.agreePrivacy) {
+      newErrors.agreePrivacy = '개인정보 처리방침에 동의해주세요.';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -163,7 +256,7 @@ const SignupPage: React.FC = () => {
       if (verified) {
         setEmailVerified(true);
         alert('이메일 인증이 완료되었습니다!');
-        navigate('/login');
+        navigate('/home'); // 인증 완료 후 실제 홈페이지로 이동
       } else {
         setErrors(prev => ({ ...prev, verificationCode: '잘못된 인증코드입니다.' }));
       }
@@ -220,7 +313,7 @@ const SignupPage: React.FC = () => {
             type="password"
             value={formData.password}
             onChange={handleInputChange('password')}
-            placeholder="영문 대소문자, 숫자, 특수문자 포함 8자 이상"
+            placeholder="대소문자, 숫자, 특수문자 각 1개 이상 포함 8자 이상"
             disabled={signupCompleted}
             error={errors.password}
             showPasswordToggle
@@ -267,7 +360,7 @@ const SignupPage: React.FC = () => {
 
           {/* 생년월일 */}
           <Input
-            label="생년월일"
+            label="생년월일 (만 14세 이상)"
             type="date"
             value={formData.birthDate}
             onChange={handleInputChange('birthDate')}
@@ -281,7 +374,7 @@ const SignupPage: React.FC = () => {
             type="tel"
             value={formData.phoneNumber}
             onChange={handleInputChange('phoneNumber')}
-            placeholder="01012345678"
+            placeholder="010XXXXXXXX 또는 010-XXXX-XXXX"
             disabled={signupCompleted}
             error={errors.phoneNumber}
           />

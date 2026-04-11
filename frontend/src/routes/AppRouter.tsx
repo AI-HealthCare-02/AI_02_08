@@ -8,6 +8,7 @@ import HomePage from '../pages/home/HomePage';
 import LandingPage from '../pages/home/LandingPage';
 import LoginPage from '../pages/auth/LoginPage';
 import SignupPage from '../pages/auth/SignupPage';
+import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import MedicationPage from '../pages/medication/MedicationPage';
 import MyPage from '../pages/mypage/MyPage';
 
@@ -74,6 +75,14 @@ const AppRoutes: React.FC = () => {
         element={
           <MainLayout>
             <SignupPage />
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/forgot-password" 
+        element={
+          <MainLayout>
+            <ForgotPasswordPage />
           </MainLayout>
         } 
       />

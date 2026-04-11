@@ -417,13 +417,13 @@ const HomePage: React.FC = () => {
       <div className="home-page__lifestyle-guide">
         <h2 className="home-page__section-title">생활습관 가이드 💡</h2>
         <div className="home-page__guide-cards">
-          <div className="home-page__guide-card">
+          <div className="home-page__guide-card home-page__guide-card--diet home-page__guide-card--coming-soon">
             <h3>식단 🍎</h3>
           </div>
-          <div className="home-page__guide-card">
+          <div className="home-page__guide-card home-page__guide-card--exercise home-page__guide-card--coming-soon">
             <h3>운동🏃</h3>
           </div>
-          <div className="home-page__guide-card">
+          <div className="home-page__guide-card home-page__guide-card--sleep home-page__guide-card--coming-soon">
             <h3>수면😴</h3>
           </div>
         </div>

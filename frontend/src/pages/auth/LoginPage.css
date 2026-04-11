@@ -58,7 +58,7 @@
 }
 
 .login-page__logo {
-  height: 120px; /* 80px에서 120px로 대폭 증가 */
+  height: 160px; /* 로그인 페이지 로고 대폭 증가 */
   width: auto;
   margin: 0 auto var(--spacing-4);
 }
@@ -279,6 +279,6 @@
   }
   
   .login-page__logo {
-    height: 90px; /* 모바일에서도 훨씬 크게 */
+    height: 120px; /* 모바일에서도 대폭 증가 */
   }
 }

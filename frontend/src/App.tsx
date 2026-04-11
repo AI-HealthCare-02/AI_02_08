@@ -1,12 +1,17 @@
 import React from 'react'
 import './App.css'
 import AppRouter from './routes/AppRouter'
+import { ToastProvider } from './contexts/ToastContext'
+import ToastContainer from './components/common/ToastContainer'
 
 const App: React.FC = () => {
   return (
-    <div className="App">
-      <AppRouter />
-    </div>
+    <ToastProvider>
+      <div className="App">
+        <AppRouter />
+        <ToastContainer />
+      </div>
+    </ToastProvider>
   )
 }
 

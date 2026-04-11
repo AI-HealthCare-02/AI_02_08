@@ -9,7 +9,7 @@
 .navbar__container {
   max-width: 1440px; /* 피그마 프레임 기준 */
   margin: 0 auto;
-  height: 80px; /* 60px에서 80px로 증가 */
+  height: 90px; /* 네비바 높이 적당히 조정 */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -26,8 +26,8 @@
 }
 
 .navbar__logo-image {
-  height: 64px; /* 50px에서 64px로 증가 */
-  width: 64px;
+  height: 110px; /* 로고만 더 크게 */
+  width: 110px;
   object-fit: contain;
 }
 
@@ -181,6 +181,60 @@
   color: #ffffff;
 }
 
+/* 모바일 햄버거 메뉴 */
+.navbar__mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
+.navbar__hamburger {
+  display: flex;
+  flex-direction: column;
+  width: 24px;
+  height: 18px;
+  position: relative;
+}
+
+.navbar__hamburger span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: var(--color-text-primary);
+  margin-bottom: 4px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.navbar__hamburger span:last-child {
+  margin-bottom: 0;
+}
+
+/* 햄버거 애니메이션 */
+.navbar__hamburger--open span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.navbar__hamburger--open span:nth-child(2) {
+  opacity: 0;
+}
+
+.navbar__hamburger--open span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+@media (max-width: 1024px) {
+  .navbar__container {
+    padding: 0 var(--spacing-6);
+  }
+  
+  .navbar__nav {
+    gap: var(--spacing-8);
+  }
+}
+
 /* 반응형 - 태블릿 */
 @media (max-width: 1024px) {
   .navbar__container {
@@ -197,19 +251,53 @@
   .navbar__container {
     height: 70px;
     padding: 0 var(--spacing-4);
+    position: relative;
   }
   
   .navbar__logo-text {
     font-size: var(--font-size-xl);
   }
   
+  /* 모바일 메뉴 표시 */
+  .navbar__mobile-toggle {
+    display: block;
+  }
+  
+  /* 데스크톱 메뉴 숨김 */
   .navbar__nav {
-    gap: var(--spacing-6);
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    background-color: var(--color-bg-base);
+    border-top: 1px solid var(--color-border-default);
+    flex-direction: column;
+    padding: var(--spacing-4) 0;
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 모바일 메뉴 열린 상태 */
+  .navbar__nav--mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
   }
   
   .navbar__nav-item {
-    font-size: var(--font-size-md);
-    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-lg);
+    padding: var(--spacing-3) var(--spacing-4);
+    text-align: center;
+    width: 100%;
+    border-bottom: 1px solid rgba(120, 160, 133, 0.1);
+  }
+  
+  .navbar__nav-item:last-child {
+    border-bottom: none;
   }
   
   .navbar__button {
@@ -217,5 +305,15 @@
     padding: var(--spacing-2) var(--spacing-4);
     min-width: 70px;
     height: 36px;
+  }
+  
+  .navbar__user {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    align-items: center;
+  }
+  
+  .navbar__user-name {
+    font-size: var(--font-size-sm);
   }
 }

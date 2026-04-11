@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Navbar.css';
@@ -21,12 +21,15 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const location = useLocation();
   const { isLoggedIn, user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // 로그아웃 핸들러
   const handleLogout = () => {
-    logout();
-    if (onLogout) {
-      onLogout();
+    if (confirm('정말 로그아웃하시겠습니까?')) {
+      logout();
+      if (onLogout) {
+        onLogout();
+      }
     }
   };
 
@@ -49,27 +52,59 @@ const Navbar: React.FC<NavbarProps> = ({
           />
         </Link>
 
-        {/* 네비게이션 메뉴 - 항상 표시 */}
-        <div className="navbar__nav">
-          <Link 
-            to="/home" 
-            className={`navbar__nav-item ${isActive('/home') ? 'navbar__nav-item--active' : ''}`}
-          >
-            홈
-          </Link>
-          <Link 
-            to="/medication" 
-            className={`navbar__nav-item ${isActive('/medication') ? 'navbar__nav-item--active' : ''}`}
-          >
-            복약관리
-          </Link>
-          <Link 
-            to="/mypage" 
-            className={`navbar__nav-item ${isActive('/mypage') ? 'navbar__nav-item--active' : ''}`}
-          >
-            마이페이지
-          </Link>
+        {/* 네비게이션 메뉴 - 로그인 상태에 따라 다르게 표시 */}
+        <div className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--mobile-open' : ''}`}>
+          {isLoggedIn ? (
+            // 로그인 후 메뉴
+            <>
+              <Link 
+                to="/home" 
+                className={`navbar__nav-item ${isActive('/home') ? 'navbar__nav-item--active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                홈
+              </Link>
+              <Link 
+                to="/medication" 
+                className={`navbar__nav-item ${isActive('/medication') ? 'navbar__nav-item--active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                복약관리
+              </Link>
+              <Link 
+                to="/mypage" 
+                className={`navbar__nav-item ${isActive('/mypage') ? 'navbar__nav-item--active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                마이페이지
+              </Link>
+            </>
+          ) : (
+            // 로그인 전 메뉴
+            <>
+              <Link 
+                to="/" 
+                className={`navbar__nav-item ${isActive('/') ? 'navbar__nav-item--active' : ''}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                홈
+              </Link>
+            </>
+          )}
         </div>
+
+        {/* 모바일 햄버거 메뉴 */}
+        <button 
+          className="navbar__mobile-toggle"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="메뉴 토글"
+        >
+          <span className={`navbar__hamburger ${isMobileMenuOpen ? 'navbar__hamburger--open' : ''}`}>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
 
         {/* 우측 액션 버튼 */}
         <div className="navbar__actions">

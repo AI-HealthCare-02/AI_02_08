@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useSearchParams } from 'react-router-dom';
+import { useToast } from '../../contexts/ToastContext';
 import './MyPage.css';
 
 type TabType = 'profile' | 'report' | 'history' | 'account';
 
 const MyPage: React.FC = () => {
   const { user, logout, updateUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
+  
+  // URL 파라미터로 탭 설정
+  useEffect(() => {
+    const tab = searchParams.get('tab') as TabType;
+    if (tab && ['profile', 'report', 'history', 'account'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -59,9 +71,17 @@ const MyPage: React.FC = () => {
       console.log('비밀번호 변경:', passwordData);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setShowPasswordModal(false);
-      alert('비밀번호가 변경되었습니다.');
+      showToast({
+        type: 'success',
+        title: '비밀번호 변경 완료',
+        message: '비밀번호가 성공적으로 변경되었습니다.'
+      });
     } else {
-      alert('새 비밀번호가 일치하지 않습니다.');
+      showToast({
+        type: 'error',
+        title: '비밀번호 불일치',
+        message: '새 비밀번호가 일치하지 않습니다.'
+      });
     }
   };
 
@@ -77,7 +97,11 @@ const MyPage: React.FC = () => {
     });
     
     setShowProfileEditModal(false);
-    alert('프로필이 업데이트되었습니다.');
+    showToast({
+      type: 'success',
+      title: '프로필 업데이트 완료',
+      message: '프로필 정보가 성공적으로 업데이트되었습니다.'
+    });
   };
 
   const handleDeleteAccount = () => {

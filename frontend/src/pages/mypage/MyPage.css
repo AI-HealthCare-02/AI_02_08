@@ -16,12 +16,22 @@
   flex-direction: column;
   height: fit-content;
   min-height: calc(100vh - 80px);
+  transition: all 0.3s ease;
+}
+
+.mypage__sidebar:hover {
+  box-shadow: 4px 0 20px rgba(120, 160, 133, 0.1);
 }
 
 .mypage__profile {
   padding: 2rem;
   text-align: center;
   border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.mypage__profile:hover {
+  background-color: #fafbfc;
 }
 
 .mypage__avatar {
@@ -41,6 +51,13 @@
   color: white;
   margin: 0 auto;
   overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.mypage__avatar-circle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(120, 160, 133, 0.3);
 }
 
 .mypage__avatar-image {
@@ -83,13 +100,31 @@
   font-size: 1rem;
   color: #7f8c8d;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   border-left: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.mypage__nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  transition: left 0.6s ease;
 }
 
 .mypage__nav-item:hover {
   background-color: #f8f9fa;
   color: #2c3e50;
+  transform: translateX(8px);
+}
+
+.mypage__nav-item:hover::before {
+  left: 100%;
 }
 
 .mypage__nav-item--active {
@@ -164,6 +199,14 @@
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #f1f3f4;
+}
+
+.mypage__tab-content:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(120, 160, 133, 0.15);
+  border-color: #78a085;
 }
 
 /* 프로필 탭 */
@@ -218,6 +261,16 @@
   padding: 1.5rem;
   border-radius: 8px;
   text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid #e9ecef;
+}
+
+.mypage__report-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(120, 160, 133, 0.12);
+  border-color: #78a085;
+  background-color: #f0f7f2;
 }
 
 .mypage__report-label {
@@ -341,6 +394,30 @@
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mypage__history-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  transition: left 0.6s ease;
+}
+
+.mypage__history-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(8px);
+  border-left: 4px solid #78a085;
+}
+
+.mypage__history-item:hover::before {
+  left: 100%;
 }
 
 .mypage__history-item:last-child {
@@ -387,6 +464,29 @@
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mypage__account-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  transition: left 0.6s ease;
+}
+
+.mypage__account-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(8px);
+}
+
+.mypage__account-item:hover::before {
+  left: 100%;
 }
 
 .mypage__account-item:last-child {
