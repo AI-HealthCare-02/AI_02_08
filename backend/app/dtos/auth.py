@@ -69,3 +69,16 @@ class PasswordResetRequest(BaseModel):
         if "new_password" in info.data and v != info.data["new_password"]:
             raise ValueError("비밀번호가 일치하지 않습니다.")
         return v
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: Annotated[str, Field(..., min_length=8, description="현재 비밀번호")]
+    new_password: Annotated[str, Field(..., min_length=8), AfterValidator(validate_password)]
+    new_password_confirm: Annotated[str, Field(..., min_length=8)]
+
+    @field_validator("new_password_confirm")
+    @classmethod
+    def passwords_match(cls, v: str, info) -> str:
+        if "new_password" in info.data and v != info.data["new_password"]:
+            raise ValueError("비밀번호가 일치하지 않습니다.")
+        return v

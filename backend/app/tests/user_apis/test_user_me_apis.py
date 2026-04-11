@@ -111,7 +111,7 @@ class TestUserMeApis(TestCase):
 
                 headers = {"Authorization": f"Bearer {access_token}"}
                 response = await client.patch(
-                    "/api/v1/users/me/password",
+                    "/api/v1/auth/password/change",
                     json={
                         "current_password": "Password123!",
                         "new_password": "NewPassword123!",
@@ -151,7 +151,7 @@ class TestUserMeApis(TestCase):
 
                 headers = {"Authorization": f"Bearer {access_token}"}
                 response = await client.patch(
-                    "/api/v1/users/me/password",
+                    "/api/v1/auth/password/change",
                     json={
                         "current_password": "WrongPassword123!",
                         "new_password": "NewPassword123!",

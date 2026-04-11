@@ -1,12 +1,12 @@
 from datetime import date, datetime
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.dtos.base import BaseSerializerModel
 from app.models.users import Gender
 from app.validators.common import optional_after_validator
-from app.validators.user_validators import validate_birth_date, validate_password, validate_phone_number
+from app.validators.user_validators import validate_birth_date, validate_phone_number
 
 
 # 1. 회원가입 요청 DTO (사용자가 보내는 데이터 검증)
@@ -61,16 +61,3 @@ class UserInfoResponse(BaseSerializerModel):
     agree_terms: bool
     agree_privacy: bool
     created_at: datetime
-
-
-class ChangePasswordRequest(BaseModel):
-    current_password: Annotated[str, Field(..., min_length=8, description="현재 비밀번호")]
-    new_password: Annotated[str, Field(..., min_length=8), AfterValidator(validate_password)]
-    new_password_confirm: Annotated[str, Field(..., min_length=8)]
-
-    @field_validator("new_password_confirm")
-    @classmethod
-    def passwords_match(cls, v: str, info) -> str:
-        if "new_password" in info.data and v != info.data["new_password"]:
-            raise ValueError("비밀번호가 일치하지 않습니다.")
-        return v

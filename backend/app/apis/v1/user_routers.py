@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 
 from app.dependencies.security import get_request_user
-from app.dtos.users import ChangePasswordRequest, UserInfoResponse, UserUpdateRequest
+from app.dtos.users import UserInfoResponse, UserUpdateRequest
 from app.models.users import User
 from app.services.auth import AuthService
 from app.services.users import UserManageService
@@ -32,23 +32,6 @@ async def update_user_me_info(
     updated_user = await user_manage_service.update_user(user=user, data=update_data)
     return JSONResponse(
         content=json.loads(UserInfoResponse.model_validate(updated_user).model_dump_json()),
-        status_code=status.HTTP_200_OK,
-    )
-
-
-@user_router.patch("/me/password", status_code=status.HTTP_200_OK)
-async def change_password(
-    request: ChangePasswordRequest,
-    user: Annotated[User, Depends(get_request_user)],
-    auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
-    await auth_service.change_password(
-        user=user,
-        current_password=request.current_password,
-        new_password=request.new_password,
-    )
-    return JSONResponse(
-        content={"detail": "비밀번호가 변경되었습니다."},
         status_code=status.HTTP_200_OK,
     )
 
