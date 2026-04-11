@@ -3,7 +3,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  nickname?: string;
   avatar?: string;
+  profileImage?: string;
 }
 
 export interface LoginData {

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- 배경 원 -->
+  <circle cx="32" cy="32" r="30" fill="#78a085" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- 약 모양 (캡슐) -->
+  <rect x="20" y="28" width="24" height="8" rx="4" ry="4" fill="#ffffff"/>
+  
+  <!-- 십자가 표시 (의료/건강 상징) -->
+  <rect x="30" y="18" width="4" height="12" fill="#ffffff"/>
+  <rect x="26" y="22" width="12" height="4" fill="#ffffff"/>
+  
+  <!-- 하트 모양 (건강/케어 상징) -->
+  <path d="M32 45 C28 41, 20 37, 20 30 C20 27, 22 25, 25 25 C27 25, 29 26, 32 29 C35 26, 37 25, 39 25 C42 25, 44 27, 44 30 C44 37, 36 41, 32 45 Z" fill="#ffffff"/>
+</svg>

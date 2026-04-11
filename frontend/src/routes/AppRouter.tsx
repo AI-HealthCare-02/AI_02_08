@@ -8,27 +8,32 @@ import HomePage from '../pages/home/HomePage';
 import LandingPage from '../pages/home/LandingPage';
 import LoginPage from '../pages/auth/LoginPage';
 import SignupPage from '../pages/auth/SignupPage';
+import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
+import MedicationPage from '../pages/medication/MedicationPage';
+import MyPage from '../pages/mypage/MyPage';
 
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* 홈 페이지 (메인 화면) - 임시로 로그인 없이 접근 가능 */}
+      {/* 랜딩 페이지 (메인 화면) */}
       <Route 
         path="/" 
         element={
           <MainLayout>
-            <HomePage />
+            <LandingPage />
           </MainLayout>
         } 
       />
       
-      {/* 랜딩 페이지 (로고 클릭 시) */}
+      {/* 홈 페이지 (OCR 기능) - 로그인 필요 */}
       <Route 
-        path="/landing" 
+        path="/home" 
         element={
-          <MainLayout>
-            <LandingPage />
-          </MainLayout>
+          <ProtectedRoute>
+            <MainLayout>
+              <HomePage />
+            </MainLayout>
+          </ProtectedRoute>
         } 
       />
       
@@ -38,10 +43,7 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <MainLayout>
-              <div style={{ padding: '2rem' }}>
-                <h1>복약관리</h1>
-                <p>복약관리 페이지입니다. (3주차에 구현 예정)</p>
-              </div>
+              <MedicationPage />
             </MainLayout>
           </ProtectedRoute>
         } 
@@ -53,10 +55,7 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <MainLayout>
-              <div style={{ padding: '2rem' }}>
-                <h1>마이페이지</h1>
-                <p>마이페이지입니다. (3주차에 구현 예정)</p>
-              </div>
+              <MyPage />
             </MainLayout>
           </ProtectedRoute>
         } 
@@ -76,6 +75,14 @@ const AppRoutes: React.FC = () => {
         element={
           <MainLayout>
             <SignupPage />
+          </MainLayout>
+        } 
+      />
+      <Route 
+        path="/forgot-password" 
+        element={
+          <MainLayout>
+            <ForgotPasswordPage />
           </MainLayout>
         } 
       />

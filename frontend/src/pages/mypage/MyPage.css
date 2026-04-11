@@ -1,0 +1,817 @@
+/* MyPage.css - 탭 기반 마이페이지 */
+
+.mypage {
+  display: flex;
+  min-height: calc(100vh - 80px);
+  background-color: #f8f9fa;
+  margin-top: 0;
+}
+
+/* 사이드바 */
+.mypage__sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  min-height: calc(100vh - 80px);
+  transition: all 0.3s ease;
+}
+
+.mypage__sidebar:hover {
+  box-shadow: 4px 0 20px rgba(120, 160, 133, 0.1);
+}
+
+.mypage__profile {
+  padding: 2rem;
+  text-align: center;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.mypage__profile:hover {
+  background-color: #fafbfc;
+}
+
+.mypage__avatar {
+  margin-bottom: 1rem;
+}
+
+.mypage__avatar-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #78a085;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin: 0 auto;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.mypage__avatar-circle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(120, 160, 133, 0.3);
+}
+
+.mypage__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mypage__avatar-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.mypage__username {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.25rem 0;
+}
+
+.mypage__user-email {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+/* 네비게이션 */
+.mypage__nav {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.mypage__nav-item {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.mypage__nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  transition: left 0.6s ease;
+}
+
+.mypage__nav-item:hover {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  transform: translateX(8px);
+}
+
+.mypage__nav-item:hover::before {
+  left: 100%;
+}
+
+.mypage__nav-item--active {
+  background-color: #f0f7f2;
+  color: #78a085;
+  border-left-color: #78a085;
+  font-weight: 500;
+}
+
+/* 사이드바 푸터 */
+.mypage__sidebar-footer {
+  padding: 1rem 2rem 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.mypage__logout-btn {
+  width: 100%;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mypage__logout-btn:hover {
+  background-color: #c0392b;
+}
+
+/* 메인 콘텐츠 */
+.mypage__main {
+  flex: 1;
+  padding: 2rem;
+  max-width: 800px;
+}
+
+.mypage__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.mypage__page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.mypage__edit-btn {
+  background-color: #78a085;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mypage__edit-btn:hover {
+  background-color: #6a8f77;
+}
+
+/* 탭 콘텐츠 */
+.mypage__tab-content {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid #f1f3f4;
+}
+
+.mypage__tab-content:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(120, 160, 133, 0.15);
+  border-color: #78a085;
+}
+
+/* 프로필 탭 */
+.mypage__profile-info-card {
+  padding: 2rem;
+}
+
+.mypage__profile-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.mypage__profile-row:last-child {
+  margin-bottom: 0;
+  grid-template-columns: 1fr;
+}
+
+.mypage__profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mypage__profile-field label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #7f8c8d;
+}
+
+.mypage__profile-field span {
+  font-size: 1rem;
+  color: #2c3e50;
+  padding: 0.8rem 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* 리포트 탭 */
+.mypage__report-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.mypage__report-card {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid #e9ecef;
+}
+
+.mypage__report-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(120, 160, 133, 0.12);
+  border-color: #78a085;
+  background-color: #f0f7f2;
+}
+
+.mypage__report-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin-bottom: 0.5rem;
+}
+
+.mypage__report-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #78a085;
+}
+
+.mypage__chart-section {
+  padding: 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.mypage__chart-section h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+}
+
+.mypage__chart {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  height: 120px;
+  padding: 1rem 0;
+}
+
+.mypage__chart-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mypage__chart-fill {
+  width: 100%;
+  background-color: #78a085;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.3s ease;
+}
+
+.mypage__chart-label {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+}
+
+.mypage__medication-list {
+  padding: 2rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.mypage__medication-list h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+}
+
+.mypage__med-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.mypage__med-item:last-child {
+  border-bottom: none;
+}
+
+.mypage__med-status {
+  background-color: #27ae60;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.mypage__tips {
+  padding: 2rem;
+}
+
+.mypage__tips h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 1rem 0;
+}
+
+.mypage__tips ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mypage__tips li {
+  padding: 0.5rem 0;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* 히스토리 탭 */
+.mypage__history-list {
+  padding: 0;
+}
+
+.mypage__history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mypage__history-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  transition: left 0.6s ease;
+}
+
+.mypage__history-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(8px);
+  border-left: 4px solid #78a085;
+}
+
+.mypage__history-item:hover::before {
+  left: 100%;
+}
+
+.mypage__history-item:last-child {
+  border-bottom: none;
+}
+
+.mypage__history-info h4 {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #2c3e50;
+  margin: 0 0 0.25rem 0;
+}
+
+.mypage__history-date {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.mypage__history-status {
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.mypage__history-status--completed {
+  background-color: #d1f2eb;
+  color: #27ae60;
+}
+
+.mypage__history-status--missed {
+  background-color: #fadbd8;
+  color: #e74c3c;
+}
+
+/* 계정 탭 */
+.mypage__account-section {
+  padding: 0;
+}
+
+.mypage__account-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.mypage__account-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  transition: left 0.6s ease;
+}
+
+.mypage__account-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(8px);
+}
+
+.mypage__account-item:hover::before {
+  left: 100%;
+}
+
+.mypage__account-item:last-child {
+  border-bottom: none;
+}
+
+.mypage__account-item--danger {
+  background-color: #fdf2f2;
+}
+
+.mypage__account-info {
+  flex: 1;
+}
+
+.mypage__account-title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.mypage__account-desc {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.mypage__account-btn {
+  background-color: #f8f9fa;
+  color: #78a085;
+  border: 1px solid #78a085;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mypage__account-btn:hover {
+  background-color: #78a085;
+  color: white;
+}
+
+.mypage__account-btn--danger {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.mypage__account-btn--danger:hover {
+  background-color: #e74c3c;
+  color: white;
+}
+
+/* 모달 */
+.mypage__modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.mypage__modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+}
+
+.mypage__modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.mypage__modal-header h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.mypage__modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #95a5a6;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.mypage__modal-close:hover {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+}
+
+.mypage__modal-form {
+  padding: 1.5rem 2rem;
+}
+
+.mypage__modal-content {
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+
+.mypage__modal-content p {
+  margin: 0 0 1rem 0;
+  color: #7f8c8d;
+  line-height: 1.5;
+}
+
+.mypage__form-group {
+  margin-bottom: 1.2rem;
+}
+
+.mypage__form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.mypage__form-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f8f9fa;
+  transition: all 0.2s;
+}
+
+.mypage__form-input:focus {
+  outline: none;
+  border-color: #78a085;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(120, 160, 133, 0.1);
+}
+
+.mypage__modal-buttons {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 2rem 2rem;
+}
+
+.mypage__modal-btn {
+  flex: 1;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mypage__modal-btn--primary {
+  background-color: #78a085;
+  color: white;
+}
+
+.mypage__modal-btn--primary:hover:not(:disabled) {
+  background-color: #6a8f77;
+  transform: translateY(-1px);
+}
+
+.mypage__modal-btn--primary:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.mypage__modal-btn--secondary {
+  background-color: white;
+  color: #78a085;
+  border: 2px solid #78a085;
+}
+
+.mypage__modal-btn--secondary:hover {
+  background-color: #f8f9fa;
+}
+
+.mypage__modal-btn--danger {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.mypage__modal-btn--danger:hover {
+  background-color: #c0392b;
+  transform: translateY(-1px);
+}
+
+/* 프로필 이미지 업로드 */
+.mypage__profile-image-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mypage__profile-image-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e9ecef;
+}
+
+.mypage__profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mypage__profile-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #78a085;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+}
+
+.mypage__profile-image-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mypage__file-input {
+  display: none;
+}
+
+.mypage__image-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.mypage__image-btn--upload {
+  background-color: #78a085;
+  color: white;
+}
+
+.mypage__image-btn--upload:hover {
+  background-color: #6a8f77;
+}
+
+.mypage__image-btn--remove {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.mypage__image-btn--remove:hover {
+  background-color: #c0392b;
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+  .mypage__sidebar {
+    width: 240px;
+  }
+  
+  .mypage__profile-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .mypage__report-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mypage {
+    flex-direction: column;
+  }
+  
+  .mypage__sidebar {
+    width: 100%;
+    height: auto;
+    min-height: auto;
+  }
+  
+  .mypage__main {
+    padding: 1rem;
+  }
+  
+  .mypage__nav {
+    display: flex;
+    overflow-x: auto;
+    padding: 0;
+  }
+  
+  .mypage__nav-item {
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+  
+  .mypage__nav-item--active {
+    border-left: none;
+    border-bottom-color: #78a085;
+  }
+  
+  .mypage__modal {
+    width: 95%;
+  }
+}
