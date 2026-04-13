@@ -21,6 +21,7 @@ from app.utils.security import hash_password, verify_password
 
 config = Config()
 
+
 class AuthService:
     def __init__(self):
         self.user_repo = UserRepository()
