@@ -49,7 +49,6 @@ const SignupPage: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
-  const [codeSent, setCodeSent] = useState(false);
   const [signupCompleted, setSignupCompleted] = useState(false);
   const [timer, setTimer] = useState(0);
 
@@ -78,73 +77,33 @@ const SignupPage: React.FC = () => {
     }
   };
 
-  // 비밀번호 유효성 검사
   const validatePassword = (password: string): string | null => {
-    if (password.length < 8) {
-      return '비밀번호는 최소 8자 이상이어야 합니다.';
-    }
-    
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
-    if (!hasUpperCase) {
-      return '비밀번호에 대문자가 포함되어야 합니다.';
-    }
-    if (!hasLowerCase) {
-      return '비밀번호에 소문자가 포함되어야 합니다.';
-    }
-    if (!hasNumbers) {
-      return '비밀번호에 숫자가 포함되어야 합니다.';
-    }
-    if (!hasSpecialChar) {
-      return '비밀번호에 특수문자가 포함되어야 합니다.';
-    }
-    
+    if (password.length < 8) return '비밀번호는 최소 8자 이상이어야 합니다.';
+    if (!/[A-Z]/.test(password)) return '비밀번호에 대문자가 포함되어야 합니다.';
+    if (!/[a-z]/.test(password)) return '비밀번호에 소문자가 포함되어야 합니다.';
+    if (!/\d/.test(password)) return '비밀번호에 숫자가 포함되어야 합니다.';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return '비밀번호에 특수문자가 포함되어야 합니다.';
     return null;
   };
 
-  // 생년월일 유효성 검사 (만 14세 이상)
   const validateBirthDate = (birthDate: string): string | null => {
-    if (!birthDate) {
-      return '생년월일을 입력해주세요.';
-    }
-    
+    if (!birthDate) return '생년월일을 입력해주세요.';
     const today = new Date();
     const birth = new Date(birthDate);
     const age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      const actualAge = age - 1;
-      if (actualAge < 14) {
-        return '만 14세 이상만 가입할 수 있습니다.';
-      }
-    } else if (age < 14) {
-      return '만 14세 이상만 가입할 수 있습니다.';
-    }
-    
+    const actualAge = (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) ? age - 1 : age;
+    if (actualAge < 14) return '만 14세 이상만 가입할 수 있습니다.';
     return null;
   };
 
-  // 전화번호 유효성 검사
   const validatePhoneNumber = (phoneNumber: string): string | null => {
-    if (!phoneNumber) {
-      return '전화번호를 입력해주세요.';
-    }
-    
-    // 01012345678 또는 010-1234-5678 형식
+    if (!phoneNumber) return '전화번호를 입력해주세요.';
     const phoneRegex = /^010[0-9]{8}$|^010-[0-9]{4}-[0-9]{4}$/;
-    
-    if (!phoneRegex.test(phoneNumber)) {
-      return '올바른 전화번호 형식이 아닙니다. (010XXXXXXXX 또는 010-XXXX-XXXX)';
-    }
-    
+    if (!phoneRegex.test(phoneNumber)) return '올바른 전화번호 형식이 아닙니다. (010XXXXXXXX 또는 010-XXXX-XXXX)';
     return null;
   };
 
-  // 회원가입 버튼 활성화 조건
   const isFormValid = () => {
     return (
       formData.email &&
@@ -160,46 +119,21 @@ const SignupPage: React.FC = () => {
     );
   };
 
-  // 회원가입 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newErrors: FormErrors = {};
-    
-    // 비밀번호 검증
     const passwordError = validatePassword(formData.password);
     if (passwordError) newErrors.password = passwordError;
-    
-    // 비밀번호 확인
-    if (formData.password !== formData.passwordConfirm) {
-      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
-    }
-    
-    // 이름 검증
-    if (!formData.name.trim()) {
-      newErrors.name = '이름을 입력해주세요.';
-    }
-    
-    // 성별 검증
-    if (!formData.gender) {
-      newErrors.gender = '성별을 선택해주세요.';
-    }
-    
-    // 생년월일 검증
+    if (formData.password !== formData.passwordConfirm) newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+    if (!formData.name.trim()) newErrors.name = '이름을 입력해주세요.';
+    if (!formData.gender) newErrors.gender = '성별을 선택해주세요.';
     const birthDateError = validateBirthDate(formData.birthDate);
     if (birthDateError) newErrors.birthDate = birthDateError;
-    
-    // 전화번호 검증
     const phoneError = validatePhoneNumber(formData.phoneNumber);
     if (phoneError) newErrors.phoneNumber = phoneError;
-    
-    // 약관 동의 검증
-    if (!formData.agreeTerms) {
-      newErrors.agreeTerms = '이용약관에 동의해주세요.';
-    }
-    if (!formData.agreePrivacy) {
-      newErrors.agreePrivacy = '개인정보 처리방침에 동의해주세요.';
-    }
+    if (!formData.agreeTerms) newErrors.agreeTerms = '이용약관에 동의해주세요.';
+    if (!formData.agreePrivacy) newErrors.agreePrivacy = '개인정보 처리방침에 동의해주세요.';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -220,6 +154,7 @@ const SignupPage: React.FC = () => {
         agreePrivacy: formData.agreePrivacy,
       });
       setSignupCompleted(true);
+      startTimer();
     } catch (error: any) {
       const message = error.response?.data?.detail || '회원가입에 실패했습니다.';
       alert(message);
@@ -228,16 +163,16 @@ const SignupPage: React.FC = () => {
     }
   };
 
-  // 인증코드 발송
-  const handleSendCode = async () => {
+  // 인증코드 재발송
+  const handleResendCode = async () => {
     setIsLoading(true);
     try {
       await sendVerificationCode(formData.email);
-      setCodeSent(true);
+      setTimer(0);
       startTimer();
-      alert('인증코드가 발송되었습니다. 이메일을 확인해주세요.');
+      alert('인증코드가 재발송되었습니다. 이메일을 확인해주세요.');
     } catch (error) {
-      alert('인증코드 발송에 실패했습니다.');
+      alert('인증코드 재발송에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -256,7 +191,7 @@ const SignupPage: React.FC = () => {
       if (verified) {
         setEmailVerified(true);
         alert('이메일 인증이 완료되었습니다!');
-        navigate('/home'); // 인증 완료 후 실제 홈페이지로 이동
+        navigate('/home');
       } else {
         setErrors(prev => ({ ...prev, verificationCode: '잘못된 인증코드입니다.' }));
       }
@@ -286,71 +221,20 @@ const SignupPage: React.FC = () => {
         <div className="signup-page__card-line" />
 
         <div className="signup-page__header">
-          <img 
-            src="/logo.png" 
-            alt="이루도담 로고" 
-            className="signup-page__logo"
-          />
+          <img src="/logo.png" alt="이루도담 로고" className="signup-page__logo" />
           <h1 className="signup-page__title">이루도담</h1>
           <p className="signup-page__subtitle">처음 만나서 반가워요 🌿</p>
         </div>
 
         <form onSubmit={handleSubmit} className="signup-page__form">
-          {/* 이메일 */}
-          <Input
-            label="이메일"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange('email')}
-            placeholder="이메일을 입력하세요"
-            disabled={signupCompleted}
-            error={errors.email}
-          />
+          <Input label="이메일" type="email" value={formData.email} onChange={handleInputChange('email')} placeholder="이메일을 입력하세요" disabled={signupCompleted} error={errors.email} />
+          <Input label="비밀번호" type="password" value={formData.password} onChange={handleInputChange('password')} placeholder="대소문자, 숫자, 특수문자 각 1개 이상 포함 8자 이상" disabled={signupCompleted} error={errors.password} showPasswordToggle />
+          <Input label="비밀번호 확인" type="password" value={formData.passwordConfirm} onChange={handleInputChange('passwordConfirm')} placeholder="비밀번호를 다시 입력하세요" disabled={signupCompleted} error={errors.passwordConfirm} showPasswordToggle />
+          <Input label="이름" type="text" value={formData.name} onChange={handleInputChange('name')} placeholder="이름을 입력하세요" disabled={signupCompleted} error={errors.name} />
 
-          {/* 비밀번호 */}
-          <Input
-            label="비밀번호"
-            type="password"
-            value={formData.password}
-            onChange={handleInputChange('password')}
-            placeholder="대소문자, 숫자, 특수문자 각 1개 이상 포함 8자 이상"
-            disabled={signupCompleted}
-            error={errors.password}
-            showPasswordToggle
-          />
-
-          {/* 비밀번호 확인 */}
-          <Input
-            label="비밀번호 확인"
-            type="password"
-            value={formData.passwordConfirm}
-            onChange={handleInputChange('passwordConfirm')}
-            placeholder="비밀번호를 다시 입력하세요"
-            disabled={signupCompleted}
-            error={errors.passwordConfirm}
-            showPasswordToggle
-          />
-
-          {/* 이름 */}
-          <Input
-            label="이름"
-            type="text"
-            value={formData.name}
-            onChange={handleInputChange('name')}
-            placeholder="이름을 입력하세요"
-            disabled={signupCompleted}
-            error={errors.name}
-          />
-
-          {/* 성별 */}
           <div className="signup-page__field">
             <label className="signup-page__label">성별</label>
-            <select
-              value={formData.gender}
-              onChange={handleInputChange('gender')}
-              disabled={signupCompleted}
-              className="signup-page__select"
-            >
+            <select value={formData.gender} onChange={handleInputChange('gender')} disabled={signupCompleted} className="signup-page__select">
               <option value="">성별을 선택하세요</option>
               <option value="MALE">남성</option>
               <option value="FEMALE">여성</option>
@@ -358,36 +242,12 @@ const SignupPage: React.FC = () => {
             {errors.gender && <p className="signup-page__error">{errors.gender}</p>}
           </div>
 
-          {/* 생년월일 */}
-          <Input
-            label="생년월일 (만 14세 이상)"
-            type="date"
-            value={formData.birthDate}
-            onChange={handleInputChange('birthDate')}
-            disabled={signupCompleted}
-            error={errors.birthDate}
-          />
+          <Input label="생년월일 (만 14세 이상)" type="date" value={formData.birthDate} onChange={handleInputChange('birthDate')} disabled={signupCompleted} error={errors.birthDate} />
+          <Input label="전화번호" type="tel" value={formData.phoneNumber} onChange={handleInputChange('phoneNumber')} placeholder="010XXXXXXXX 또는 010-XXXX-XXXX" disabled={signupCompleted} error={errors.phoneNumber} />
 
-          {/* 전화번호 */}
-          <Input
-            label="전화번호"
-            type="tel"
-            value={formData.phoneNumber}
-            onChange={handleInputChange('phoneNumber')}
-            placeholder="010XXXXXXXX 또는 010-XXXX-XXXX"
-            disabled={signupCompleted}
-            error={errors.phoneNumber}
-          />
-
-          {/* 약관 동의 */}
           <div className="signup-page__field">
             <label className="signup-page__checkbox">
-              <input
-                type="checkbox"
-                checked={formData.agreeTerms}
-                onChange={handleInputChange('agreeTerms')}
-                disabled={signupCompleted}
-              />
+              <input type="checkbox" checked={formData.agreeTerms} onChange={handleInputChange('agreeTerms')} disabled={signupCompleted} />
               이용약관에 동의합니다 (필수)
             </label>
             {errors.agreeTerms && <p className="signup-page__error">{errors.agreeTerms}</p>}
@@ -395,67 +255,68 @@ const SignupPage: React.FC = () => {
 
           <div className="signup-page__field">
             <label className="signup-page__checkbox">
-              <input
-                type="checkbox"
-                checked={formData.agreePrivacy}
-                onChange={handleInputChange('agreePrivacy')}
-                disabled={signupCompleted}
-              />
+              <input type="checkbox" checked={formData.agreePrivacy} onChange={handleInputChange('agreePrivacy')} disabled={signupCompleted} />
               개인정보 처리방침에 동의합니다 (필수)
             </label>
             {errors.agreePrivacy && <p className="signup-page__error">{errors.agreePrivacy}</p>}
           </div>
 
-          {/* 회원가입 버튼 */}
-          <Button
-            type="submit"
-            disabled={isLoading || !isFormValid() || signupCompleted}
-            isLoading={isLoading}
-            fullWidth
-            className="signup-page__submit"
-          >
-            회원가입
-          </Button>
+          {/* 회원가입 버튼 → 완료 후 인증코드 재발송 버튼으로 변경 */}
+          {!signupCompleted ? (
+            <Button
+              type="submit"
+              disabled={isLoading || !isFormValid()}
+              isLoading={isLoading}
+              fullWidth
+              className="signup-page__submit"
+            >
+              회원가입
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handleResendCode}
+              disabled={isLoading || emailVerified}
+              variant="secondary"
+              fullWidth
+              className="signup-page__submit"
+            >
+              인증코드 재발송
+            </Button>
+          )}
 
           {/* 인증번호 - 회원가입 완료 후 활성화 */}
-          <div className="signup-page__field">
-            <div className="signup-page__code-group">
-              <Input
-                label={`인증번호${timer > 0 ? ` (${formatTime(timer)})` : ''}`}
-                type="text"
-                value={formData.verificationCode}
-                onChange={handleInputChange('verificationCode')}
-                placeholder="인증번호를 입력하세요"
-                maxLength={6}
-                disabled={!signupCompleted || emailVerified}
-                error={errors.verificationCode}
-              />
-              <Button
-                type="button"
-                onClick={codeSent ? handleVerifyCode : handleSendCode}
-                disabled={
-                  isLoading ||
-                  !signupCompleted ||
-                  emailVerified ||
-                  (codeSent && !formData.verificationCode)
-                }
-                variant="secondary"
-                size="sm"
-              >
-                {codeSent ? '인증하기' : '인증코드 발송'}
-              </Button>
+          {signupCompleted && (
+            <div className="signup-page__field">
+              <div className="signup-page__code-group">
+                <Input
+                  label={`인증번호${timer > 0 ? ` (${formatTime(timer)})` : ' (만료됨)'}`}
+                  type="text"
+                  value={formData.verificationCode}
+                  onChange={handleInputChange('verificationCode')}
+                  placeholder="인증번호를 입력하세요"
+                  maxLength={6}
+                  disabled={emailVerified}
+                  error={errors.verificationCode}
+                />
+                <Button
+                  type="button"
+                  onClick={handleVerifyCode}
+                  disabled={isLoading || emailVerified || !formData.verificationCode || timer === 0}
+                  variant="secondary"
+                  size="sm"
+                >
+                  인증하기
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </form>
 
         <div className="signup-page__footer">
           <p>
             이미 회원이신가요?{' '}
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              className="signup-page__link"
-            >
+            <button type="button" onClick={() => navigate('/login')} className="signup-page__link">
               로그인
             </button>
           </p>
