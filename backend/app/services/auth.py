@@ -31,8 +31,34 @@ class AuthService:
         self.email_service = EmailService()
 
     async def signup(self, data: SignUpRequest) -> User:
-        await self.check_email_exists(data.email)
+        # 탈퇴한 유저인지 확인
+        existing_user = await self.user_repo.get_user_by_email(data.email)
 
+        if existing_user and not existing_user.is_active:
+            normalized_phone_number = normalize_phone_number(data.phone_number)
+            await self.check_phone_number_exists(normalized_phone_number)
+
+            async with in_transaction():
+                existing_user.hashed_password = hash_password(data.password)
+                existing_user.name = data.name
+                existing_user.phone_number = normalized_phone_number
+                existing_user.gender = data.gender
+                existing_user.birthday = data.birth_date
+                existing_user.agree_terms = data.agree_terms
+                existing_user.agree_privacy = data.agree_privacy
+                existing_user.is_active = True
+                existing_user.is_verified = False
+                existing_user.deleted_at = None
+                await existing_user.save()
+                await self._send_verification_code(
+                    user_id=existing_user.id,
+                    email=data.email,
+                    verification_type=VerificationType.SIGNUP,
+                )
+                return existing_user
+
+        # 신규 유저면 기존 로직
+        await self.check_email_exists(data.email)
         normalized_phone_number = normalize_phone_number(data.phone_number)
         await self.check_phone_number_exists(normalized_phone_number)
 
@@ -133,7 +159,6 @@ class AuthService:
         if not user:
             return
 
-        # 기존 코드 삭제 후 재발송 (유효시간 30분)
         await self.email_verification_repo.delete_previous(
             email=email,
             verification_type=VerificationType.PASSWORD_RESET,
