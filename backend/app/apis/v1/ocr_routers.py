@@ -5,11 +5,14 @@ OCR 관련 API 라우터
 - GET  /api/v1/ai/ocr/prescription/{ocrId}/analysis : 약물 상호작용 분석
 """
 
+import traceback
 import uuid
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
+from app.dependencies.security import get_request_user
 from app.dtos.medications import (
     OcrAnalyzeResponse,
     OcrConfirmRequest,
@@ -17,6 +20,7 @@ from app.dtos.medications import (
     PrescriptionAnalysisResponse,
 )
 from app.models.medications import MedicationLog, OcrPrescription, OcrStatus
+from app.models.users import User
 from app.services.ocr_service import analyze_prescription_via_clova, upload_image_to_s3
 
 ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
@@ -39,33 +43,36 @@ ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
 )
 async def analyze_prescription(
     image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 15MB"),  # noqa: B008
-    # TODO: JWT 인증 의존성 주입 (예: current_user = Depends(get_current_user))
+    user: Annotated[User, Depends(get_request_user)] = None,
 ):
-    """
-    업로드된 이미지를 S3에 보관하고 네이버 클로바 서버에 전송하여 OCR 결과를 반환.
-    """
     # 1) S3에 이미지 업로드 및 URL 확보
     try:
         s3_url = await upload_image_to_s3(image)
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"이미지 스토리지 업로드 실패: {str(e)}") from e
 
     ocr_id = f"ocr_{datetime.now().strftime('%Y%m%d')}_{uuid.uuid4().hex[:6]}"
 
-    # 2) Clova OCR API 호줄 및 파싱 진행
+    # 2) Clova OCR API 호출 및 파싱 진행
     try:
         raw_json, parsed_medications = await analyze_prescription_via_clova(s3_url)
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"클로바 OCR 연동 실패: {str(e)}") from e
 
-    # 3) 추출 결과 DB 보존 (추후 user_id 연동)
-    await OcrPrescription.create(
-        ocr_id=ocr_id,
-        user_id=None,  # <current_user.id>
-        image_url=s3_url,
-        status=OcrStatus.PENDING,
-        extracted_data=raw_json,
-    )
+    # 3) 추출 결과 DB 저장
+    try:
+        await OcrPrescription.create(
+            ocr_id=ocr_id,
+            user_id=user.id,
+            image_url=s3_url,
+            status=OcrStatus.PENDING,
+            extracted_data=raw_json,
+        )
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"DB 저장 실패: {str(e)}") from e
 
     return OcrAnalyzeResponse(
         ocrId=ocr_id,
@@ -89,22 +96,22 @@ async def analyze_prescription(
         422: {"description": "요청 바디 유효성 검증 실패"},
     },
 )
-async def confirm_prescription(ocr_id: str, body: OcrConfirmRequest):
-    # OCR 레코드 존재 확인
+async def confirm_prescription(
+    ocr_id: str,
+    body: OcrConfirmRequest,
+    user: Annotated[User, Depends(get_request_user)] = None,
+):
     ocr_record = await OcrPrescription.get_or_none(ocr_id=ocr_id)
     if not ocr_record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="해당 OCR 기록을 찾을 수 없습니다.")
 
-    # 상태 업데이트
     ocr_record.status = OcrStatus.CONFIRMED
     await ocr_record.save()
 
-    # 약물 스케줄 등록
     created_ids: list[int] = []
     for med in body.medications:
-        # TODO: DrugInfo 테이블과 이름매칭하여 drug_id FK 연결
         medication = await MedicationLog.create(
-            user_id=ocr_record.user_id,
+            user_id=user.id,
             ocr_prescription_id=ocr_id,
             name=med.name,
             dosage=med.dosage,
@@ -133,13 +140,13 @@ async def confirm_prescription(ocr_id: str, body: OcrConfirmRequest):
         404: {"description": "해당 OCR 기록을 찾을 수 없음"},
     },
 )
-async def analyze_interactions(ocr_id: str):
+async def analyze_interactions(
+    ocr_id: str,
+    user: Annotated[User, Depends(get_request_user)] = None,
+):
     ocr_record = await OcrPrescription.get_or_none(ocr_id=ocr_id)
     if not ocr_record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="해당 OCR 기록을 찾을 수 없습니다.")
-
-    # TODO: extracted_data에서 약물 목록 추출 → DrugInfo.interactions 컬럼 기반 상호작용 분석 로직 구현
-    # TODO: 사용자 알레르기 정보와 교차 검증 로직 구현
 
     return PrescriptionAnalysisResponse(
         interactions=[],
