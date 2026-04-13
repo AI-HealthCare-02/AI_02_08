@@ -3,7 +3,7 @@ import zoneinfo
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -40,10 +40,10 @@ class Config(BaseSettings):
     CLOVA_OCR_SECRET: str = ""
     CLOVA_OCR_URL: str = ""
 
-    # OpenAI (GPT-4o mini)
+    # OpenAI
     OPENAI_API_KEY: str = ""
 
-    # AWS S3 (이미지 저장)
+    # AWS S3
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_S3_BUCKET: str = ""
@@ -54,6 +54,20 @@ class Config(BaseSettings):
     MAIL_FROM: str = ""
     MAIL_SERVER: str = "smtp.gmail.com"
     MAIL_PORT: int = 587
+
+    @computed_field
+    @property
+    def openai_chat_model(self) -> str:
+        if self.ENV == Env.PROD:
+            return "gpt-4o"
+        return "gpt-4o-mini"
+
+    @computed_field
+    @property
+    def openai_embedding_model(self) -> str:
+        if self.ENV == Env.PROD:
+            return "text-embedding-3-large"
+        return "text-embedding-3-small"
 
 
 # 1. Config 인스턴스 생성
