@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { analyzePrescription, OcrMedicationItem } from '../../api/ocrApi';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [ocrResults, setOcrResults] = useState<{
-    medicines: string[];
-    warnings: string[];
-    interactions: string[];
-  } | null>(null);
+  const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(null);
   const [showManualInput, setShowManualInput] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -27,91 +23,57 @@ const HomePage: React.FC = () => {
 
   const displayName = user?.name || '사용자';
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // 실제 OCR API 호출
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      setOcrStatus('uploading');
-      
-      // 이미지 미리보기 URL 생성
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
-        
-        // 업로드 진행률 시뮬레이션
-        simulateUploadProgress();
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+    if (!file) return;
 
-  const simulateUploadProgress = () => {
-    setUploadProgress(0);
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setOcrStatus('processing');
-          
-          setTimeout(() => {
-            // 이미지 유형 검증 시뮬레이션
-            const imageValidation = validateImageType();
-            
-            if (!imageValidation.isValid) {
-              // 처방전이 아닌 경우
-              setOcrStatus('error');
-              return;
-            }
-            
-            // 처방전이지만 OCR 실패 가능성
-            const isOcrSuccess = Math.random() > 0.2; // 80% OCR 성공률
-            
-            if (isOcrSuccess) {
-              setOcrStatus('completed');
-              setOcrResults({
-                medicines: ['타이레놀정 500mg', '루코페트정', '세레브렉스캅슐 200mg', '낙시용정 20mg'],
-                warnings: ['아세트아미노펜', '알코올 주의'],
-                interactions: ['아스피린 병용 주의', '위장약 병용 주의']
-              });
-            } else {
-              setOcrStatus('error');
-            }
-          }, 3000);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
-  };
+    setSelectedImage(file);
+    setOcrStatus('uploading');
 
-  // 이미지 유형 검증 시뮬레이션
-  const validateImageType = () => {
-    if (!selectedImage) return { isValid: false, reason: '이미지가 없습니다' };
-    
-    // 파일명에 기반한 간단한 검증 (실제로는 AI 모델로 검증)
-    const fileName = selectedImage.name.toLowerCase();
-    
-    // 처방전 관련 키워드가 있으면 처방전으로 간주
-    const prescriptionKeywords = ['처방', 'prescription', '약', 'medicine', '병원', 'hospital'];
-    const hasKeyword = prescriptionKeywords.some(keyword => fileName.includes(keyword));
-    
-    if (hasKeyword) {
-      return { isValid: true };
-    }
-    
-    // 70% 확률로 처방전이 아닌 것으로 판단 (랜덤 시뮬레이션)
-    const isValidPrescription = Math.random() > 0.7;
-    
-    return {
-      isValid: isValidPrescription,
-      reason: isValidPrescription ? '' : '처방전이 아닌 이미지입니다'
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
     };
+    reader.readAsDataURL(file);
+
+    try {
+      setOcrStatus('processing');
+      const result = await analyzePrescription(file);
+      setOcrResults(result.medications);
+      setOcrStatus('completed');
+    } catch (error) {
+      console.error('OCR 분석 실패:', error);
+      setOcrStatus('error');
+    }
+  };
+
+  // 카메라 촬영 후 OCR 호출
+  const handleCapturedImage = async (file: File) => {
+    setSelectedImage(file);
+    setOcrStatus('uploading');
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      setOcrStatus('processing');
+      const result = await analyzePrescription(file);
+      setOcrResults(result.medications);
+      setOcrStatus('completed');
+    } catch (error) {
+      console.error('OCR 분석 실패:', error);
+      setOcrStatus('error');
+    }
   };
 
   const getStatusText = () => {
     switch (ocrStatus) {
       case 'idle': return '대기중';
-      case 'uploading': return `업로드 중... ${uploadProgress}%`;
+      case 'uploading': return '업로드 중...';
       case 'processing': return 'OCR 처리 중...';
       case 'completed': return '분석완료 ✓';
       case 'error': return '오류 발생';
@@ -132,15 +94,14 @@ const HomePage: React.FC = () => {
 
   const handleManualInputSubmit = () => {
     if (manualInputData.name && manualInputData.dosage) {
-      // 수동 입력 데이터를 OCR 결과로 변환
-      setOcrResults({
-        medicines: [`${manualInputData.name} ${manualInputData.dosage}`],
-        warnings: ['수동 입력된 약물'],
-        interactions: [manualInputData.usage || '복용법 미입력']
-      });
+      setOcrResults([{
+        name: manualInputData.name,
+        dosage: manualInputData.dosage,
+        frequency: manualInputData.usage || '',
+        timing: manualInputData.timing || '',
+      }]);
       setOcrStatus('completed');
       setShowManualInput(false);
-      // 입력 데이터 초기화
       setManualInputData({ name: '', dosage: '', usage: '', timing: '' });
     }
   };
@@ -149,23 +110,21 @@ const HomePage: React.FC = () => {
     setPreviewUrl(null);
     setSelectedImage(null);
     setOcrStatus('idle');
-    setUploadProgress(0);
     setOcrResults(null);
+    openCameraModal();
   };
 
-  // 카메라 모달 열기
   const openCameraModal = () => {
     setShowCameraModal(true);
     startCamera();
   };
 
-  // 카메라 시작
   const startCamera = async () => {
     try {
       setCameraError(null);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment', // 후면 카메라 (모바일)
+          facingMode: 'environment',
           width: { ideal: 1920 },
           height: { ideal: 1080 }
         }
@@ -177,7 +136,6 @@ const HomePage: React.FC = () => {
     }
   };
 
-  // 카메라 정지
   const stopCamera = () => {
     if (cameraStream) {
       cameraStream.getTracks().forEach(track => track.stop());
@@ -185,39 +143,27 @@ const HomePage: React.FC = () => {
     }
   };
 
-  // 카메라 모달 닫기
   const closeCameraModal = () => {
     stopCamera();
     setShowCameraModal(false);
     setCameraError(null);
   };
 
-  // 사진 촬영
   const capturePhoto = () => {
     const video = document.getElementById('camera-video') as HTMLVideoElement;
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
-    
+
     if (video && context) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0);
-      
-      // Canvas를 Blob으로 변환
+
       canvas.toBlob((blob) => {
         if (blob) {
           const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
-          setSelectedImage(file);
-          
-          // 미리보기 URL 생성
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            setPreviewUrl(e.target?.result as string);
-            closeCameraModal();
-            setOcrStatus('uploading');
-            simulateUploadProgress();
-          };
-          reader.readAsDataURL(file);
+          closeCameraModal();
+          handleCapturedImage(file);
         }
       }, 'image/jpeg', 0.9);
     }
@@ -225,7 +171,6 @@ const HomePage: React.FC = () => {
 
   const handleChatSubmit = () => {
     if (chatMessage.trim()) {
-      // TODO: 챗봇 API 연결
       console.log('챗봇 메시지:', chatMessage);
       setChatMessage('');
     }
@@ -233,14 +178,12 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="home-page">
-      {/* 인사말 섹션 */}
       <div className="home-page__greeting">
         <h1 className="home-page__title">안녕하세요, {displayName}님 !</h1>
         <p className="home-page__subtitle">오늘도 건강한 하루 되세요 😊</p>
       </div>
 
       <div className="home-page__content">
-        {/* 왼쪽: OCR 섹션 */}
         <div className="home-page__left">
           <div className="home-page__ocr-section">
             <div className="home-page__ocr-header">
@@ -249,34 +192,23 @@ const HomePage: React.FC = () => {
                 {getStatusText()}
               </p>
             </div>
-            
+
             <div className="home-page__upload-area">
-              <input 
-                type="file" 
+              <input
+                type="file"
                 id="prescription-upload"
                 accept="image/*,.pdf"
                 onChange={handleImageUpload}
                 className="home-page__file-input"
                 disabled={ocrStatus === 'uploading' || ocrStatus === 'processing'}
               />
-              
+
               {previewUrl ? (
                 <div className="home-page__image-preview">
-                  <img 
-                    src={previewUrl} 
-                    alt="업로드된 처방전" 
-                    className="home-page__preview-image"
-                  />
-                  
+                  <img src={previewUrl} alt="업로드된 처방전" className="home-page__preview-image" />
                   <div className="home-page__preview-overlay">
-                    <button 
-                      onClick={() => {
-                        setPreviewUrl(null);
-                        setSelectedImage(null);
-                        setOcrStatus('idle');
-                        setUploadProgress(0);
-                        setOcrResults(null);
-                      }}
+                    <button
+                      onClick={handleRetakePhoto}
                       className="home-page__remove-btn"
                       disabled={ocrStatus === 'uploading' || ocrStatus === 'processing'}
                     >
@@ -297,17 +229,9 @@ const HomePage: React.FC = () => {
                     </p>
                     <p className="home-page__upload-formats">JPG, PNG, PDF 최대 10MB</p>
                   </label>
-                  
-                  {/* 카메라 촬영 버튼 */}
                   <div className="home-page__camera-section">
-                    <div className="home-page__divider">
-                      <span>또는</span>
-                    </div>
-                    <button 
-                      onClick={openCameraModal}
-                      className="home-page__camera-btn"
-                      type="button"
-                    >
+                    <div className="home-page__divider"><span>또는</span></div>
+                    <button onClick={openCameraModal} className="home-page__camera-btn" type="button">
                       📸 카메라로 촬영하기
                     </button>
                   </div>
@@ -321,15 +245,16 @@ const HomePage: React.FC = () => {
             <h2 className="home-page__section-title">
               처방전 인식 결과 {ocrResults ? '✓' : ''}
             </h2>
-            
+
             <div className="home-page__medicine-categories">
+              {/* 약 목록 */}
               <div className="home-page__medicine-category">
                 <h3 className="home-page__category-title home-page__category-title--blue">약 목록</h3>
                 <div className="home-page__medicine-tags">
-                  {ocrResults && ocrResults.medicines.length > 0 ? (
-                    ocrResults.medicines.map((medicine, index) => (
+                  {ocrResults && ocrResults.length > 0 ? (
+                    ocrResults.map((med, index) => (
                       <span key={index} className="home-page__medicine-tag home-page__medicine-tag--blue">
-                        {medicine}
+                        {med.name}{med.dosage ? ` ${med.dosage}` : ''}
                       </span>
                     ))
                   ) : (
@@ -337,63 +262,54 @@ const HomePage: React.FC = () => {
                   )}
                 </div>
               </div>
-              
+
+              {/* 복용법 */}
               <div className="home-page__medicine-category">
-                <h3 className="home-page__category-title home-page__category-title--orange">주의 성분</h3>
+                <h3 className="home-page__category-title home-page__category-title--orange">복용법</h3>
                 <div className="home-page__medicine-tags">
-                  {ocrResults && ocrResults.warnings.length > 0 ? (
-                    ocrResults.warnings.map((warning, index) => (
+                  {ocrResults && ocrResults.length > 0 ? (
+                    ocrResults.map((med, index) => (
                       <span key={index} className="home-page__medicine-tag home-page__medicine-tag--orange">
-                        {warning}
+                        {med.name}: {med.frequency}{med.timing ? ` (${med.timing})` : ''}
                       </span>
                     ))
                   ) : (
-                    <div className="home-page__empty-state">주의해야 할 성분이 표시됩니다</div>
+                    <div className="home-page__empty-state">복용법이 표시됩니다</div>
                   )}
                 </div>
               </div>
-              
+
+              {/* 상호작용 - 추후 연동 예정 */}
               <div className="home-page__medicine-category">
                 <h3 className="home-page__category-title home-page__category-title--teal">상호작용</h3>
                 <div className="home-page__medicine-tags">
-                  {ocrResults && ocrResults.interactions.length > 0 ? (
-                    ocrResults.interactions.map((interaction, index) => (
-                      <span key={index} className="home-page__medicine-tag home-page__medicine-tag--teal">
-                        {interaction}
-                      </span>
-                    ))
-                  ) : (
-                    <div className="home-page__empty-state">상호작용 정보가 표시됩니다</div>
-                  )}
+                  <div className="home-page__empty-state">상호작용 정보가 표시됩니다</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 오른쪽: 챗봇 섹션 */}
+        {/* 챗봇 섹션 */}
         <div className="home-page__right">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
               <h2 className="home-page__section-title">🤖 약속이 상담소</h2>
               <span className="home-page__chatbot-status">답변 중</span>
             </div>
-            
             <div className="home-page__chat-messages">
               <div className="home-page__chat-message home-page__chat-message--bot">
                 안녕하세요! 복약 관련 궁금한 점을 물어보세요
               </div>
-              
               <div className="home-page__chat-suggestions">
                 <button className="home-page__suggestion-btn">부작용이 있나요?</button>
                 <button className="home-page__suggestion-btn">주의사항 알려주세요</button>
                 <button className="home-page__suggestion-btn">몇 번 먹어야 하나요?</button>
               </div>
             </div>
-            
             <div className="home-page__chat-input-area">
               <div className="home-page__chat-input-wrapper">
-                <input 
+                <input
                   type="text"
                   value={chatMessage}
                   onChange={(e) => setChatMessage(e.target.value)}
@@ -401,12 +317,7 @@ const HomePage: React.FC = () => {
                   className="home-page__chat-input"
                   onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
                 />
-                <button 
-                  onClick={handleChatSubmit}
-                  className="home-page__send-btn"
-                >
-                  전송
-                </button>
+                <button onClick={handleChatSubmit} className="home-page__send-btn">전송</button>
               </div>
             </div>
           </div>
@@ -435,23 +346,11 @@ const HomePage: React.FC = () => {
           <div className="home-page__modal">
             <div className="home-page__loading-spinner"></div>
             <h3 className="home-page__modal-title">
-              {ocrStatus === 'uploading' ? '처방전을 분석하고 있습니다 ...' : 'OCR 처리 중...'}
+              {ocrStatus === 'uploading' ? '이미지 업로드 중...' : 'OCR 처리 중...'}
             </h3>
             <p className="home-page__modal-subtitle">
               {ocrStatus === 'uploading' ? '잠시만 기다려주세요.' : '약물 정보를 추출하고 있습니다.'}
             </p>
-            
-            {/* 진행률 바 */}
-            <div className="home-page__modal-progress">
-              <div className="home-page__modal-progress-bar">
-                <div 
-                  className="home-page__modal-progress-fill"
-                  style={{ 
-                    width: ocrStatus === 'uploading' ? `${uploadProgress}%` : '100%'
-                  }}
-                />
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -460,35 +359,18 @@ const HomePage: React.FC = () => {
       {ocrStatus === 'error' && (
         <div className="home-page__modal-overlay">
           <div className="home-page__modal">
-            <button 
-              onClick={() => setOcrStatus('idle')}
-              className="home-page__modal-close"
-            >
-              ✕
-            </button>
+            <button onClick={() => setOcrStatus('idle')} className="home-page__modal-close">✕</button>
             <div className="home-page__error-icon"></div>
             <h3 className="home-page__modal-title home-page__modal-title--error">
-              처방전 인식에 실패 했습니다.
+              처방전 인식에 실패했습니다.
             </h3>
             <p className="home-page__modal-subtitle">
-              처방전이 아닌 이미지이거나<br />
               이미지가 명확하지 않아 인식에 실패했습니다.<br />
               다시 촬영하거나 직접 입력해주세요.
             </p>
-            
             <div className="home-page__modal-buttons">
-              <button 
-                onClick={handleRetakePhoto}
-                className="home-page__modal-btn home-page__modal-btn--primary"
-              >
-                재촬영하기
-              </button>
-              <button 
-                onClick={() => setShowManualInput(true)}
-                className="home-page__modal-btn home-page__modal-btn--secondary"
-              >
-                수동입력
-              </button>
+              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">재촬영하기</button>
+              <button onClick={() => setShowManualInput(true)} className="home-page__modal-btn home-page__modal-btn--secondary">수동입력</button>
             </div>
           </div>
         </div>
@@ -500,55 +382,24 @@ const HomePage: React.FC = () => {
           <div className="home-page__modal home-page__modal--large">
             <div className="home-page__modal-header">
               <h3 className="home-page__modal-title">복용 정보 입력</h3>
-              <button 
-                onClick={() => setShowManualInput(false)}
-                className="home-page__modal-close"
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowManualInput(false)} className="home-page__modal-close">✕</button>
             </div>
-            
             <div className="home-page__modal-form">
               <div className="home-page__form-group">
                 <label>약 이름</label>
-                <input 
-                  type="text"
-                  placeholder="약 이름을 입력해주세요"
-                  value={manualInputData.name}
-                  onChange={(e) => setManualInputData({...manualInputData, name: e.target.value})}
-                  className="home-page__form-input"
-                />
+                <input type="text" placeholder="약 이름을 입력해주세요" value={manualInputData.name} onChange={(e) => setManualInputData({...manualInputData, name: e.target.value})} className="home-page__form-input" />
               </div>
-              
               <div className="home-page__form-group">
                 <label>용량</label>
-                <input 
-                  type="text"
-                  placeholder="ex) 500mg"
-                  value={manualInputData.dosage}
-                  onChange={(e) => setManualInputData({...manualInputData, dosage: e.target.value})}
-                  className="home-page__form-input"
-                />
+                <input type="text" placeholder="ex) 500mg" value={manualInputData.dosage} onChange={(e) => setManualInputData({...manualInputData, dosage: e.target.value})} className="home-page__form-input" />
               </div>
-              
               <div className="home-page__form-group">
                 <label>복용법</label>
-                <input 
-                  type="text"
-                  placeholder="ex) 1일 3회"
-                  value={manualInputData.usage}
-                  onChange={(e) => setManualInputData({...manualInputData, usage: e.target.value})}
-                  className="home-page__form-input"
-                />
+                <input type="text" placeholder="ex) 1일 3회" value={manualInputData.usage} onChange={(e) => setManualInputData({...manualInputData, usage: e.target.value})} className="home-page__form-input" />
               </div>
-              
               <div className="home-page__form-group">
                 <label>식후 ❓</label>
-                <select 
-                  value={manualInputData.timing}
-                  onChange={(e) => setManualInputData({...manualInputData, timing: e.target.value})}
-                  className="home-page__form-select"
-                >
+                <select value={manualInputData.timing} onChange={(e) => setManualInputData({...manualInputData, timing: e.target.value})} className="home-page__form-select">
                   <option value="">선택해주세요</option>
                   <option value="식전">식전</option>
                   <option value="식후">식후</option>
@@ -556,21 +407,9 @@ const HomePage: React.FC = () => {
                 </select>
               </div>
             </div>
-            
             <div className="home-page__modal-buttons">
-              <button 
-                onClick={() => setShowManualInput(false)}
-                className="home-page__modal-btn home-page__modal-btn--secondary"
-              >
-                취소
-              </button>
-              <button 
-                onClick={handleManualInputSubmit}
-                className="home-page__modal-btn home-page__modal-btn--primary"
-                disabled={!manualInputData.name || !manualInputData.dosage}
-              >
-                확인
-              </button>
+              <button onClick={() => setShowManualInput(false)} className="home-page__modal-btn home-page__modal-btn--secondary">취소</button>
+              <button onClick={handleManualInputSubmit} className="home-page__modal-btn home-page__modal-btn--primary" disabled={!manualInputData.name || !manualInputData.dosage}>확인</button>
             </div>
           </div>
         </div>
@@ -582,32 +421,21 @@ const HomePage: React.FC = () => {
           <div className="home-page__modal home-page__modal--camera">
             <div className="home-page__modal-header">
               <h3 className="home-page__modal-title">처방전 촬영</h3>
-              <button 
-                onClick={closeCameraModal}
-                className="home-page__modal-close"
-              >
-                ✕
-              </button>
+              <button onClick={closeCameraModal} className="home-page__modal-close">✕</button>
             </div>
-            
             <div className="home-page__camera-container">
               {cameraError ? (
                 <div className="home-page__camera-error">
                   <div className="home-page__error-icon-small">⚠️</div>
                   <p>{cameraError}</p>
-                  <button 
-                    onClick={startCamera}
-                    className="home-page__retry-btn"
-                  >
-                    다시 시도
-                  </button>
+                  <button onClick={startCamera} className="home-page__retry-btn">다시 시도</button>
                 </div>
               ) : cameraStream ? (
                 <div className="home-page__camera-preview">
-                  <video 
+                  <video
                     id="camera-video"
-                    autoPlay 
-                    playsInline 
+                    autoPlay
+                    playsInline
                     muted
                     className="home-page__camera-video"
                     ref={(video) => {
@@ -628,21 +456,14 @@ const HomePage: React.FC = () => {
                 </div>
               )}
             </div>
-            
             {cameraStream && !cameraError && (
               <div className="home-page__camera-controls">
-                <button 
-                  onClick={closeCameraModal}
-                  className="home-page__modal-btn home-page__modal-btn--secondary"
-                >
-                  취소
-                </button>
-                <button 
-                  onClick={capturePhoto}
-                  className="home-page__camera-capture-btn"
-                >
-                  📸
-                </button>
+                <button onClick={closeCameraModal} className="home-page__modal-btn home-page__modal-btn--secondary">취소</button>
+                <button onClick={capturePhoto} className="home-page__camera-capture-btn">📸</button>
+                {/* 사진 선택 버튼 추가 */}
+                <label htmlFor="prescription-upload" className="home-page__modal-btn home-page__modal-btn--secondary" onClick={closeCameraModal}>
+                  사진 선택
+                </label>
               </div>
             )}
           </div>
