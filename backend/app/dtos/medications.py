@@ -13,6 +13,9 @@ class OcrMedicationItem(BaseSerializerModel):
     dosage: str | None = Field(None, description="용량 (예: 500mg)")
     frequency: str | None = Field(None, description="복용 횟수 (예: 1일 3회)")
     timing: str | None = Field(None, description="복용 시점 (예: 식후)")
+    description: str | None = Field(
+        None, description="약품 한 줄 설명 (예: 해열진통제로 열을 내리고 통증을 줄여줍니다)"
+    )
 
 
 class OcrAnalyzeResponse(BaseSerializerModel):

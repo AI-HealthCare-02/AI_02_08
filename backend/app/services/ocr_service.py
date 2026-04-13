@@ -52,15 +52,19 @@ async def parse_medications_with_gpt(extracted_texts: list[str]) -> list[OcrMedi
 2. dosage는 1회 복용량 (예: "1정", "1포", "5ml")
 3. frequency는 1일 복용 횟수 (예: "1일 3회", "1일 2회")
 4. timing은 복용 시점 (예: "식후 30분", "식전", "취침 전")
-5. 정보가 불명확한 경우 빈 문자열("")로 반환하세요.
+5. description은 처방전에 나와있는 약품 설명을 바탕으로 한 줄로 요약 (예: "해열진통제로 열을 내리고 통증을 줄여줍니다")
+6. 처방전 왼쪽의 약품 목록에 있는 약품명만 추출하세요.
+7. 괄호 안에 성분명이 포함된 약품명 형식 (예: 파독심정(세프포독심))으로 된 것만 추출하세요.
+8. 제조사명, 병원명, 환자정보 등은 제외하세요.
 
-반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 절대 포함하지 마세요:
+반드시 아래 JSON 형식으로만 응답하세요. 마크다운 코드블록 없이 순수 JSON만 반환하세요:
 [
   {{
     "name": "약물명",
     "dosage": "1회 복용량",
     "frequency": "1일 복용 횟수",
-    "timing": "복용 시점"
+    "timing": "복용 시점",
+    "description": "약품 한 줄 설명"
   }}
 ]
 
@@ -72,21 +76,27 @@ async def parse_medications_with_gpt(extracted_texts: list[str]) -> list[OcrMedi
         model=settings.openai_chat_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
-        max_tokens=1000,
+        max_tokens=1500,
     )
 
     content = response.choices[0].message.content or "[]"
-    print("===== GPT 응답 =====")
-    print(content)
-    print("====================")
 
-    medications_data = json.loads(content)
+    # 코드블록 제거
+    clean_content = content.strip()
+    if clean_content.startswith("```"):
+        clean_content = clean_content.split("```")[1]
+        if clean_content.startswith("json"):
+            clean_content = clean_content[4:]
+    clean_content = clean_content.strip()
+
+    medications_data = json.loads(clean_content)
     return [
         OcrMedicationItem(
             name=med.get("name", ""),
             dosage=med.get("dosage", ""),
             frequency=med.get("frequency", ""),
             timing=med.get("timing", ""),
+            description=med.get("description", ""),
         )
         for med in medications_data
         if med.get("name")
@@ -121,10 +131,6 @@ async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[Ocr
         if extracted_texts:
             try:
                 parsed_medications = await parse_medications_with_gpt(extracted_texts)
-                print("===== GPT 파싱 결과 =====")
-                for med in parsed_medications:
-                    print(med)
-                print("=========================")
             except Exception as e:
                 print(f"GPT 파싱 실패: {e}")
                 import traceback
