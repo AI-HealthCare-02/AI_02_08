@@ -53,10 +53,10 @@ class UserRepository:
         return await self._model.get_or_none(email=email)
 
     async def exists_by_email(self, email: str) -> bool:
-        return await self._model.filter(email=email).exists()
+        return await self._model.filter(email=email, is_active=True).exists()
 
     async def exists_by_phone_number(self, phone_number: str) -> bool:
-        return await self._model.filter(phone_number=phone_number).exists()
+        return await self._model.filter(phone_number=phone_number, is_active=True).exists()
 
     async def update_last_login(self, user_id: int) -> None:
         await self._model.filter(id=user_id).update(last_login=datetime.now(config.TIMEZONE))
