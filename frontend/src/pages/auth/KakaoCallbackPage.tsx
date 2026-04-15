@@ -1,12 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import apiClient from '../../api/apiClient';
 
 const KakaoCallbackPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const code = searchParams.get('code');
 
     if (!code) {
@@ -19,7 +23,6 @@ const KakaoCallbackPage: React.FC = () => {
       try {
         const response = await apiClient.get(`/auth/kakao/callback?code=${code}`);
         const { access_token } = response.data;
-
         localStorage.setItem('accessToken', access_token);
         window.location.href = '/home';
       } catch (error) {
