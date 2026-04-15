@@ -6,6 +6,8 @@ config = Config()
 
 
 async def get_kakao_token(code: str) -> str:
+    print(f"KAKAO_CLIENT_ID: {config.KAKAO_CLIENT_ID}")
+    print(f"KAKAO_REDIRECT_URI: {config.KAKAO_REDIRECT_URI}")
     """
     카카오 인증 코드로 액세스 토큰 발급
     """
@@ -20,7 +22,10 @@ async def get_kakao_token(code: str) -> str:
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
-
+    print("===== 카카오 토큰 응답 =====")
+    print(response.status_code)
+    print(response.text)
+    print("===========================")
     if response.status_code != 200:
         raise Exception(f"카카오 토큰 발급 실패: {response.text}")
 
