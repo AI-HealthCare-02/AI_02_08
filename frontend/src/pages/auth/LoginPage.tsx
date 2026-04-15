@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './LoginPage.css';
@@ -10,6 +10,13 @@ const LoginPage: React.FC = () => {
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleShowPassword = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setShowPassword(true);
+    timerRef.current = setTimeout(() => setShowPassword(false), 1000);
+  }, []);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -138,7 +145,7 @@ const LoginPage: React.FC = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={handleShowPassword}
                 className="login-page__password-toggle"
                 disabled={isLoading}
               >
