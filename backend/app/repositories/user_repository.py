@@ -52,6 +52,25 @@ class UserRepository:
     async def get_user_by_email(self, email: str) -> User | None:
         return await self._model.get_or_none(email=email)
 
+    async def get_user_by_kakao_id(self, kakao_id: str) -> User | None:
+        return await self._model.get_or_none(kakao_id=kakao_id)
+
+    async def create_kakao_user(
+        self,
+        kakao_id: str,
+        name: str,
+        email: str | None = None,
+    ) -> User:
+        return await self._model.create(
+            kakao_id=kakao_id,
+            name=name,
+            email=email,
+            is_active=True,
+            is_verified=True,  # 카카오는 이메일 인증 불필요
+            agree_terms=True,
+            agree_privacy=True,
+        )
+
     async def exists_by_email(self, email: str) -> bool:
         return await self._model.filter(email=email, is_active=True).exists()
 

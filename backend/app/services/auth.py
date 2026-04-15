@@ -265,3 +265,34 @@ class AuthService:
             await user.save(update_fields=["deleted_at", "is_active"])
             # 모든 리프레시 토큰 무효화
             await self.refresh_token_repo.delete_by_user_id(user.id)
+
+    async def kakao_login(self, kakao_user_info: dict) -> User:
+        """
+        카카오 로그인/회원가입 처리
+        - kakao_id로 기존 유저 조회
+        - 없으면 자동 회원가입
+        - 있으면 바로 로그인
+        """
+        kakao_id = kakao_user_info["kakao_id"]
+        email = kakao_user_info.get("email")
+        name = kakao_user_info.get("name", "카카오유저")
+
+        # 카카오 ID로 기존 유저 조회
+        user = await self.user_repo.get_user_by_kakao_id(kakao_id)
+
+        if user:
+            # 기존 유저 - 바로 로그인
+            if not user.is_active:
+                raise HTTPException(
+                    status_code=status.HTTP_423_LOCKED,
+                    detail="비활성화된 계정입니다.",
+                )
+            return user
+
+        # 신규 유저 - 자동 회원가입
+        user = await self.user_repo.create_kakao_user(
+            kakao_id=kakao_id,
+            name=name,
+            email=email,
+        )
+        return user
