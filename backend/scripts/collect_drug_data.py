@@ -1,8 +1,9 @@
 import os
-import requests
-import pandas as pd
-from dotenv import load_dotenv
 import time
+
+import pandas as pd
+import requests
+from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv("EYAK_API_KEY")
@@ -10,17 +11,12 @@ BASE_URL = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrug
 
 
 def fetch_eyak_data(page_no=1, num_of_rows=100):
-    params = {
-        'serviceKey': API_KEY,
-        'pageNo': page_no,
-        'numOfRows': num_of_rows,
-        'type': 'json'
-    }
+    params = {"serviceKey": API_KEY, "pageNo": page_no, "numOfRows": num_of_rows, "type": "json"}
     try:
         response = requests.get(BASE_URL, params=params, timeout=15)
         if response.status_code == 200:
             data = response.json()
-            items = data.get('body', {}).get('items', [])
+            items = data.get("body", {}).get("items", [])
             return items if items else []
         return []
     except Exception as e:
