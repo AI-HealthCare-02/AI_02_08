@@ -227,7 +227,7 @@ const HomePage: React.FC = () => {
                       처방전 이미지를 업로드 하거나<br />
                       드래그 & 드롭하세요
                     </p>
-                    <p className="home-page__upload-formats">JPG, PNG, PDF 최대 10MB</p>
+                    <p className="home-page__upload-formats">JPG, PNG, PDF 최대 15MB</p>
                   </label>
                   <div className="home-page__camera-section">
                     <div className="home-page__divider"><span>또는</span></div>
