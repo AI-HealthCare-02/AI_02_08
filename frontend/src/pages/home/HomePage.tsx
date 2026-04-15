@@ -24,9 +24,29 @@ const HomePage: React.FC = () => {
   const displayName = user?.name || '사용자';
 
   // 실제 OCR API 호출
+  const MAX_FILE_SIZE = 15 * 1024 * 1024;
+  const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
+
+  const validateFile = (file: File): string | null => {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return 'JPG, PNG, PDF 형식만 업로드 가능합니다.';
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return '파일 크기는 15MB 이하만 가능합니다.';
+    }
+    return null;
+  };
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    const error = validateFile(file);
+    if (error) {
+      alert(error);
+      event.target.value = '';
+      return;
+    }
 
     setSelectedImage(file);
     setOcrStatus('uploading');
@@ -50,6 +70,12 @@ const HomePage: React.FC = () => {
 
   // 카메라 촬영 후 OCR 호출
   const handleCapturedImage = async (file: File) => {
+    const error = validateFile(file);
+    if (error) {
+      alert(error);
+      return;
+    }
+
     setSelectedImage(file);
     setOcrStatus('uploading');
 
@@ -228,6 +254,7 @@ const HomePage: React.FC = () => {
                       드래그 & 드롭하세요
                     </p>
                     <p className="home-page__upload-formats">JPG, PNG, PDF 최대 15MB</p>
+                    <p className="home-page__upload-notice">💡 텍스트 인식은 밝기가 중요해요. 밝은 곳에서 촬영해주세요!</p>
                   </label>
                   <div className="home-page__camera-section">
                     <div className="home-page__divider"><span>또는</span></div>
@@ -460,8 +487,17 @@ const HomePage: React.FC = () => {
               <div className="home-page__camera-controls">
                 <button onClick={closeCameraModal} className="home-page__modal-btn home-page__modal-btn--secondary">취소</button>
                 <button onClick={capturePhoto} className="home-page__camera-capture-btn">📸</button>
-                {/* 사진 선택 버튼 추가 */}
-                <label htmlFor="prescription-upload" className="home-page__modal-btn home-page__modal-btn--secondary" onClick={closeCameraModal}>
+                <input
+                  type="file"
+                  id="camera-file-select"
+                  accept="image/*,.pdf"
+                  onChange={(e) => {
+                    closeCameraModal();
+                    handleImageUpload(e);
+                  }}
+                  style={{ display: 'none' }}
+                />
+                <label htmlFor="camera-file-select" className="home-page__modal-btn home-page__modal-btn--secondary">
                   사진 선택
                 </label>
               </div>

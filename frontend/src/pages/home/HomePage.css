@@ -108,6 +108,13 @@
   color: #7f8c8d;
 }
 
+.home-page__upload-notice {
+  font-size: 0.85rem;
+  color: #B95C3B;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
 /* 이미지 미리보기 */
 .home-page__image-preview {
   position: relative;
