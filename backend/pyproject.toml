@@ -29,6 +29,9 @@ dependencies = [
     "tzdata>=2025.3",
     "aioboto3>=15.5.0",
     "orjson>=3.11.8",
+    "python-dotenv>=1.2.2",
+    "requests>=2.33.1",
+    "pandas>=3.0.2",
 ]
 
 [dependency-groups]
