@@ -3,7 +3,7 @@
 // 이루도담 | Branch: feature/common-components
 // ==============================================
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 
 // ── 타입 정의 ──────────────────────────────
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -25,6 +25,13 @@ const Input = ({
   ...props
 }: InputProps) => {
   const [showPassword, setShowPassword] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleShowPassword = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setShowPassword(true);
+    timerRef.current = setTimeout(() => setShowPassword(false), 1000);
+  }, []);
 
   const inputId = id || label?.replace(/\s+/g, '-').toLowerCase();
   const inputType = showPasswordToggle
@@ -56,8 +63,8 @@ const Input = ({
           <button
             type="button"
             className="input-toggle"
-            onClick={() => setShowPassword(!showPassword)}
-            aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보이기'}
+            onClick={handleShowPassword}
+            aria-label="비밀번호 잠깐 보기"
           >
             {showPassword ? '숨기기' : '보이기'}
           </button>
