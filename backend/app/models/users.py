@@ -10,12 +10,15 @@ class Gender(StrEnum):
 
 class User(models.Model):
     id = fields.BigIntField(primary_key=True, generated=True)
-    email = fields.CharField(max_length=255, unique=True, db_index=True)
-    hashed_password = fields.CharField(max_length=128)
+    email = fields.CharField(max_length=255, unique=True, db_index=True, null=True)  # 카카오는 이메일 없을 수 있음
+    hashed_password = fields.CharField(max_length=128, null=True)  # 카카오는 비밀번호 없음
     name = fields.CharField(max_length=20)
-    gender = fields.CharEnumField(enum_type=Gender)
-    birthday = fields.DateField()
-    phone_number = fields.CharField(max_length=13)
+    gender = fields.CharEnumField(enum_type=Gender, null=True)  # 카카오는 성별 정보 없음
+    birthday = fields.DateField(null=True)  # 카카오는 생년월일 없음
+    phone_number = fields.CharField(max_length=13, null=True)  # 카카오는 전화번호 없음
+
+    # 카카오 OAuth
+    kakao_id = fields.CharField(max_length=50, null=True, unique=True, db_index=True)
 
     is_active = fields.BooleanField(default=True)
     is_admin = fields.BooleanField(default=False)
@@ -28,7 +31,6 @@ class User(models.Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
-    # 소프트 딜리트를 위한 필드 (null=True여야 탈퇴 안 한 상태를 표현 가능)
     deleted_at = fields.DatetimeField(null=True, description="탈퇴 일시")
 
     class Meta:

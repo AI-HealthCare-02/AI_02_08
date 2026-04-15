@@ -55,6 +55,10 @@ class Config(BaseSettings):
     MAIL_SERVER: str = "smtp.gmail.com"
     MAIL_PORT: int = 587
 
+    # Kakao OAuth
+    KAKAO_CLIENT_ID: str = ""
+    KAKAO_REDIRECT_URI: str = "http://localhost:3000/auth/kakao/callback"
+
     @computed_field
     @property
     def openai_chat_model(self) -> str:
