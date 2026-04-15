@@ -181,11 +181,11 @@ const ForgotPasswordPage: React.FC = () => {
               <Button
                 type="button"
                 onClick={handleSendCode}
-                disabled={isLoading || codeSent || !formData.email}
+                disabled={isLoading || !formData.email}
                 variant="secondary"
                 size="sm"
               >
-                인증코드 발송
+                {codeSent ? '인증코드 재발송' : '인증코드 발송'}
               </Button>
             </div>
           </div>
