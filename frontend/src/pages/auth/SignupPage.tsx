@@ -195,8 +195,8 @@ const SignupPage: React.FC = () => {
       const verified = await verifyEmailCode(formData.email, formData.verificationCode);
       if (verified) {
         setEmailVerified(true);
-        alert('이메일 인증이 완료되었습니다!');
-        navigate('/home');
+        alert('이메일 인증이 완료되었습니다! 로그인해주세요.');
+        navigate('/login');
       } else {
         setErrors(prev => ({ ...prev, verificationCode: '잘못된 인증코드입니다.' }));
       }
