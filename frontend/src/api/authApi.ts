@@ -42,6 +42,13 @@ export const login = async (loginData: LoginData): Promise<LoginResponse> => {
   return response.data;
 };
 
+// 카카오 로그인 URL 생성
+export const getKakaoLoginUrl = (): string => {
+  const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
+  const REDIRECT_URI = 'http://localhost:3000/auth/kakao/callback';
+  return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+};
+
 // 로그아웃 - refresh_token은 쿠키로 자동 전송
 export const logout = async (): Promise<void> => {
   await apiClient.post('/auth/logout');

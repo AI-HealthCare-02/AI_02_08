@@ -54,10 +54,10 @@ class UserUpdateRequest(BaseModel):
 class UserInfoResponse(BaseSerializerModel):
     id: int
     name: str
-    email: str
-    phone_number: str
-    birthday: date
-    gender: Gender
+    email: str | None = None
+    phone_number: str | None = None
+    birthday: date | None = None
+    gender: Gender | None = None
     agree_terms: bool
     agree_privacy: bool
     created_at: datetime

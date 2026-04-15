@@ -168,7 +168,6 @@ const SignupPage: React.FC = () => {
     }
   };
 
-  // 인증코드 재발송
   const handleResendCode = async () => {
     setIsLoading(true);
     try {
@@ -183,7 +182,6 @@ const SignupPage: React.FC = () => {
     }
   };
 
-  // 인증코드 확인
   const handleVerifyCode = async () => {
     if (!formData.verificationCode) {
       setErrors(prev => ({ ...prev, verificationCode: '인증코드를 입력해주세요.' }));
@@ -205,6 +203,13 @@ const SignupPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleKakaoSignup = () => {
+    const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
+    const REDIRECT_URI = 'http://localhost:3000/auth/kakao/callback';
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
+    window.location.href = kakaoAuthUrl;
   };
 
   const formatTime = (seconds: number): string => {
@@ -282,31 +287,16 @@ const SignupPage: React.FC = () => {
             <PrivacyContent />
           </Modal>
 
-          {/* 회원가입 버튼 → 완료 후 인증코드 재발송 버튼으로 변경 */}
           {!signupCompleted ? (
-            <Button
-              type="submit"
-              disabled={isLoading || !isFormValid()}
-              isLoading={isLoading}
-              fullWidth
-              className="signup-page__submit"
-            >
+            <Button type="submit" disabled={isLoading || !isFormValid()} isLoading={isLoading} fullWidth className="signup-page__submit">
               회원가입
             </Button>
           ) : (
-            <Button
-              type="button"
-              onClick={handleResendCode}
-              disabled={isLoading || emailVerified}
-              variant="secondary"
-              fullWidth
-              className="signup-page__submit"
-            >
+            <Button type="button" onClick={handleResendCode} disabled={isLoading || emailVerified} variant="secondary" fullWidth className="signup-page__submit">
               인증코드 재발송
             </Button>
           )}
 
-          {/* 인증번호 - 회원가입 완료 후 활성화 */}
           {signupCompleted && (
             <div className="signup-page__field">
               <div className="signup-page__code-group">
@@ -333,6 +323,47 @@ const SignupPage: React.FC = () => {
             </div>
           )}
         </form>
+
+        {/* 구분선 */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          margin: '16px 0',
+          gap: '8px',
+        }}>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#ddd' }} />
+          <span style={{ color: '#999', fontSize: '13px' }}>또는</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#ddd' }} />
+        </div>
+
+        {/* 카카오 간편가입 버튼 */}
+        <button
+          type="button"
+          onClick={handleKakaoSignup}
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#FEE500',
+            color: '#000',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '15px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            marginBottom: '12px',
+          }}
+        >
+          <img
+            src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
+            alt="카카오"
+            style={{ width: '20px', height: '20px' }}
+          />
+          카카오 1초 회원가입
+        </button>
 
         <div className="signup-page__footer">
           <p>

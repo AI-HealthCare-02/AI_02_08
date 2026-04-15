@@ -17,6 +17,7 @@ const LoginPage: React.FC = () => {
     setShowPassword(true);
     timerRef.current = setTimeout(() => setShowPassword(false), 1000);
   }, []);
+
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,11 +25,7 @@ const LoginPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // 에러 제거
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -40,35 +37,29 @@ const LoginPage: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
-    
     if (!formData.email) {
       newErrors.email = '이메일을 입력해주세요.';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = '올바른 이메일 형식이 아닙니다.';
     }
-    
     if (!formData.password) {
       newErrors.password = '비밀번호를 입력해주세요.';
     }
-    
     return newErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
     setIsLoading(true);
-    
     try {
       const success = await login(formData.email, formData.password);
       if (success) {
-        navigate('/home'); // 로그인 성공 시 실제 홈페이지로 이동
+        window.location.href = '/home';
       } else {
         setErrors({ general: '이메일 또는 비밀번호를 확인해주세요.' });
       }
@@ -80,42 +71,36 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  // 카카오 로그인
+  const handleKakaoLogin = () => {
+    const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
+    const REDIRECT_URI = 'http://localhost:3000/auth/kakao/callback';
+    const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
+    window.location.href = kakaoAuthUrl;
+  };
+
   return (
     <div className="login-page">
-      {/* 배경 이미지 */}
-      <div 
+      <div
         className="login-page__background"
         style={{ backgroundImage: `url(${bgLandingImage})` }}
       >
         <div className="login-page__background-overlay" />
       </div>
-      
-      {/* 로그인 카드 */}
+
       <div className="login-page__card">
-        {/* 카드 상단 라인 */}
         <div className="login-page__card-line" />
-        
-        {/* 로고 영역 */}
+
         <div className="login-page__header">
-          <img 
-            src="/logo.png" 
-            alt="이루도담" 
-            className="login-page__logo"
-          />
-          <h1 className="login-page__title">
-            다시 만나서 반가워요 🌿
-          </h1>
+          <img src="/logo.png" alt="이루도담" className="login-page__logo" />
+          <h1 className="login-page__title">다시 만나서 반가워요 🌿</h1>
         </div>
-        
-        {/* 로그인 폼 */}
+
         <form onSubmit={handleSubmit} className="login-page__form">
           {errors.general && (
-            <div className="login-page__error-general">
-              {errors.general}
-            </div>
+            <div className="login-page__error-general">{errors.general}</div>
           )}
-          
-          {/* 이메일 필드 */}
+
           <div className="login-page__field">
             <input
               type="email"
@@ -126,12 +111,9 @@ const LoginPage: React.FC = () => {
               className={`login-page__input ${errors.email ? 'login-page__input--error' : ''}`}
               disabled={isLoading}
             />
-            {errors.email && (
-              <span className="login-page__error">{errors.email}</span>
-            )}
+            {errors.email && <span className="login-page__error">{errors.email}</span>}
           </div>
-          
-          {/* 비밀번호 필드 */}
+
           <div className="login-page__field">
             <div className="login-page__password-wrapper">
               <input
@@ -152,28 +134,60 @@ const LoginPage: React.FC = () => {
                 {showPassword ? '숨기기' : '보기'}
               </button>
             </div>
-            {errors.password && (
-              <span className="login-page__error">{errors.password}</span>
-            )}
+            {errors.password && <span className="login-page__error">{errors.password}</span>}
           </div>
-          
-          {/* 로그인 버튼 */}
-          <button 
-            type="submit" 
-            className="login-page__submit"
-            disabled={isLoading}
-          >
+
+          <button type="submit" className="login-page__submit" disabled={isLoading}>
             {isLoading ? '로그인 중...' : '로그인'}
           </button>
         </form>
-        
-        {/* 하단 링크 */}
+
+        {/* 구분선 */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          margin: '16px 0',
+          gap: '8px',
+        }}>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#ddd' }} />
+          <span style={{ color: '#999', fontSize: '13px' }}>또는</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#ddd' }} />
+        </div>
+
+        {/* 카카오 로그인 버튼 */}
+        <button
+          type="button"
+          onClick={handleKakaoLogin}
+          style={{
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#FEE500',
+            color: '#000',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '15px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+          }}
+        >
+          <img
+            src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
+            alt="카카오"
+            style={{ width: '20px', height: '20px' }}
+          />
+          카카오로 로그인
+        </button>
+
         <div className="login-page__footer">
           <Link to="/forgot-password" className="login-page__link">
             비밀번호를 잊으셨나요?
           </Link>
           <p className="login-page__signup-prompt">
-            아직 회원이 아니신가요? 
+            아직 회원이 아니신가요?
             <Link to="/signup" className="login-page__link login-page__link--primary">
               회원가입
             </Link>

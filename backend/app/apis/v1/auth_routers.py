@@ -21,6 +21,7 @@ from app.dtos.auth import (
 from app.models.users import User
 from app.services.auth import AuthService
 from app.services.jwt import JwtService
+from app.services.kakao_auth import get_kakao_token, get_kakao_user_info
 
 config = Config()
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -174,3 +175,40 @@ async def change_password(
         content={"detail": "비밀번호가 변경되었습니다."},
         status_code=status.HTTP_200_OK,
     )
+
+
+@auth_router.get("/kakao/callback", status_code=status.HTTP_200_OK)
+async def kakao_callback(
+    code: Annotated[str, Query(description="카카오 인증 코드")],
+    auth_service: Annotated[AuthService, Depends(AuthService)],
+) -> Response:
+    """
+    카카오 로그인 콜백
+    1. 카카오 인증 코드로 액세스 토큰 발급
+    2. 액세스 토큰으로 유저 정보 조회
+    3. DB에 없으면 자동 회원가입, 있으면 로그인
+    4. JWT 발급 후 프론트로 리다이렉트
+    """
+    try:
+        kakao_access_token = await get_kakao_token(code)
+        kakao_user_info = await get_kakao_user_info(kakao_access_token)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"카카오 로그인 실패: {str(e)}") from e
+
+    user = await auth_service.kakao_login(kakao_user_info)
+    tokens = await auth_service.login(user)
+
+    resp = Response(
+        content=json.dumps(LoginResponse(access_token=str(tokens["access_token"])).model_dump()),
+        media_type="application/json",
+        status_code=status.HTTP_200_OK,
+    )
+    resp.set_cookie(
+        key="refresh_token",
+        value=str(tokens["refresh_token"]),
+        httponly=True,
+        secure=True if config.ENV == Env.PROD else False,
+        domain=config.COOKIE_DOMAIN or None,
+        expires=datetime.fromtimestamp(tokens["refresh_token"].payload["exp"], tz=UTC),
+    )
+    return resp

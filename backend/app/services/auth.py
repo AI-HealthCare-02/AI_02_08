@@ -265,3 +265,41 @@ class AuthService:
             await user.save(update_fields=["deleted_at", "is_active"])
             # 모든 리프레시 토큰 무효화
             await self.refresh_token_repo.delete_by_user_id(user.id)
+
+    async def kakao_login(self, kakao_user_info: dict) -> User:
+        kakao_id = kakao_user_info["kakao_id"]
+        email = kakao_user_info.get("email")
+        name = kakao_user_info.get("name", "카카오유저")
+
+        user = await self.user_repo.get_user_by_kakao_id(kakao_id)
+
+        if user:
+            if not user.is_active:
+                # 탈퇴한 유저 - 재가입 처리 (새 유저처럼)
+                user.is_active = True
+                user.deleted_at = None
+                user.name = name
+                user.email = email
+                user.is_verified = True
+                user.agree_terms = True
+                user.agree_privacy = True
+                await user.save(
+                    update_fields=[
+                        "is_active",
+                        "deleted_at",
+                        "name",
+                        "email",
+                        "is_verified",
+                        "agree_terms",
+                        "agree_privacy",
+                    ]
+                )
+                return user
+            return user
+
+        user = await self.user_repo.create_kakao_user(
+            kakao_id=kakao_id,
+            name=name,
+            email=email,
+        )
+        return user
