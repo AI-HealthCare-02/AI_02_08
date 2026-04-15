@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { sendVerificationCode, verifyEmailCode, signup } from '../../api/authApi';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import Modal from '../../components/common/Modal';
+import TermsContent from './TermsContent';
+import PrivacyContent from './PrivacyContent';
 import './SignupPage.css';
 import bgLandingImage from '../../assets/images/bg-landing.png';
 
@@ -51,6 +54,8 @@ const SignupPage: React.FC = () => {
   const [emailVerified, setEmailVerified] = useState(false);
   const [signupCompleted, setSignupCompleted] = useState(false);
   const [timer, setTimer] = useState(0);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
   const startTimer = () => {
     setTimer(300);
@@ -245,21 +250,37 @@ const SignupPage: React.FC = () => {
           <Input label="생년월일 (만 14세 이상)" type="date" value={formData.birthDate} onChange={handleInputChange('birthDate')} disabled={signupCompleted} error={errors.birthDate} />
           <Input label="전화번호" type="tel" value={formData.phoneNumber} onChange={handleInputChange('phoneNumber')} placeholder="010XXXXXXXX 또는 010-XXXX-XXXX" disabled={signupCompleted} error={errors.phoneNumber} />
 
-          <div className="signup-page__field">
-            <label className="signup-page__checkbox">
-              <input type="checkbox" checked={formData.agreeTerms} onChange={handleInputChange('agreeTerms')} disabled={signupCompleted} />
-              이용약관에 동의합니다 (필수)
-            </label>
-            {errors.agreeTerms && <p className="signup-page__error">{errors.agreeTerms}</p>}
+          <div className="signup-page__terms-section">
+            <div className="signup-page__field">
+              <div className="signup-page__terms-row">
+                <label className="signup-page__checkbox">
+                  <input type="checkbox" checked={formData.agreeTerms} onChange={handleInputChange('agreeTerms')} disabled={signupCompleted} />
+                  이용약관에 동의합니다 (필수)
+                </label>
+                <button type="button" className="signup-page__terms-view" onClick={() => setTermsModalOpen(true)}>보기</button>
+              </div>
+              {errors.agreeTerms && <p className="signup-page__error">{errors.agreeTerms}</p>}
+            </div>
+
+            <div className="signup-page__field">
+              <div className="signup-page__terms-row">
+                <label className="signup-page__checkbox">
+                  <input type="checkbox" checked={formData.agreePrivacy} onChange={handleInputChange('agreePrivacy')} disabled={signupCompleted} />
+                  개인정보 처리방침에 동의합니다 (필수)
+                </label>
+                <button type="button" className="signup-page__terms-view" onClick={() => setPrivacyModalOpen(true)}>보기</button>
+              </div>
+              {errors.agreePrivacy && <p className="signup-page__error">{errors.agreePrivacy}</p>}
+            </div>
           </div>
 
-          <div className="signup-page__field">
-            <label className="signup-page__checkbox">
-              <input type="checkbox" checked={formData.agreePrivacy} onChange={handleInputChange('agreePrivacy')} disabled={signupCompleted} />
-              개인정보 처리방침에 동의합니다 (필수)
-            </label>
-            {errors.agreePrivacy && <p className="signup-page__error">{errors.agreePrivacy}</p>}
-          </div>
+          <Modal isOpen={termsModalOpen} onClose={() => setTermsModalOpen(false)} title="이용약관" size="lg">
+            <TermsContent />
+          </Modal>
+
+          <Modal isOpen={privacyModalOpen} onClose={() => setPrivacyModalOpen(false)} title="개인정보 처리방침" size="lg">
+            <PrivacyContent />
+          </Modal>
 
           {/* 회원가입 버튼 → 완료 후 인증코드 재발송 버튼으로 변경 */}
           {!signupCompleted ? (
