@@ -247,6 +247,32 @@
   color: var(--color-text-secondary, #9ca3af);
 }
 
+.signup-page__error {
+  /* existing error style */
+}
+
+.signup-page__verification-notice {
+  text-align: center;
+  padding: var(--spacing-4);
+  background-color: #f0f7ff;
+  border: 1px solid #bdd7f1;
+  border-radius: var(--radius-md, 8px);
+}
+
+.signup-page__verification-notice p:first-child {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-2);
+}
+
+.signup-page__verification-notice p:last-child {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0;
+  line-height: 1.6;
+}
+
 /* 반응형 - 모바일 */
 @media (max-width: 768px) {
   .signup-page__container {
