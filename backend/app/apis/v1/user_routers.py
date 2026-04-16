@@ -19,9 +19,9 @@ user_router = APIRouter(prefix="/users", tags=["users"])
     status_code=status.HTTP_200_OK,
     summary="내 정보 조회",
     description="""
-현재 로그인한 사용자의 정보를 조회합니다.
+현재 로그인한 사용자의 정보를 조회합니다. (마이페이지 진입 시 호출)
 
-- **Authorization 헤더에 Access Token이 필요합니다.**
+- 로그인이 필요한 API입니다.
 - 카카오 로그인 유저의 경우 이메일, 전화번호, 생년월일, 성별이 없을 수 있습니다.
     """,
     responses={
