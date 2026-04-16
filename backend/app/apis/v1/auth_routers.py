@@ -27,6 +27,19 @@ config = Config()
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def set_refresh_cookie(response: Response, refresh_token) -> None:
+    """Refresh Token을 HttpOnly 쿠키로 설정하는 공통 함수"""
+    response.set_cookie(
+        key="refresh_token",
+        value=str(refresh_token),
+        httponly=True,
+        secure=config.ENV == Env.PROD,
+        domain=config.COOKIE_DOMAIN or None,
+        expires=datetime.fromtimestamp(refresh_token.payload["exp"], tz=UTC),
+        samesite="lax",
+    )
+
+
 @auth_router.post(
     "/signup",
     status_code=status.HTTP_201_CREATED,
@@ -62,8 +75,7 @@ async def signup(
     description="""
 회원가입 시 발송된 인증 코드로 이메일을 인증합니다.
 
-- 인증 코드는 **24시간** 동안 유효합니다.
-- 인증 코드 입력은 발송 후 **5분 이내**에 완료해야 합니다.
+- 인증 코드는 발송 후 **24시간** 동안 유효합니다.
 - 인증 완료 후 로그인이 가능합니다.
     """,
     responses={
@@ -169,14 +181,7 @@ async def login(
         media_type="application/json",
         status_code=status.HTTP_200_OK,
     )
-    resp.set_cookie(
-        key="refresh_token",
-        value=str(tokens["refresh_token"]),
-        httponly=True,
-        secure=True if config.ENV == Env.PROD else False,
-        domain=config.COOKIE_DOMAIN or None,
-        expires=datetime.fromtimestamp(tokens["refresh_token"].payload["exp"], tz=UTC),
-    )
+    set_refresh_cookie(resp, tokens["refresh_token"])
     return resp
 
 
@@ -243,9 +248,10 @@ async def logout(
     status_code=status.HTTP_200_OK,
     summary="비밀번호 재설정 이메일 발송",
     description="""
-비밀번호를 잊어버린 사용자가 이메일 인증을 통해 새로운 비밀번호를 설정하는 기능입니다.
+비밀번호를 잊어버린 경우 이메일로 인증 코드를 발송합니다.
 
-- 인증 코드는 **5분** 동안 유효합니다.
+- 발송된 인증 코드는 **5분** 동안 유효합니다.
+- 인증 코드 확인은 `/auth/password/reset` API에서 진행합니다.
 - 존재하지 않는 이메일로 요청해도 보안상 동일하게 성공 응답을 반환합니다.
     """,
     responses={
@@ -268,10 +274,13 @@ async def password_reset_request(
     status_code=status.HTTP_200_OK,
     summary="비밀번호 재설정",
     description="""
-인증 코드로 비밀번호를 재설정합니다.
+비밀번호를 잊어버린 사용자가 이메일 인증을 통해 비밀번호를 재설정하는 첫 번째 단계입니다.
+(로그인 상태에서 비밀번호를 변경하려면 `/auth/password/change` API를 사용하세요.)
 
-- 인증 코드는 5분 이내에 발급된 코드여야 합니다.
-- 재설정 완료 후 기존 모든 Refresh Token이 무효화됩니다.
+- 이메일 주소를 입력하면 **6자리 인증 코드**를 발송합니다.
+- 발송된 인증 코드는 **5분** 동안 유효합니다.
+- 인증 코드 확인 및 새 비밀번호 설정은 `/auth/password/reset` API에서 진행합니다.
+- 존재하지 않는 이메일로 요청해도 보안상 동일하게 성공 응답을 반환합니다.
     """,
     responses={
         200: {"description": "비밀번호 재설정 완료"},
@@ -300,6 +309,7 @@ async def password_reset(
     summary="비밀번호 변경",
     description="""
 로그인 상태에서 현재 비밀번호를 확인 후 새 비밀번호로 변경합니다.
+(비밀번호를 잊어버린 경우 `/auth/password/reset-request` API를 사용하세요.)
 
 - 현재 비밀번호와 동일한 비밀번호로는 변경이 불가합니다.
 - 변경 완료 후 기존 모든 Refresh Token이 무효화됩니다.
@@ -362,12 +372,5 @@ async def kakao_callback(
         media_type="application/json",
         status_code=status.HTTP_200_OK,
     )
-    resp.set_cookie(
-        key="refresh_token",
-        value=str(tokens["refresh_token"]),
-        httponly=True,
-        secure=True if config.ENV == Env.PROD else False,
-        domain=config.COOKIE_DOMAIN or None,
-        expires=datetime.fromtimestamp(tokens["refresh_token"].payload["exp"], tz=UTC),
-    )
+    set_refresh_cookie(resp, tokens["refresh_token"])
     return resp
