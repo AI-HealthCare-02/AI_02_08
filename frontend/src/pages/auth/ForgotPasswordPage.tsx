@@ -35,12 +35,18 @@ const ForgotPasswordPage: React.FC = () => {
   const [codeSent, setCodeSent] = useState(false);
   const [timer, setTimer] = useState(0);
 
+  const [expired, setExpired] = useState(false);
+
   const startTimer = () => {
     setTimer(300); // 5분
+    setExpired(false);
+    setFormData(prev => ({ ...prev, verificationCode: '', newPassword: '', newPasswordConfirm: '' }));
+    setErrors({});
     const interval = setInterval(() => {
       setTimer(prev => {
         if (prev <= 1) {
           clearInterval(interval);
+          setExpired(true);
           return 0;
         }
         return prev - 1;
@@ -193,15 +199,21 @@ const ForgotPasswordPage: React.FC = () => {
           {/* 인증코드 + 새 비밀번호 - 코드 발송 후 표시 */}
           {codeSent && (
             <>
+              {expired && (
+                <p className="forgot-password-page__expired-message">
+                  인증 시간이 만료되었습니다. 인증 코드를 다시 요청해주세요.
+                </p>
+              )}
+
               <div className="forgot-password-page__field">
                 <Input
-                  label={`인증코드${timer > 0 ? ` (${formatTime(timer)})` : ''}`}
+                  label={`인증코드${timer > 0 ? ` (${formatTime(timer)})` : ' (만료됨)'}`}
                   type="text"
                   value={formData.verificationCode}
                   onChange={handleInputChange('verificationCode')}
                   placeholder="인증코드를 입력하세요"
                   maxLength={6}
-                  disabled={timer === 0}
+                  disabled={expired}
                   error={errors.verificationCode}
                 />
               </div>
@@ -214,6 +226,7 @@ const ForgotPasswordPage: React.FC = () => {
                 placeholder="영문 대소문자, 숫자, 특수문자 포함 8자 이상"
                 error={errors.newPassword}
                 showPasswordToggle
+                disabled={expired}
               />
 
               <Input
@@ -224,12 +237,13 @@ const ForgotPasswordPage: React.FC = () => {
                 placeholder="새 비밀번호를 다시 입력하세요"
                 error={errors.newPasswordConfirm}
                 showPasswordToggle
+                disabled={expired}
               />
 
               <Button
                 type="button"
                 onClick={handleResetPassword}
-                disabled={isLoading || timer === 0}
+                disabled={isLoading || expired}
                 isLoading={isLoading}
                 fullWidth
                 className="forgot-password-page__submit"
