@@ -49,21 +49,21 @@ async def analyze_prescription(
     allowed_types = ["image/jpeg", "image/png", "application/pdf", "image/jpg"]
     if image.content_type not in allowed_types:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="지원하지 않는 파일 형식입니다. JPG, PNG, PDF 파일만 업로드 가능합니다."
         )
-    
-    # 사이즈 체크 (15MB 제한) 
+
+    # 사이즈 체크 (15MB 제한)
     # image.size 속성은 FastAPI 최신 버전에 존재하나 없는 경우를 대비해 위치를 0으로 되돌립니다.
     file_bytes = await image.read()
     if len(file_bytes) > 15 * 1024 * 1024:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="파일 용량이 15MB를 초과했습니다."
         )
     # 이미 다 읽어버렸으므로 S3 업로드 시 이슈가 없게 포인터를 원복
     await image.seek(0)
-    
+
     # 1) S3에 이미지 업로드 및 URL 확보
     try:
         s3_url = await upload_image_to_s3(image)

@@ -61,7 +61,7 @@ async def seed() -> None:
     # 2) CSV 파일 목록 찾기
     csv_pattern = os.path.join(os.path.abspath(DATA_DIR), "*.csv")
     csv_files = glob.glob(csv_pattern)
-    
+
     if not csv_files:
         print(f"❌ CSV 파일을 찾을 수 없습니다: {csv_pattern}")
         await Tortoise.close_connections()
@@ -78,7 +78,7 @@ async def seed() -> None:
     # 4) 각 CSV 순회하며 읽기
     total_count = 0
     duplicate_count = 0
-    
+
     # 중복 방지를 위한 in-memory Set (표준화 기준으로 약품명 + 제조사를 결합)
     seen_drugs = set()
 
@@ -88,14 +88,14 @@ async def seed() -> None:
         try:
             with open(csv_path, encoding="utf-8-sig") as f:
                 reader = csv.DictReader(f)
-                
+
                 # BOM(Byte Order Mark) 등이 섞여있을 때를 대비해 키들의 앞뒤 공백을 제거한 딕셔너리로 만듦
                 buffer: list[DrugInfo] = []
                 file_count = 0
 
                 for raw_row in reader:
                     row = {k.strip(): v for k, v in raw_row.items() if k is not None}
-                    
+
                     # CSV 헤더 → 모델 필드 변환
                     model_data: dict = {}
                     for model_field, possible_csv_cols in COLUMN_MAP.items():
@@ -110,18 +110,18 @@ async def seed() -> None:
                     # 약품명이 없으면 무효 데이터이므로 스킵
                     name = model_data.get("name")
                     manufacturer = model_data.get("manufacturer")
-                    
+
                     if not name:
                         continue
 
                     # 중복 체크: (약품명, 제조사) 쌍이 이미 등록되었는지 확인
                     # 데이터 일관성을 위해 대소문자나 공백으로 인한 엇갈림을 최소화
                     unique_key = (name.replace(" ", "").lower(), manufacturer.replace(" ", "").lower() if manufacturer else "")
-                    
+
                     if unique_key in seen_drugs:
                         duplicate_count += 1
                         continue
-                        
+
                     seen_drugs.add(unique_key)
                     buffer.append(DrugInfo(**model_data))
 
@@ -136,7 +136,7 @@ async def seed() -> None:
                 if buffer:
                     await DrugInfo.bulk_create(buffer)
                     file_count += len(buffer)
-                
+
                 total_count += file_count
                 print(f"  👉 {os.path.basename(csv_path)} 에서 총 {file_count}건 적재 완료.\n")
 

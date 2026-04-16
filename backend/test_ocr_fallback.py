@@ -1,7 +1,7 @@
 import asyncio
 import json
-import sys
 import os
+import sys
 
 # 백엔드 루트를 시스템 패스에 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -12,13 +12,14 @@ from app.core.config import settings
 from app.models.drugs import DrugInfo
 from app.services.openai_service import batch_analyze_unmatched_drugs
 
+
 async def test_fallback_flow():
     # 1. ORM 초기화
     await Tortoise.init(
         db_url=f"mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:3306/{settings.DB_NAME}",
         modules={'models': ['app.models.drugs']}
     )
-    
+
     # 2. 더미 파싱결과 (OCR & 1차 정규화 통과했다고 치고)
     # 타이레놀8시간이알서방정 -> DB에 존재할 확률 높음 (Exact Match 기대)
     # 파득심 -> '파독심'의 오타, LIKE 매칭 안될수도 있음
@@ -31,19 +32,19 @@ async def test_fallback_flow():
     ]
     for rw in raw_meds:
         print(rw)
-        
+
     print("\n=== [2] DB 검색 (Exact/LIKE) ===")
     matched_meds = []
     unmatched_meds = []
     for med in raw_meds:
         name = med.get("name", "").strip()
-        
+
         # Exact Match
         drug = await DrugInfo.get_or_none(name=name)
         if not drug:
             # LIKE Match
             drug = await DrugInfo.filter(name__icontains=name).first()
-            
+
         if drug:
             med["description"] = drug.efficacy or "설명 없음"
             matched_meds.append(med)
@@ -59,7 +60,7 @@ async def test_fallback_flow():
             med_name = med.get("name")
             med["description"] = fallback_desc_map.get(med_name, "일치하는 약품 정보를 찾을 수 없습니다.")
             print(f"🤖 GPT 병합 결과: {med_name} -> {med['description']}")
-            
+
     print("\n=== [4] 최종 200 부분 응답용 병합 결과 (Fallback 적용 완료) ===")
     final_meds_data = matched_meds + unmatched_meds
     print(json.dumps(final_meds_data, ensure_ascii=False, indent=2))

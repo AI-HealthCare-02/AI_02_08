@@ -43,6 +43,7 @@ async def upload_image_to_s3(file: UploadFile) -> str:
 from app.models.drugs import DrugInfo
 from app.services.openai_service import batch_analyze_unmatched_drugs
 
+
 async def extract_medication_structure(extracted_texts: list[str]) -> list[dict]:
     text_joined = "\n".join(extracted_texts)
 
