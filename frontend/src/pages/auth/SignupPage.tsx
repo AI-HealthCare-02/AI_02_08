@@ -53,22 +53,9 @@ const SignupPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [signupCompleted, setSignupCompleted] = useState(false);
-  const [timer, setTimer] = useState(0);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [privacyModalOpen, setPrivacyModalOpen] = useState(false);
 
-  const startTimer = () => {
-    setTimer(300);
-    const interval = setInterval(() => {
-      setTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
 
   const handleInputChange = (field: keyof FormData) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -159,7 +146,6 @@ const SignupPage: React.FC = () => {
         agreePrivacy: formData.agreePrivacy,
       });
       setSignupCompleted(true);
-      startTimer();
     } catch (error: any) {
       const message = error.response?.data?.detail || '회원가입에 실패했습니다.';
       alert(message);
@@ -172,8 +158,6 @@ const SignupPage: React.FC = () => {
     setIsLoading(true);
     try {
       await sendVerificationCode(formData.email);
-      setTimer(0);
-      startTimer();
       alert('인증코드가 재발송되었습니다. 이메일을 확인해주세요.');
     } catch (error) {
       alert('인증코드 재발송에 실패했습니다.');
@@ -212,11 +196,6 @@ const SignupPage: React.FC = () => {
     window.location.href = kakaoAuthUrl;
   };
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   return (
     <div className="signup-page">
@@ -298,10 +277,17 @@ const SignupPage: React.FC = () => {
           )}
 
           {signupCompleted && (
+            <div className="signup-page__verification-notice">
+              <p>이메일을 확인해주세요 📧</p>
+              <p>입력하신 이메일로 인증 코드를 발송했습니다.<br />인증 코드는 24시간 내에 입력해주세요.</p>
+            </div>
+          )}
+
+          {signupCompleted && (
             <div className="signup-page__field">
               <div className="signup-page__code-group">
                 <Input
-                  label={`인증번호${timer > 0 ? ` (${formatTime(timer)})` : ' (만료됨)'}`}
+                  label="인증번호"
                   type="text"
                   value={formData.verificationCode}
                   onChange={handleInputChange('verificationCode')}
@@ -313,7 +299,7 @@ const SignupPage: React.FC = () => {
                 <Button
                   type="button"
                   onClick={handleVerifyCode}
-                  disabled={isLoading || emailVerified || !formData.verificationCode || timer === 0}
+                  disabled={isLoading || emailVerified || !formData.verificationCode}
                   variant="secondary"
                   size="sm"
                 >
