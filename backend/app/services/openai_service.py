@@ -157,3 +157,44 @@ async def get_medication_context_for_chatbot(user_id: int) -> str:
         context_lines.append(line)
 
     return "\n".join(context_lines)
+
+
+async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str, str]:
+    """
+    여러 약품 정보를 한 번에 묶어서 GPT에 질문하여 설명을 보완합니다.
+    환각 방지를 위한 System Prompt가 포함됩니다.
+    """
+    system_prompt = """
+    당신은 처방전 분석을 돕는 의료 데이터 어시스턴트입니다.
+    사용자가 처방전에서 추출한 약품 정보를 제공할 것입니다.
+    다음 규칙을 반드시 지켜주세요:
+    1. 각 약품명에 대한 간략한 설명(효능/용도 위주, 1문장)을 작성하세요.
+    2. [할루시네이션 방지 필수]: 만약 알 수 없는 약품명(또는 실제 존재하지 않거나 오타가 심한 약품)이라면 절대로 효능이나 부작용을 지어내지 마세요.
+    3. 알 수 없는 약품의 경우 설명은 "일치하는 약품 정보를 찾을 수 없습니다." 로 고정하세요. 복용 스케줄 연동을 위해 임시 저장됩니다.
+    4. 응답은 반드시 약품명을 키(key)로, 설명을 값(value)으로 하는 순수 JSON 객체(dict) 포맷만 반환하세요.
+    예시: {"타이레놀정500mg": "해열진통제로 열을 내리고 통증을 완화합니다.", "이상한약123": "일치하는 약품 정보를 찾을 수 없습니다."}
+    """
+
+    user_message = f"다음 약품들에 대한 설명을 JSON으로 반환해주세요: {json.dumps(unmatched_meds, ensure_ascii=False)}"
+
+    try:
+        response = await client.chat.completions.create(
+            model=settings.openai_chat_model,
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}],
+            temperature=0,
+            max_tokens=1000,
+        )
+
+        content = response.choices[0].message.content or "{}"
+        clean_content = content.strip()
+        if clean_content.startswith("```"):
+            clean_content = clean_content.split("```")[1]
+            if clean_content.startswith("json"):
+                clean_content = clean_content[4:]
+        clean_content = clean_content.strip()
+
+        return json.loads(clean_content)
+    except Exception as e:
+        print(f"GPT Batch Fallback 에러: {e}")
+        # 오류 발생 시 모든 빈 약품에 대해 동일한 폴백 메시지 반환
+        return {med["name"]: "서비스 지연으로 약품 정보를 불러오지 못했습니다." for med in unmatched_meds if "name" in med}

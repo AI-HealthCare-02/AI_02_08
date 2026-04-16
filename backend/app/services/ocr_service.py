@@ -40,7 +40,10 @@ async def upload_image_to_s3(file: UploadFile) -> str:
     return url
 
 
-async def parse_medications_with_gpt(extracted_texts: list[str]) -> list[OcrMedicationItem]:
+from app.models.drugs import DrugInfo
+from app.services.openai_service import batch_analyze_unmatched_drugs
+
+async def extract_medication_structure(extracted_texts: list[str]) -> list[dict]:
     text_joined = "\n".join(extracted_texts)
 
     prompt = f"""
@@ -48,14 +51,12 @@ async def parse_medications_with_gpt(extracted_texts: list[str]) -> list[OcrMedi
 이 텍스트에서 약물 정보를 추출하여 JSON 배열로 반환해주세요.
 
 추출 규칙:
-1. 약물명은 정제, 캡슐, 액, 정 등이 포함된 실제 약품명을 추출하세요.
+1. 약물명은 정제, 캡슐, 액, 정 등이 포함된 실제 약품명을 추출하세요. (예: 타이레놀8시간이알서방정)
 2. dosage는 1회 복용량 (예: "1정", "1포", "5ml")
 3. frequency는 1일 복용 횟수 (예: "1일 3회", "1일 2회")
 4. timing은 복용 시점 (예: "식후 30분", "식전", "취침 전")
-5. description은 처방전에 나와있는 약품 설명을 바탕으로 한 줄로 요약 (예: "해열진통제로 열을 내리고 통증을 줄여줍니다")
-6. 처방전 왼쪽의 약품 목록에 있는 약품명만 추출하세요.
-7. 괄호 안에 성분명이 포함된 약품명 형식 (예: 파독심정(세프포독심))으로 된 것만 추출하세요.
-8. 제조사명, 병원명, 환자정보 등은 제외하세요.
+5. 처방전 왼쪽의 약품 목록에 있는 약품명만 추출하세요. 괄호 안에 성분명이 포함된 약품명 형식을 참고하세요.
+6. 제조사명, 병원명, 환자정보 등 불필요한 정보는 제외하세요.
 
 반드시 아래 JSON 형식으로만 응답하세요. 마크다운 코드블록 없이 순수 JSON만 반환하세요:
 [
@@ -63,8 +64,7 @@ async def parse_medications_with_gpt(extracted_texts: list[str]) -> list[OcrMedi
     "name": "약물명",
     "dosage": "1회 복용량",
     "frequency": "1일 복용 횟수",
-    "timing": "복용 시점",
-    "description": "약품 한 줄 설명"
+    "timing": "복용 시점"
   }}
 ]
 
@@ -81,7 +81,6 @@ async def parse_medications_with_gpt(extracted_texts: list[str]) -> list[OcrMedi
 
     content = response.choices[0].message.content or "[]"
 
-    # 코드블록 제거
     clean_content = content.strip()
     if clean_content.startswith("```"):
         clean_content = clean_content.split("```")[1]
@@ -90,24 +89,12 @@ async def parse_medications_with_gpt(extracted_texts: list[str]) -> list[OcrMedi
     clean_content = clean_content.strip()
 
     medications_data = json.loads(clean_content)
-    return [
-        OcrMedicationItem(
-            name=med.get("name", ""),
-            dosage=med.get("dosage", ""),
-            frequency=med.get("frequency", ""),
-            timing=med.get("timing", ""),
-            description=med.get("description", ""),
-        )
-        for med in medications_data
-        if med.get("name")
-    ]
+    return [med for med in medications_data if med.get("name")]
 
 
 async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[OcrMedicationItem]]:
     headers = {"X-OCR-SECRET": settings.CLOVA_OCR_SECRET, "Content-Type": "application/json"}
-
     timestamp = int(round(time.time() * 1000))
-
     payload = {
         "version": "V2",
         "requestId": str(uuid.uuid4()),
@@ -129,13 +116,56 @@ async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[Ocr
         extracted_texts = [f.get("inferText", "") for f in fields]
 
         if extracted_texts:
-            try:
-                parsed_medications = await parse_medications_with_gpt(extracted_texts)
-            except Exception as e:
-                print(f"GPT 파싱 실패: {e}")
-                import traceback
+            # 1. 1차 추출 (약품명 등 구조 추출)
+            raw_meds = await extract_medication_structure(extracted_texts)
 
-                traceback.print_exc()
-                parsed_medications = []
+            if not raw_meds:
+                return data, []
+
+            # 2. DB 매칭 및 미매칭 분리
+            matched_meds = []
+            unmatched_meds = []
+
+            for med in raw_meds:
+                name = med.get("name", "").strip()
+                if not name:
+                    continue
+
+                # Exact Match
+                drug = await DrugInfo.get_or_none(name=name)
+                if not drug:
+                    # LIKE Match (icontains)
+                    drug = await DrugInfo.filter(name__icontains=name).first()
+
+                if drug:
+                    med["description"] = drug.efficacy or "약품 설명이 존재하지 않습니다."
+                    matched_meds.append(med)
+                else:
+                    unmatched_meds.append(med)
+
+            # 3. GPT Fallback for unmatched_meds
+            if unmatched_meds:
+                try:
+                    fallback_desc_map = await batch_analyze_unmatched_drugs(unmatched_meds)
+                    for med in unmatched_meds:
+                        med_name = med.get("name")
+                        med["description"] = fallback_desc_map.get(med_name, "일치하는 약품 정보를 찾을 수 없습니다.")
+                except Exception as e:
+                    print(f"Fallback 처리 중 오류: {e}")
+                    for med in unmatched_meds:
+                        med["description"] = "약품 정보 매칭 중 서비스 지연이 발생했습니다."
+
+            # 4. 종합
+            final_meds_data = matched_meds + unmatched_meds
+
+            parsed_medications = [
+                OcrMedicationItem(
+                    name=m.get("name", ""),
+                    dosage=m.get("dosage", ""),
+                    frequency=m.get("frequency", ""),
+                    timing=m.get("timing", ""),
+                    description=m.get("description", "")
+                ) for m in final_meds_data
+            ]
 
     return data, parsed_medications
