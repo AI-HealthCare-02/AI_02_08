@@ -118,7 +118,8 @@ async def resend_verification(
     description="""
 회원가입 전 이메일 중복 여부를 확인합니다.
 
-- 탈퇴한 계정의 이메일은 사용 가능한 것으로 표시됩니다.
+- 현재 활성화된 계정의 이메일만 중복으로 처리됩니다.
+- 탈퇴한 계정의 이메일은 중복으로 처리되지 않아 재가입이 가능합니다.
     """,
     responses={
         200: {"description": "중복 여부 반환 (is_duplicate: true/false)"},
@@ -215,8 +216,8 @@ async def token_refresh(
     description="""
 로그아웃합니다.
 
-- 쿠키에 저장된 Refresh Token이 DB에서 삭제됩니다.
-- Refresh Token 쿠키가 제거됩니다.
+- Refresh Token을 DB에서 삭제하고 쿠키에서 제거합니다.
+- 이후 해당 Refresh Token으로 Access Token 갱신이 불가합니다.
     """,
     responses={
         200: {"description": "로그아웃 성공"},
@@ -242,7 +243,7 @@ async def logout(
     status_code=status.HTTP_200_OK,
     summary="비밀번호 재설정 이메일 발송",
     description="""
-비밀번호 재설정을 위한 인증 코드를 이메일로 발송합니다.
+비밀번호를 잊어버린 사용자가 이메일 인증을 통해 새로운 비밀번호를 설정하는 기능입니다.
 
 - 인증 코드는 **5분** 동안 유효합니다.
 - 존재하지 않는 이메일로 요청해도 보안상 동일하게 성공 응답을 반환합니다.
