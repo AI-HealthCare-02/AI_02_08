@@ -321,10 +321,16 @@ const HomePage: React.FC = () => {
         <div className="home-page__right">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
-              <h2 className="home-page__section-title">🤖 약속이 상담소</h2>
-              <span className="home-page__chatbot-status">답변 중</span>
+              <div>
+                <h2 className="home-page__section-title">🤖 약속이 상담소</h2>
+                <p className="home-page__chatbot-ai-label">AI 기반 건강 상담 서비스</p>
+              </div>
+              {chatMessage.trim() && <span className="home-page__chatbot-status">답변 준비 중</span>}
             </div>
             <div className="home-page__chat-messages">
+              <div className="home-page__chatbot-disclaimer">
+                ⚠️ AI가 제공하는 정보는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다. 정확한 복약 상담은 전문 의료진과 상담해주세요.
+              </div>
               <div className="home-page__chat-message home-page__chat-message--bot">
                 안녕하세요! 복약 관련 궁금한 점을 물어보세요
               </div>
