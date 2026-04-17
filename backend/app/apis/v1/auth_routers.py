@@ -10,6 +10,7 @@ from app.core.config import Config, Env
 from app.dependencies.security import get_request_user
 from app.dtos.auth import (
     ChangePasswordRequest,
+    KakaoAdditionalInfoRequest,
     LoginRequest,
     LoginResponse,
     PasswordResetEmailRequest,
@@ -18,10 +19,12 @@ from app.dtos.auth import (
     SignUpRequest,
     TokenRefreshResponse,
 )
+from app.dtos.users import UserUpdateRequest
 from app.models.users import User
 from app.services.auth import AuthService
 from app.services.jwt import JwtService
 from app.services.kakao_auth import get_kakao_token, get_kakao_user_info
+from app.services.users import UserManageService
 
 config = Config()
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -364,13 +367,57 @@ async def kakao_callback(
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"카카오 로그인 실패: {str(e)}") from e
 
-    user = await auth_service.kakao_login(kakao_user_info)
+    user, is_new = await auth_service.kakao_login(kakao_user_info)
     tokens = await auth_service.login(user)
 
     resp = Response(
-        content=json.dumps(LoginResponse(access_token=str(tokens["access_token"])).model_dump()),
+        content=json.dumps(
+            {
+                **LoginResponse(access_token=str(tokens["access_token"])).model_dump(),
+                "is_new": is_new,  # 프론트에서 추가 정보 입력 페이지로 이동 여부 판단
+            }
+        ),
         media_type="application/json",
         status_code=status.HTTP_200_OK,
     )
     set_refresh_cookie(resp, tokens["refresh_token"])
     return resp
+
+
+@auth_router.patch(
+    "/kakao/additional-info",
+    status_code=status.HTTP_200_OK,
+    summary="카카오 로그인 추가 정보 입력",
+    description="""
+카카오 로그인 후 추가 정보를 입력합니다.
+
+- 신규 가입 또는 탈퇴 후 재가입 시 호출됩니다.
+- **Authorization 헤더에 Access Token이 필요합니다.**
+    """,
+    responses={
+        200: {"description": "추가 정보 저장 완료"},
+        401: {"description": "인증 실패"},
+        422: {"description": "입력값 유효성 검증 실패"},
+    },
+)
+async def kakao_additional_info(
+    request: KakaoAdditionalInfoRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
+) -> JSONResponse:
+    await user_manage_service.update_user(
+        user=user,
+        data=UserUpdateRequest(
+            gender=request.gender,
+            birth_date=request.birth_date,
+            phone_number=request.phone_number,
+        ),
+    )
+    user.agree_terms = request.agree_terms
+    user.agree_privacy = request.agree_privacy
+    await user.save(update_fields=["agree_terms", "agree_privacy"])
+
+    return JSONResponse(
+        content={"detail": "추가 정보가 저장되었습니다."},
+        status_code=status.HTTP_200_OK,
+    )

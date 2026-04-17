@@ -108,3 +108,26 @@ class ChangePasswordRequest(BaseModel):
         if "new_password" in info.data and v != info.data["new_password"]:
             raise ValueError("비밀번호가 일치하지 않습니다.")
         return v
+
+
+class KakaoAdditionalInfoRequest(BaseModel):
+    gender: Annotated[Gender, Field(..., description="성별 (MALE 또는 FEMALE)")]
+    birth_date: Annotated[
+        date,
+        Field(..., description="생년월일 (YYYY-MM-DD 형식, 만 14세 이상)"),
+        AfterValidator(validate_birth_date),
+    ]
+    phone_number: Annotated[
+        str,
+        Field(..., description="전화번호 (01011112222 또는 010-1111-2222 형식)"),
+        AfterValidator(validate_phone_number),
+    ]
+    agree_terms: Annotated[bool, Field(..., description="이용약관 동의 여부 (필수 동의)")]
+    agree_privacy: Annotated[bool, Field(..., description="개인정보 처리방침 동의 여부 (필수 동의)")]
+
+    @field_validator("agree_terms", "agree_privacy")
+    @classmethod
+    def must_be_agreed(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("필수 약관에 동의해야 합니다.")
+        return v

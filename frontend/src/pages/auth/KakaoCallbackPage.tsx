@@ -22,9 +22,16 @@ const KakaoCallbackPage: React.FC = () => {
     const handleKakaoCallback = async () => {
       try {
         const response = await apiClient.get(`/auth/kakao/callback?code=${code}`);
-        const { access_token } = response.data;
+        const { access_token, is_new } = response.data;
         localStorage.setItem('accessToken', access_token);
-        window.location.href = '/home';
+
+        if (is_new) {
+          // 신규 가입 또는 탈퇴 후 재가입 → 추가 정보 입력 페이지로 이동
+          window.location.href = '/auth/kakao/additional-info';
+        } else {
+          // 기존 유저 → 바로 홈으로 이동
+          window.location.href = '/home';
+        }
       } catch (error) {
         console.error('카카오 로그인 실패:', error);
         alert('카카오 로그인에 실패했습니다.');
