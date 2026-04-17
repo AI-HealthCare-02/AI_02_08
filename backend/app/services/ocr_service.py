@@ -9,6 +9,8 @@ from openai import AsyncOpenAI
 
 from app.core.config import Config
 from app.dtos.medications import OcrMedicationItem
+from app.models.drugs import DrugInfo
+from app.services.openai_service import batch_analyze_unmatched_drugs
 
 settings = Config()
 openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
@@ -38,10 +40,6 @@ async def upload_image_to_s3(file: UploadFile) -> str:
         )
 
     return url
-
-
-from app.models.drugs import DrugInfo
-from app.services.openai_service import batch_analyze_unmatched_drugs
 
 
 async def extract_medication_structure(extracted_texts: list[str]) -> list[dict]:
@@ -93,6 +91,39 @@ async def extract_medication_structure(extracted_texts: list[str]) -> list[dict]
     return [med for med in medications_data if med.get("name")]
 
 
+async def _match_or_fallback_medications(raw_meds: list[dict]) -> list[dict]:
+    matched_meds = []
+    unmatched_meds = []
+
+    for med in raw_meds:
+        name = med.get("name", "").strip()
+        if not name:
+            continue
+
+        drug = await DrugInfo.get_or_none(name=name)
+        if not drug:
+            drug = await DrugInfo.filter(name__icontains=name).first()
+
+        if drug:
+            med["description"] = drug.efficacy or "약품 설명이 존재하지 않습니다."
+            matched_meds.append(med)
+        else:
+            unmatched_meds.append(med)
+
+    if unmatched_meds:
+        try:
+            fallback_desc_map = await batch_analyze_unmatched_drugs(unmatched_meds)
+            for med in unmatched_meds:
+                med_name = med.get("name")
+                med["description"] = fallback_desc_map.get(med_name, "일치하는 약품 정보를 찾을 수 없습니다.")
+        except Exception as e:
+            print(f"Fallback 처리 중 오류: {e}")
+            for med in unmatched_meds:
+                med["description"] = "약품 정보 매칭 중 서비스 지연이 발생했습니다."
+
+    return matched_meds + unmatched_meds
+
+
 async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[OcrMedicationItem]]:
     headers = {"X-OCR-SECRET": settings.CLOVA_OCR_SECRET, "Content-Type": "application/json"}
     timestamp = int(round(time.time() * 1000))
@@ -123,41 +154,7 @@ async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[Ocr
             if not raw_meds:
                 return data, []
 
-            # 2. DB 매칭 및 미매칭 분리
-            matched_meds = []
-            unmatched_meds = []
-
-            for med in raw_meds:
-                name = med.get("name", "").strip()
-                if not name:
-                    continue
-
-                # Exact Match
-                drug = await DrugInfo.get_or_none(name=name)
-                if not drug:
-                    # LIKE Match (icontains)
-                    drug = await DrugInfo.filter(name__icontains=name).first()
-
-                if drug:
-                    med["description"] = drug.efficacy or "약품 설명이 존재하지 않습니다."
-                    matched_meds.append(med)
-                else:
-                    unmatched_meds.append(med)
-
-            # 3. GPT Fallback for unmatched_meds
-            if unmatched_meds:
-                try:
-                    fallback_desc_map = await batch_analyze_unmatched_drugs(unmatched_meds)
-                    for med in unmatched_meds:
-                        med_name = med.get("name")
-                        med["description"] = fallback_desc_map.get(med_name, "일치하는 약품 정보를 찾을 수 없습니다.")
-                except Exception as e:
-                    print(f"Fallback 처리 중 오류: {e}")
-                    for med in unmatched_meds:
-                        med["description"] = "약품 정보 매칭 중 서비스 지연이 발생했습니다."
-
-            # 4. 종합
-            final_meds_data = matched_meds + unmatched_meds
+            final_meds_data = await _match_or_fallback_medications(raw_meds)
 
             parsed_medications = [
                 OcrMedicationItem(
@@ -165,8 +162,9 @@ async def analyze_prescription_via_clova(image_url: str) -> tuple[dict, list[Ocr
                     dosage=m.get("dosage", ""),
                     frequency=m.get("frequency", ""),
                     timing=m.get("timing", ""),
-                    description=m.get("description", "")
-                ) for m in final_meds_data
+                    description=m.get("description", ""),
+                )
+                for m in final_meds_data
             ]
 
     return data, parsed_medications

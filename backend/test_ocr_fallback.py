@@ -17,7 +17,7 @@ async def test_fallback_flow():
     # 1. ORM 초기화
     await Tortoise.init(
         db_url=f"mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:3306/{settings.DB_NAME}",
-        modules={'models': ['app.models.drugs']}
+        modules={"models": ["app.models.drugs"]},
     )
 
     # 2. 더미 파싱결과 (OCR & 1차 정규화 통과했다고 치고)
@@ -26,9 +26,9 @@ async def test_fallback_flow():
     # 존재하지않는우주약물 -> 백프로 DB 미매칭, GPT 폴백 대상
     print("=== [1] 파싱된 더미 약품 입력 ===")
     raw_meds = [
-         {"name": "타이레놀8시간이알서방정", "dosage": "1정", "frequency": "3회", "timing": "식후 30분"},
-         {"name": "푸라콩", "dosage": "1정", "frequency": "2회", "timing": "식전"}, # 푸라콩정 등 (LIKE Match 기대)
-         {"name": "존재하지않는우주약물", "dosage": "2캡슐", "frequency": "1번", "timing": "취침전"}
+        {"name": "타이레놀8시간이알서방정", "dosage": "1정", "frequency": "3회", "timing": "식후 30분"},
+        {"name": "푸라콩", "dosage": "1정", "frequency": "2회", "timing": "식전"},  # 푸라콩정 등 (LIKE Match 기대)
+        {"name": "존재하지않는우주약물", "dosage": "2캡슐", "frequency": "1번", "timing": "취침전"},
     ]
     for rw in raw_meds:
         print(rw)
@@ -66,6 +66,7 @@ async def test_fallback_flow():
     print(json.dumps(final_meds_data, ensure_ascii=False, indent=2))
 
     await Tortoise.close_connections()
+
 
 if __name__ == "__main__":
     asyncio.run(test_fallback_flow())

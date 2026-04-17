@@ -52,6 +52,62 @@ def clean_value(value: str | None) -> str | None:
     return stripped if stripped else None
 
 
+async def _process_csv_file(csv_path: str, seen_drugs: set) -> tuple[int, int]:
+    file_count = 0
+    duplicate_count = 0
+    try:
+        with open(csv_path, encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            buffer: list[DrugInfo] = []
+
+            for raw_row in reader:
+                row = {k.strip(): v for k, v in raw_row.items() if k is not None}
+
+                model_data: dict = {}
+                for model_field, possible_csv_cols in COLUMN_MAP.items():
+                    val = None
+                    for col in possible_csv_cols:
+                        if col in row:
+                            val = row[col]
+                            break
+                    model_data[model_field] = clean_value(val)
+
+                name = model_data.get("name")
+                manufacturer = model_data.get("manufacturer")
+
+                if not name:
+                    continue
+
+                unique_key = (
+                    name.replace(" ", "").lower(),
+                    manufacturer.replace(" ", "").lower() if manufacturer else "",
+                )
+
+                if unique_key in seen_drugs:
+                    duplicate_count += 1
+                    continue
+
+                seen_drugs.add(unique_key)
+                buffer.append(DrugInfo(**model_data))
+
+                if len(buffer) >= CHUNK_SIZE:
+                    await DrugInfo.bulk_create(buffer)
+                    file_count += len(buffer)
+                    print(f"  ✅ {file_count}건 삽입 완료...")
+                    buffer.clear()
+
+            if buffer:
+                await DrugInfo.bulk_create(buffer)
+                file_count += len(buffer)
+
+            print(f"  👉 {os.path.basename(csv_path)} 에서 총 {file_count}건 적재 완료.\n")
+
+    except Exception as e:
+        print(f"❌ 파일 처리 중 에러 발생 ({csv_path}): {e}")
+
+    return file_count, duplicate_count
+
+
 async def seed() -> None:
     """메인 시딩 로직."""
     # 1) Tortoise ORM 초기화
@@ -78,72 +134,17 @@ async def seed() -> None:
     # 4) 각 CSV 순회하며 읽기
     total_count = 0
     duplicate_count = 0
-
-    # 중복 방지를 위한 in-memory Set (표준화 기준으로 약품명 + 제조사를 결합)
     seen_drugs = set()
 
     for csv_path in csv_files:
         print(f"📂 CSV 처리 중: {csv_path}")
+        f_count, d_count = await _process_csv_file(csv_path, seen_drugs)
+        total_count += f_count
+        duplicate_count += d_count
 
-        try:
-            with open(csv_path, encoding="utf-8-sig") as f:
-                reader = csv.DictReader(f)
-
-                # BOM(Byte Order Mark) 등이 섞여있을 때를 대비해 키들의 앞뒤 공백을 제거한 딕셔너리로 만듦
-                buffer: list[DrugInfo] = []
-                file_count = 0
-
-                for raw_row in reader:
-                    row = {k.strip(): v for k, v in raw_row.items() if k is not None}
-
-                    # CSV 헤더 → 모델 필드 변환
-                    model_data: dict = {}
-                    for model_field, possible_csv_cols in COLUMN_MAP.items():
-                        # 매핑 목록에 있는 키 중 CSV에 존재하는 값을 찾음
-                        val = None
-                        for col in possible_csv_cols:
-                            if col in row:
-                                val = row[col]
-                                break
-                        model_data[model_field] = clean_value(val)
-
-                    # 약품명이 없으면 무효 데이터이므로 스킵
-                    name = model_data.get("name")
-                    manufacturer = model_data.get("manufacturer")
-
-                    if not name:
-                        continue
-
-                    # 중복 체크: (약품명, 제조사) 쌍이 이미 등록되었는지 확인
-                    # 데이터 일관성을 위해 대소문자나 공백으로 인한 엇갈림을 최소화
-                    unique_key = (name.replace(" ", "").lower(), manufacturer.replace(" ", "").lower() if manufacturer else "")
-
-                    if unique_key in seen_drugs:
-                        duplicate_count += 1
-                        continue
-
-                    seen_drugs.add(unique_key)
-                    buffer.append(DrugInfo(**model_data))
-
-                    # Chunk 단위로 Bulk Insert 실행
-                    if len(buffer) >= CHUNK_SIZE:
-                        await DrugInfo.bulk_create(buffer)
-                        file_count += len(buffer)
-                        print(f"  ✅ {file_count}건 삽입 완료...")
-                        buffer.clear()
-
-                # 나머지 데이터 삽입
-                if buffer:
-                    await DrugInfo.bulk_create(buffer)
-                    file_count += len(buffer)
-
-                total_count += file_count
-                print(f"  👉 {os.path.basename(csv_path)} 에서 총 {file_count}건 적재 완료.\n")
-
-        except Exception as e:
-            print(f"❌ 파일 처리 중 에러 발생 ({csv_path}): {e}")
-
-    print(f"🎉 시딩 완료! 총 {total_count}건의 약품 데이터가 적재되었으며, 중복된 {duplicate_count}건은 무시되었습니다.")
+    print(
+        f"🎉 시딩 완료! 총 {total_count}건의 약품 데이터가 적재되었으며, 중복된 {duplicate_count}건은 무시되었습니다."
+    )
     await Tortoise.close_connections()
 
 

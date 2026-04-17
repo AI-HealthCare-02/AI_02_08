@@ -50,17 +50,14 @@ async def analyze_prescription(
     if image.content_type not in allowed_types:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="지원하지 않는 파일 형식입니다. JPG, PNG, PDF 파일만 업로드 가능합니다."
+            detail="지원하지 않는 파일 형식입니다. JPG, PNG, PDF 파일만 업로드 가능합니다.",
         )
 
     # 사이즈 체크 (15MB 제한)
     # image.size 속성은 FastAPI 최신 버전에 존재하나 없는 경우를 대비해 위치를 0으로 되돌립니다.
     file_bytes = await image.read()
     if len(file_bytes) > 15 * 1024 * 1024:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="파일 용량이 15MB를 초과했습니다."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="파일 용량이 15MB를 초과했습니다.")
     # 이미 다 읽어버렸으므로 S3 업로드 시 이슈가 없게 포인터를 원복
     await image.seek(0)
 
@@ -80,7 +77,9 @@ async def analyze_prescription(
         traceback.print_exc()
         error_msg = str(e)
         if "OCR API 연동 실패" in error_msg:
-            raise HTTPException(status_code=502, detail=f"네이버 클로바 OCR 서버 연동 중 오류가 발생했습니다: {error_msg}") from e
+            raise HTTPException(
+                status_code=502, detail=f"네이버 클로바 OCR 서버 연동 중 오류가 발생했습니다: {error_msg}"
+            ) from e
         elif "GPT" in error_msg or "rate limit" in error_msg.lower():
             raise HTTPException(status_code=502, detail="AI 분석 서버 지연으로 약품을 파싱하지 못했습니다.") from e
         else:

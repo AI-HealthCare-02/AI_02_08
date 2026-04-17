@@ -197,4 +197,6 @@ async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str,
     except Exception as e:
         print(f"GPT Batch Fallback 에러: {e}")
         # 오류 발생 시 모든 빈 약품에 대해 동일한 폴백 메시지 반환
-        return {med["name"]: "서비스 지연으로 약품 정보를 불러오지 못했습니다." for med in unmatched_meds if "name" in med}
+        return {
+            med["name"]: "서비스 지연으로 약품 정보를 불러오지 못했습니다." for med in unmatched_meds if "name" in med
+        }
