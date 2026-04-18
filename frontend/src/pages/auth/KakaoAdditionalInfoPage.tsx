@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/apiClient';
 import Modal from '../../components/common/Modal';
@@ -20,6 +20,18 @@ const KakaoAdditionalInfoPage: React.FC = () => {
     agreePrivacy: false,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const isSubmitted = useRef(false);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!isSubmitted.current) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -51,10 +63,34 @@ const KakaoAdditionalInfoPage: React.FC = () => {
         agree_terms: formData.agreeTerms,
         agree_privacy: formData.agreePrivacy,
       });
+
+      isSubmitted.current = true;
+      localStorage.removeItem('user');
+      alert('카카오 간편가입이 완료되었습니다! 환영합니다 🌿');
       window.location.href = '/home';
     } catch (error: any) {
-      const message = error.response?.data?.detail || '추가 정보 저장에 실패했습니다.';
-      alert(message);
+      // 422 유효성 검증 에러 처리
+      if (error.response?.status === 422) {
+        const details = error.response?.data?.detail;
+        if (Array.isArray(details)) {
+          const newErrors: { [key: string]: string } = {};
+          details.forEach((err: any) => {
+            const field = err.loc?.[err.loc.length - 1];
+            const message = err.msg;
+            if (field === 'birth_date') {
+              newErrors.birthDate = '만 14세 이상만 가입할 수 있습니다.';
+            } else if (field === 'phone_number') {
+              newErrors.phoneNumber = '올바른 전화번호 형식이 아닙니다.';
+            } else if (field === 'gender') {
+              newErrors.gender = '성별을 선택해주세요.';
+            }
+          });
+          setErrors(newErrors);
+        }
+      } else {
+        const message = error.response?.data?.detail || '추가 정보 저장에 실패했습니다.';
+        alert(message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +115,6 @@ const KakaoAdditionalInfoPage: React.FC = () => {
         </div>
 
         <div className="kakao-additional__form">
-          {/* 성별 */}
           <div className="kakao-additional__field">
             <label className="kakao-additional__label">성별</label>
             <select
@@ -94,7 +129,6 @@ const KakaoAdditionalInfoPage: React.FC = () => {
             {errors.gender && <p className="kakao-additional__error">{errors.gender}</p>}
           </div>
 
-          {/* 생년월일 */}
           <div className="kakao-additional__field">
             <label className="kakao-additional__label">생년월일 (만 14세 이상)</label>
             <input
@@ -107,7 +141,6 @@ const KakaoAdditionalInfoPage: React.FC = () => {
             {errors.birthDate && <p className="kakao-additional__error">{errors.birthDate}</p>}
           </div>
 
-          {/* 전화번호 */}
           <div className="kakao-additional__field">
             <label className="kakao-additional__label">전화번호</label>
             <input
@@ -120,7 +153,6 @@ const KakaoAdditionalInfoPage: React.FC = () => {
             {errors.phoneNumber && <p className="kakao-additional__error">{errors.phoneNumber}</p>}
           </div>
 
-          {/* 약관 동의 */}
           <div className="kakao-additional__terms-section">
             <div className="kakao-additional__field">
               <div className="kakao-additional__terms-row">

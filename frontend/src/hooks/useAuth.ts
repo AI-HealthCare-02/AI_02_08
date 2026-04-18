@@ -12,6 +12,7 @@ interface User {
   nickname?: string;
   avatar?: string;
   profileImage?: string;
+  agreeTerms?: boolean;
 }
 
 interface AuthState {
@@ -55,6 +56,7 @@ export const useAuth = (): AuthState => {
         birthday: response.data.birthday,
         phoneNumber: response.data.phone_number,
         gender: response.data.gender,
+        agreeTerms: response.data.agree_terms,
       };
       setUser(userInfo);
       localStorage.setItem('user', JSON.stringify(userInfo));
@@ -76,6 +78,7 @@ export const useAuth = (): AuthState => {
         birthday: userResponse.data.birthday,
         phoneNumber: userResponse.data.phone_number,
         gender: userResponse.data.gender,
+        agreeTerms: userResponse.data.agree_terms
       };
       setUser(userInfo);
       setIsLoggedIn(true);

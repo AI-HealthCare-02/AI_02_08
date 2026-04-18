@@ -368,6 +368,7 @@ async def kakao_callback(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"카카오 로그인 실패: {str(e)}") from e
 
     user, is_new = await auth_service.kakao_login(kakao_user_info)
+    print(f"===== is_new: {is_new} =====")
     tokens = await auth_service.login(user)
 
     resp = Response(

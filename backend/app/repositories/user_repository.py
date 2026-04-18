@@ -67,8 +67,8 @@ class UserRepository:
             email=email,
             is_active=True,
             is_verified=True,  # 카카오는 이메일 인증 불필요
-            agree_terms=True,
-            agree_privacy=True,
+            agree_terms=False,
+            agree_privacy=False,
         )
 
     async def exists_by_email(self, email: str) -> bool:
