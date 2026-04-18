@@ -66,7 +66,7 @@ class UserRepository:
             name=name,
             email=email,
             is_active=True,
-            is_verified=True,  # 카카오는 이메일 인증 불필요
+            is_verified=True,
             agree_terms=False,
             agree_privacy=False,
         )
@@ -83,9 +83,12 @@ class UserRepository:
     async def update_instance(self, user: User, data: dict[str, Any]) -> None:
         update_fields = []
         for key, value in data.items():
-            if value is not None and key in ALLOWED_UPDATE_FIELDS:
-                setattr(user, key, value)
-                update_fields.append(key)
+            if value is not None:
+                # birth_date → birthday 변환
+                field_name = "birthday" if key == "birth_date" else key
+                if field_name in ALLOWED_UPDATE_FIELDS:
+                    setattr(user, field_name, value)
+                    update_fields.append(field_name)
         if update_fields:
             user.updated_at = datetime.now(config.TIMEZONE)
             update_fields.append(UPDATED_AT_FIELD)

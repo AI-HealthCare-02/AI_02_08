@@ -19,7 +19,7 @@ from app.dtos.auth import (
     SignUpRequest,
     TokenRefreshResponse,
 )
-from app.dtos.users import UserUpdateRequest
+from app.dtos.users import TermsAgreementRequest, UserUpdateRequest
 from app.models.users import User
 from app.services.auth import AuthService
 from app.services.jwt import JwtService
@@ -61,8 +61,8 @@ def set_refresh_cookie(response: Response, refresh_token) -> None:
     },
 )
 async def signup(
-    request: SignUpRequest,
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        request: SignUpRequest,
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> JSONResponse:
     await auth_service.signup(request)
     return JSONResponse(
@@ -88,9 +88,9 @@ async def signup(
     },
 )
 async def verify_email(
-    email: Annotated[str, Query(description="인증할 이메일")],
-    code: Annotated[str, Query(description="6자리 인증 코드")],
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        email: Annotated[str, Query(description="인증할 이메일")],
+        code: Annotated[str, Query(description="6자리 인증 코드")],
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> JSONResponse:
     await auth_service.verify_email(email=email, code=code)
     return JSONResponse(
@@ -116,8 +116,8 @@ async def verify_email(
     },
 )
 async def resend_verification(
-    request: ResendVerificationRequest,
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        request: ResendVerificationRequest,
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> JSONResponse:
     await auth_service.resend_verification_email(email=request.email)
     return JSONResponse(
@@ -141,8 +141,8 @@ async def resend_verification(
     },
 )
 async def check_email(
-    email: Annotated[str, Query(description="중복 확인할 이메일")],
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        email: Annotated[str, Query(description="중복 확인할 이메일")],
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> JSONResponse:
     is_duplicate = await auth_service.is_email_duplicate(email=email)
     return JSONResponse(
@@ -174,8 +174,8 @@ async def check_email(
     },
 )
 async def login(
-    request: LoginRequest,
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        request: LoginRequest,
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> Response:
     user = await auth_service.authenticate(request)
     tokens = await auth_service.login(user)
@@ -205,8 +205,8 @@ Refresh Token으로 새로운 Access Token을 발급합니다.
     },
 )
 async def token_refresh(
-    jwt_service: Annotated[JwtService, Depends(JwtService)],
-    refresh_token: Annotated[str | None, Cookie()] = None,
+        jwt_service: Annotated[JwtService, Depends(JwtService)],
+        refresh_token: Annotated[str | None, Cookie()] = None,
 ) -> JSONResponse:
     if not refresh_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token is missing.")
@@ -232,8 +232,8 @@ async def token_refresh(
     },
 )
 async def logout(
-    auth_service: Annotated[AuthService, Depends(AuthService)],
-    refresh_token: Annotated[str | None, Cookie()] = None,
+        auth_service: Annotated[AuthService, Depends(AuthService)],
+        refresh_token: Annotated[str | None, Cookie()] = None,
 ) -> Response:
     if refresh_token:
         await auth_service.logout(refresh_token=refresh_token)
@@ -262,8 +262,8 @@ async def logout(
     },
 )
 async def password_reset_request(
-    request: PasswordResetEmailRequest,
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        request: PasswordResetEmailRequest,
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> JSONResponse:
     await auth_service.send_password_reset_email(email=request.email)
     return JSONResponse(
@@ -292,8 +292,8 @@ async def password_reset_request(
     },
 )
 async def password_reset(
-    request: PasswordResetRequest,
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        request: PasswordResetRequest,
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> JSONResponse:
     await auth_service.reset_password(
         email=request.email,
@@ -325,9 +325,9 @@ async def password_reset(
     },
 )
 async def change_password(
-    request: ChangePasswordRequest,
-    user: Annotated[User, Depends(get_request_user)],
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        request: ChangePasswordRequest,
+        user: Annotated[User, Depends(get_request_user)],
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> JSONResponse:
     await auth_service.change_password(
         user=user,
@@ -351,6 +351,8 @@ async def change_password(
 2. 카카오 액세스 토큰으로 유저 정보 조회
 3. DB에 없으면 **자동 회원가입**, 있으면 **바로 로그인**
 4. JWT 발급 (Access Token 응답, Refresh Token 쿠키 설정)
+5. 약관 미동의 시 requires_terms_agreement=true 반환
+6. 추가 정보 미입력 시 requires_additional_info=true 반환
     """,
     responses={
         200: {"description": "카카오 로그인 성공"},
@@ -358,8 +360,8 @@ async def change_password(
     },
 )
 async def kakao_callback(
-    code: Annotated[str, Query(description="카카오 인증 코드")],
-    auth_service: Annotated[AuthService, Depends(AuthService)],
+        code: Annotated[str, Query(description="카카오 인증 코드")],
+        auth_service: Annotated[AuthService, Depends(AuthService)],
 ) -> Response:
     try:
         kakao_access_token = await get_kakao_token(code)
@@ -368,14 +370,26 @@ async def kakao_callback(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"카카오 로그인 실패: {str(e)}") from e
 
     user, is_new = await auth_service.kakao_login(kakao_user_info)
-    print(f"===== is_new: {is_new} =====")
     tokens = await auth_service.login(user)
+
+    # 약관 동의 여부 체크
+    requires_terms = not (user.agree_terms and user.agree_privacy)
+
+    # 추가 정보 입력 필요 여부 체크
+    requires_additional_info = not all([
+        user.gender,
+        user.birthday,
+        user.phone_number
+    ])
 
     resp = Response(
         content=json.dumps(
             {
                 **LoginResponse(access_token=str(tokens["access_token"])).model_dump(),
-                "is_new": is_new,  # 프론트에서 추가 정보 입력 페이지로 이동 여부 판단
+                "is_new": is_new,
+                "requires_terms_agreement": requires_terms,
+                "requires_additional_info": requires_additional_info,  # 추가
+                "user_id": user.id,
             }
         ),
         media_type="application/json",
@@ -383,6 +397,34 @@ async def kakao_callback(
     )
     set_refresh_cookie(resp, tokens["refresh_token"])
     return resp
+
+
+@auth_router.post(
+    "/terms/agree",
+    status_code=status.HTTP_200_OK,
+    summary="약관 동의 처리",
+    description="""
+카카오 로그인 후 약관 동의를 처리합니다.
+
+- 신규 가입 또는 탈퇴 후 재가입 시 호출됩니다.
+- **Authorization 헤더에 Access Token이 필요합니다.**
+    """,
+    responses={
+        200: {"description": "약관 동의 완료"},
+        400: {"description": "필수 약관 미동의"},
+        401: {"description": "인증 실패"},
+    },
+)
+async def agree_terms(
+        request: TermsAgreementRequest,
+        user: Annotated[User, Depends(get_request_user)],
+        user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
+) -> JSONResponse:
+    await user_manage_service.agree_terms(user=user, agreement=request)
+    return JSONResponse(
+        content={"detail": "약관 동의가 완료되었습니다."},
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @auth_router.patch(
@@ -402,10 +444,11 @@ async def kakao_callback(
     },
 )
 async def kakao_additional_info(
-    request: KakaoAdditionalInfoRequest,
-    user: Annotated[User, Depends(get_request_user)],
-    user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
+        request: KakaoAdditionalInfoRequest,
+        user: Annotated[User, Depends(get_request_user)],
+        user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
 ) -> JSONResponse:
+    # 추가 정보 업데이트
     await user_manage_service.update_user(
         user=user,
         data=UserUpdateRequest(
@@ -414,9 +457,6 @@ async def kakao_additional_info(
             phone_number=request.phone_number,
         ),
     )
-    user.agree_terms = request.agree_terms
-    user.agree_privacy = request.agree_privacy
-    await user.save(update_fields=["agree_terms", "agree_privacy"])
 
     return JSONResponse(
         content={"detail": "추가 정보가 저장되었습니다."},

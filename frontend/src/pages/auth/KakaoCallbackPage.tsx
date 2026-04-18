@@ -22,14 +22,24 @@ const KakaoCallbackPage: React.FC = () => {
     const handleKakaoCallback = async () => {
       try {
         const response = await apiClient.get(`/auth/kakao/callback?code=${code}`);
-        const { access_token, is_new } = response.data;
+        const {
+          access_token,
+          requires_terms_agreement,
+          requires_additional_info
+        } = response.data;
+
         localStorage.setItem('accessToken', access_token);
 
-        if (is_new) {
-          // 신규 가입 또는 탈퇴 후 재가입 → 추가 정보 입력 페이지로 이동
-          window.location.href = '/auth/kakao/additional-info';
-        } else {
-          // 기존 유저 → 바로 홈으로 이동
+        // 1단계: 약관 동의 필요?
+        if (requires_terms_agreement) {
+          navigate('/terms-agreement');
+        }
+        // 2단계: 추가 정보 입력 필요?
+        else if (requires_additional_info) {
+          navigate('/auth/kakao/additional-info');
+        }
+        // 완료: 홈으로
+        else {
           window.location.href = '/home';
         }
       } catch (error) {
@@ -40,7 +50,7 @@ const KakaoCallbackPage: React.FC = () => {
     };
 
     handleKakaoCallback();
-  }, []);
+  }, [navigate, searchParams]);
 
   return (
     <div style={{
