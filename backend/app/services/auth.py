@@ -266,7 +266,12 @@ class AuthService:
             # 모든 리프레시 토큰 무효화
             await self.refresh_token_repo.delete_by_user_id(user.id)
 
-    async def kakao_login(self, kakao_user_info: dict) -> User:
+    async def kakao_login(self, kakao_user_info: dict) -> tuple[User, bool]:
+        """
+        반환값: (user, is_new)
+        is_new=True: 신규 가입 또는 탈퇴 후 재가입 → 추가 정보 입력 필요
+        is_new=False: 기존 유저 → 바로 로그인
+        """
         kakao_id = kakao_user_info["kakao_id"]
         email = kakao_user_info.get("email")
         name = kakao_user_info.get("name", "카카오유저")
@@ -275,14 +280,14 @@ class AuthService:
 
         if user:
             if not user.is_active:
-                # 탈퇴한 유저 - 재가입 처리 (새 유저처럼)
+                # 탈퇴한 유저 - 재활성화만 하고 추가 정보 입력 페이지로 보냄
                 user.is_active = True
                 user.deleted_at = None
                 user.name = name
                 user.email = email
                 user.is_verified = True
-                user.agree_terms = True
-                user.agree_privacy = True
+                user.agree_terms = False
+                user.agree_privacy = False
                 await user.save(
                     update_fields=[
                         "is_active",
@@ -294,12 +299,13 @@ class AuthService:
                         "agree_privacy",
                     ]
                 )
-                return user
-            return user
+                return user, True  # 탈퇴 후 재가입 → 추가 정보 필요
+            return user, False  # 기존 유저 → 바로 로그인
 
+        # 신규 유저
         user = await self.user_repo.create_kakao_user(
             kakao_id=kakao_id,
             name=name,
             email=email,
         )
-        return user
+        return user, True  # 신규 → 추가 정보 필요

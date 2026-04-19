@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
-import { changePassword, deleteAccount } from '../../api/authApi';
+import { changePassword, deleteAccount, updateUserInfo } from '../../api/authApi';
 import './MyPage.css';
 
 type TabType = 'profile' | 'report' | 'history' | 'account';
 
 const MyPage: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser, setIsLoggedIn } = useAuth();
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>('profile');
@@ -31,20 +31,20 @@ const MyPage: React.FC = () => {
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
-    nickname: user?.nickname || '',
     email: user?.email || '',
     phone: user?.phoneNumber || '',
     birthDate: user?.birthday || '',
+    gender: user?.gender || '',
     profileImage: user?.profileImage || ''
   });
 
   React.useEffect(() => {
     setProfileData({
       name: user?.name || '',
-      nickname: user?.nickname || '',
       email: user?.email || '',
       phone: user?.phoneNumber || '',
       birthDate: user?.birthday || '',
+      gender: user?.gender || '',
       profileImage: user?.profileImage || ''
     });
   }, [user]);
@@ -98,36 +98,69 @@ const MyPage: React.FC = () => {
     }
   };
 
-  const handleProfileUpdate = () => {
-    // TODO: 프로필 수정 API 연동 예정
-    setShowProfileEditModal(false);
-    showToast({
-      type: 'success',
-      title: '프로필 업데이트 완료',
-      message: '프로필 정보가 성공적으로 업데이트되었습니다.'
-    });
+  const handleProfileUpdate = async () => {
+    try {
+      const updateData: {
+        name?: string;
+        phone_number?: string;
+        birth_date?: string;
+        gender?: string;
+      } = {};
+
+      if (profileData.name && profileData.name !== user?.name) {
+        updateData.name = profileData.name;
+      }
+      if (profileData.phone && profileData.phone !== user?.phoneNumber) {
+        updateData.phone_number = profileData.phone;
+      }
+      if (profileData.birthDate && profileData.birthDate !== user?.birthday) {
+        updateData.birth_date = profileData.birthDate;
+      }
+      if (profileData.gender && profileData.gender !== user?.gender) {
+        updateData.gender = profileData.gender;
+      }
+
+      await updateUserInfo(updateData);
+      window.location.reload();
+      setShowProfileEditModal(false);
+      showToast({
+        type: 'success',
+        title: '프로필 업데이트 완료',
+        message: '프로필 정보가 성공적으로 업데이트되었습니다.',
+      });
+    } catch (error: any) {
+      const message = error.response?.data?.detail || '프로필 수정에 실패했습니다.';
+      showToast({
+        type: 'error',
+        title: '프로필 수정 실패',
+        message,
+      });
+    }
   };
 
   const handleDeleteAccount = async () => {
-  try {
-    await deleteAccount();
-    logout();
-    window.location.href = '/';
-  } catch (error: any) {
-    const message = error.response?.data?.detail || '회원탈퇴에 실패했습니다.';
-    showToast({
-      type: 'error',
-      title: '회원탈퇴 실패',
-      message,
-    });
-  }
-  setShowDeleteModal(false);
-};
+    try {
+      await deleteAccount();
+      setUser(null);
+      setIsLoggedIn(false);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
+      window.location.href = '/';
+    } catch (error: any) {
+      const message = error.response?.data?.detail || '회원탈퇴에 실패했습니다.';
+      showToast({
+        type: 'error',
+        title: '회원탈퇴 실패',
+        message,
+      });
+    }
+    setShowDeleteModal(false);
+  };
 
   const handleLogout = () => {
     if (confirm('정말 로그아웃하시겠습니까?')) {
       logout();
-      window.location.href = '/landing';
+      window.location.href = '/';
     }
   };
 
@@ -154,27 +187,27 @@ const MyPage: React.FC = () => {
               <div className="mypage__profile-row">
                 <div className="mypage__profile-field">
                   <label>이름</label>
-                  <span>{user?.name}</span>
+                  <span>{user?.name || '-'}</span>
                 </div>
                 <div className="mypage__profile-field">
-                  <label>닉네임</label>
-                  <span>{user?.nickname || '설정되지 않음'}</span>
+                  <label>연락처</label>
+                  <span>{profileData.phone || '-'}</span>
                 </div>
               </div>
               <div className="mypage__profile-row">
                 <div className="mypage__profile-field">
                   <label>이메일</label>
-                  <span>{user?.email}</span>
+                  <span>{user?.email || '-'}</span>
                 </div>
                 <div className="mypage__profile-field">
-                  <label>연락처</label>
-                  <span>{profileData.phone}</span>
+                  <label>성별</label>
+                  <span>{profileData.gender === 'MALE' ? '남성' : profileData.gender === 'FEMALE' ? '여성' : '-'}</span>
                 </div>
               </div>
               <div className="mypage__profile-row">
                 <div className="mypage__profile-field">
                   <label>생년월일</label>
-                  <span>{profileData.birthDate}</span>
+                  <span>{profileData.birthDate || '-'}</span>
                 </div>
               </div>
             </div>
@@ -291,13 +324,13 @@ const MyPage: React.FC = () => {
                 <img src={user.profileImage} alt="프로필" className="mypage__avatar-image" />
               ) : (
                 <span className="mypage__avatar-text">
-                  {(user?.nickname || user?.name)?.charAt(0).toUpperCase() || 'U'}
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
                 </span>
               )}
             </div>
           </div>
           <div className="mypage__user-info">
-            <h3 className="mypage__username">{user?.nickname || user?.name || '사용자'}</h3>
+            <h3 className="mypage__username">{user?.name || '사용자'}</h3>
             <p className="mypage__user-email">{user?.email || 'user@example.com'}</p>
           </div>
         </div>
@@ -346,7 +379,7 @@ const MyPage: React.FC = () => {
                       <img src={profileData.profileImage} alt="프로필 미리보기" className="mypage__profile-image" />
                     ) : (
                       <div className="mypage__profile-image-placeholder">
-                        {(profileData.nickname || profileData.name)?.charAt(0).toUpperCase() || 'U'}
+                        {profileData.name?.charAt(0).toUpperCase() || 'U'}
                       </div>
                     )}
                   </div>
@@ -364,10 +397,6 @@ const MyPage: React.FC = () => {
                 <input type="text" value={profileData.name} onChange={(e) => setProfileData({...profileData, name: e.target.value})} className="mypage__form-input" />
               </div>
               <div className="mypage__form-group">
-                <label>닉네임</label>
-                <input type="text" value={profileData.nickname} onChange={(e) => setProfileData({...profileData, nickname: e.target.value})} className="mypage__form-input" placeholder="닉네임을 입력하세요" />
-              </div>
-              <div className="mypage__form-group">
                 <label>이메일</label>
                 <input type="email" value={profileData.email} onChange={(e) => setProfileData({...profileData, email: e.target.value})} className="mypage__form-input" />
               </div>
@@ -377,7 +406,21 @@ const MyPage: React.FC = () => {
               </div>
               <div className="mypage__form-group">
                 <label>생년월일</label>
-                <input type="text" value={profileData.birthDate} onChange={(e) => setProfileData({...profileData, birthDate: e.target.value})} className="mypage__form-input" />
+                <input
+                  type="date"
+                  value={profileData.birthDate}
+                  onChange={(e) => setProfileData({...profileData, birthDate: e.target.value})}
+                  className="mypage__form-input"
+                  max={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div className="mypage__form-group">
+                <label>성별</label>
+                <select value={profileData.gender} onChange={(e) => setProfileData({...profileData, gender: e.target.value})} className="mypage__form-input">
+                  <option value="">선택하세요</option>
+                  <option value="MALE">남성</option>
+                  <option value="FEMALE">여성</option>
+                </select>
               </div>
             </div>
             <div className="mypage__modal-buttons">

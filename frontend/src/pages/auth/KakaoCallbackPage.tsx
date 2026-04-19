@@ -22,9 +22,26 @@ const KakaoCallbackPage: React.FC = () => {
     const handleKakaoCallback = async () => {
       try {
         const response = await apiClient.get(`/auth/kakao/callback?code=${code}`);
-        const { access_token } = response.data;
+        const {
+          access_token,
+          requires_terms_agreement,
+          requires_additional_info
+        } = response.data;
+
         localStorage.setItem('accessToken', access_token);
-        window.location.href = '/home';
+
+        // 1단계: 약관 동의 필요?
+        if (requires_terms_agreement) {
+          navigate('/terms-agreement');
+        }
+        // 2단계: 추가 정보 입력 필요?
+        else if (requires_additional_info) {
+          navigate('/auth/kakao/additional-info');
+        }
+        // 완료: 홈으로
+        else {
+          window.location.href = '/home';
+        }
       } catch (error) {
         console.error('카카오 로그인 실패:', error);
         alert('카카오 로그인에 실패했습니다.');
@@ -33,7 +50,7 @@ const KakaoCallbackPage: React.FC = () => {
     };
 
     handleKakaoCallback();
-  }, []);
+  }, [navigate, searchParams]);
 
   return (
     <div style={{

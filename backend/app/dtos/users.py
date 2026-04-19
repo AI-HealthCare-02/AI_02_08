@@ -63,4 +63,20 @@ class UserInfoResponse(BaseSerializerModel):
     gender: Annotated[Gender | None, Field(None, description="성별 (카카오 로그인 유저는 없을 수 있음)")]
     agree_terms: Annotated[bool, Field(..., description="이용약관 동의 여부")]
     agree_privacy: Annotated[bool, Field(..., description="개인정보 처리방침 동의 여부")]
+    agreed_at: Annotated[datetime | None, Field(None, description="약관 동의 일시")]  # 추가
     created_at: Annotated[datetime, Field(..., description="계정 생성일시")]
+
+
+# 4. 약관 동의 요청 DTO (신규 추가)
+class TermsAgreementRequest(BaseModel):
+    """카카오 로그인 후 약관 동의 처리"""
+
+    agree_terms: Annotated[bool, Field(..., description="이용약관 동의 여부 (필수)")]
+    agree_privacy: Annotated[bool, Field(..., description="개인정보 처리방침 동의 여부 (필수)")]
+
+    @field_validator("agree_terms", "agree_privacy")
+    @classmethod
+    def must_be_agreed(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("필수 약관에 동의해야 합니다.")
+        return v

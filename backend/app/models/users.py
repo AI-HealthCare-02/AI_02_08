@@ -26,6 +26,7 @@ class User(models.Model):
 
     agree_terms = fields.BooleanField(default=False, description="이용약관 동의 여부")
     agree_privacy = fields.BooleanField(default=False, description="개인정보 처리방침 동의 여부")
+    agreed_at = fields.DatetimeField(null=True, description="약관 동의 일시")
 
     last_login = fields.DatetimeField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)

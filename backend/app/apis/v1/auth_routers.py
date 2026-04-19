@@ -10,6 +10,7 @@ from app.core.config import Config, Env
 from app.dependencies.security import get_request_user
 from app.dtos.auth import (
     ChangePasswordRequest,
+    KakaoAdditionalInfoRequest,
     LoginRequest,
     LoginResponse,
     PasswordResetEmailRequest,
@@ -18,10 +19,12 @@ from app.dtos.auth import (
     SignUpRequest,
     TokenRefreshResponse,
 )
+from app.dtos.users import TermsAgreementRequest, UserUpdateRequest
 from app.models.users import User
 from app.services.auth import AuthService
 from app.services.jwt import JwtService
 from app.services.kakao_auth import get_kakao_token, get_kakao_user_info
+from app.services.users import UserManageService
 
 config = Config()
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
@@ -348,6 +351,8 @@ async def change_password(
 2. 카카오 액세스 토큰으로 유저 정보 조회
 3. DB에 없으면 **자동 회원가입**, 있으면 **바로 로그인**
 4. JWT 발급 (Access Token 응답, Refresh Token 쿠키 설정)
+5. 약관 미동의 시 requires_terms_agreement=true 반환
+6. 추가 정보 미입력 시 requires_additional_info=true 반환
     """,
     responses={
         200: {"description": "카카오 로그인 성공"},
@@ -364,13 +369,92 @@ async def kakao_callback(
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"카카오 로그인 실패: {str(e)}") from e
 
-    user = await auth_service.kakao_login(kakao_user_info)
+    user, is_new = await auth_service.kakao_login(kakao_user_info)
     tokens = await auth_service.login(user)
 
+    # 약관 동의 여부 체크
+    requires_terms = not (user.agree_terms and user.agree_privacy)
+
+    # 추가 정보 입력 필요 여부 체크
+    requires_additional_info = not all([user.gender, user.birthday, user.phone_number])
+
     resp = Response(
-        content=json.dumps(LoginResponse(access_token=str(tokens["access_token"])).model_dump()),
+        content=json.dumps(
+            {
+                **LoginResponse(access_token=str(tokens["access_token"])).model_dump(),
+                "is_new": is_new,
+                "requires_terms_agreement": requires_terms,
+                "requires_additional_info": requires_additional_info,  # 추가
+                "user_id": user.id,
+            }
+        ),
         media_type="application/json",
         status_code=status.HTTP_200_OK,
     )
     set_refresh_cookie(resp, tokens["refresh_token"])
     return resp
+
+
+@auth_router.post(
+    "/terms/agree",
+    status_code=status.HTTP_200_OK,
+    summary="약관 동의 처리",
+    description="""
+카카오 로그인 후 약관 동의를 처리합니다.
+
+- 신규 가입 또는 탈퇴 후 재가입 시 호출됩니다.
+- **Authorization 헤더에 Access Token이 필요합니다.**
+    """,
+    responses={
+        200: {"description": "약관 동의 완료"},
+        400: {"description": "필수 약관 미동의"},
+        401: {"description": "인증 실패"},
+    },
+)
+async def agree_terms(
+    request: TermsAgreementRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
+) -> JSONResponse:
+    await user_manage_service.agree_terms(user=user, agreement=request)
+    return JSONResponse(
+        content={"detail": "약관 동의가 완료되었습니다."},
+        status_code=status.HTTP_200_OK,
+    )
+
+
+@auth_router.patch(
+    "/kakao/additional-info",
+    status_code=status.HTTP_200_OK,
+    summary="카카오 로그인 추가 정보 입력",
+    description="""
+카카오 로그인 후 추가 정보를 입력합니다.
+
+- 신규 가입 또는 탈퇴 후 재가입 시 호출됩니다.
+- **Authorization 헤더에 Access Token이 필요합니다.**
+    """,
+    responses={
+        200: {"description": "추가 정보 저장 완료"},
+        401: {"description": "인증 실패"},
+        422: {"description": "입력값 유효성 검증 실패"},
+    },
+)
+async def kakao_additional_info(
+    request: KakaoAdditionalInfoRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
+) -> JSONResponse:
+    # 추가 정보 업데이트
+    await user_manage_service.update_user(
+        user=user,
+        data=UserUpdateRequest(
+            gender=request.gender,
+            birth_date=request.birth_date,
+            phone_number=request.phone_number,
+        ),
+    )
+
+    return JSONResponse(
+        content={"detail": "추가 정보가 저장되었습니다."},
+        status_code=status.HTTP_200_OK,
+    )

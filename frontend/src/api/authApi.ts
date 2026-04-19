@@ -49,7 +49,7 @@ export const getKakaoLoginUrl = (): string => {
   return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`;
 };
 
-// 로그아웃 - refresh_token은 쿠키로 자동 전송
+// 로그아웃
 export const logout = async (): Promise<void> => {
   await apiClient.post('/auth/logout');
 };
@@ -96,4 +96,14 @@ export const changePassword = async (
 // 회원탈퇴
 export const deleteAccount = async (): Promise<void> => {
   await apiClient.delete('/users/me');
+};
+
+// 프로필 수정
+export const updateUserInfo = async (data: {
+  name?: string;
+  phone_number?: string;
+  birth_date?: string;
+  gender?: string;
+}): Promise<void> => {
+  await apiClient.patch('/users/me', data);
 };

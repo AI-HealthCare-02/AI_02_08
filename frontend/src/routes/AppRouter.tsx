@@ -9,8 +9,10 @@ import LoginPage from '../pages/auth/LoginPage';
 import SignupPage from '../pages/auth/SignupPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import KakaoCallbackPage from '../pages/auth/KakaoCallbackPage';
+import KakaoAdditionalInfoPage from '../pages/auth/KakaoAdditionalInfoPage';
 import MedicationPage from '../pages/medication/MedicationPage';
 import MyPage from '../pages/mypage/MyPage';
+import TermsAgreementPage from '../pages/auth/TermsAgreementPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -87,6 +89,14 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/auth/kakao/callback"
         element={<KakaoCallbackPage />}
+      />
+
+
+      <Route path="/terms-agreement" element={<TermsAgreementPage />} />
+
+      <Route
+        path="/auth/kakao/additional-info"
+        element={<KakaoAdditionalInfoPage />}
       />
 
       <Route

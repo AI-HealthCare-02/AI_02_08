@@ -7,9 +7,12 @@ interface User {
   name: string;
   email: string;
   birthday?: string;
+  phoneNumber?: string;
+  gender?: string;
   nickname?: string;
   avatar?: string;
   profileImage?: string;
+  agreeTerms?: boolean;
 }
 
 interface AuthState {
@@ -17,6 +20,8 @@ interface AuthState {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  setUser: (user: User | null) => void;
+  setIsLoggedIn: (isLoggedIn: boolean) => void;
 }
 
 export const useAuth = (): AuthState => {
@@ -36,10 +41,10 @@ export const useAuth = (): AuthState => {
   });
 
   useEffect(() => {
-  if (isLoggedIn) {
-    fetchUserInfo();
-  }
-}, [isLoggedIn]);
+    if (isLoggedIn) {
+      fetchUserInfo();
+    }
+  }, [isLoggedIn]);
 
   const fetchUserInfo = async () => {
     try {
@@ -50,6 +55,8 @@ export const useAuth = (): AuthState => {
         email: response.data.email,
         birthday: response.data.birthday,
         phoneNumber: response.data.phone_number,
+        gender: response.data.gender,
+        agreeTerms: response.data.agree_terms,
       };
       setUser(userInfo);
       localStorage.setItem('user', JSON.stringify(userInfo));
@@ -66,8 +73,12 @@ export const useAuth = (): AuthState => {
       const userResponse = await apiClient.get('/users/me');
       const userInfo: User = {
         id: String(userResponse.data.id),
-        name: userResponse.data.name,  // ✅ 실제 이름
+        name: userResponse.data.name,
         email: userResponse.data.email,
+        birthday: userResponse.data.birthday,
+        phoneNumber: userResponse.data.phone_number,
+        gender: userResponse.data.gender,
+        agreeTerms: userResponse.data.agree_terms
       };
       setUser(userInfo);
       setIsLoggedIn(true);
@@ -92,5 +103,7 @@ export const useAuth = (): AuthState => {
     user,
     login,
     logout,
+    setUser,
+    setIsLoggedIn,
   };
 };
