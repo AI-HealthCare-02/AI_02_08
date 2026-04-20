@@ -1,4 +1,6 @@
-from fastapi import HTTPException
+import json
+
+from fastapi import BackgroundTasks, HTTPException
 from starlette import status
 from tortoise.transactions import in_transaction
 
@@ -47,7 +49,9 @@ class ChatService:
 
     async def delete_session(self, session_id: int, user_id: int) -> None:
         session = await self.get_session(session_id=session_id, user_id=user_id)
-        await self.session_repo.delete(session)
+        async with in_transaction():
+            await self.session_repo.delete(session)
+            await ChatMessage.filter(session_id=session_id).update(is_deleted=True)
 
     async def get_messages(self, session_id: int, user_id: int) -> list[ChatMessage]:
         await self.get_session(session_id=session_id, user_id=user_id)
@@ -84,34 +88,37 @@ class ChatService:
         session_id: int,
         user_id: int,
         user_message: str,
+        background_tasks: BackgroundTasks,
     ) -> ChatMessage:
-        from openai import AsyncOpenAI
+        from app.services.openai_service import generate_chat_answer, summarize_and_deidentify_chat
 
         session = await self.get_session(session_id=session_id, user_id=user_id)
 
         # OCR 컨텍스트 조회
-        context = ""
+        ocr_context = ""
         if session.ocr_id:
             await session.fetch_related("ocr")
             if session.ocr and session.ocr.extracted_data:
-                context = f"처방전 분석 결과: {session.ocr.extracted_data}"
+                ocr_context = json.dumps(session.ocr.extracted_data, ensure_ascii=False)
 
-        client = AsyncOpenAI()
-        system_prompt = f"""당신은 복약 정보 전문 AI 어시스턴트입니다.
-약학 및 복약 관련 질문에만 답변하고, 그 외 질문은 정중히 거절하세요.
-답변 끝에 반드시 '[출처: 식품의약품안전처 e약은요]' 문구를 추가하세요.
-{f"참고 정보: {context}" if context else ""}"""
+        # 현재 저장된 최근 메시지 조회 (Assistant 생성을 위한 컨텍스트, 최대 6건)
+        recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)
+        recent_chat_messages = recent_chat_messages[-6:]  # 최근 6개만
 
-        response = await client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message},
-            ],
+        recent_dicts = [
+            {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content}
+            for m in recent_chat_messages
+        ]
+
+        # 1. AI 응답 생성
+        ai_content = await generate_chat_answer(
+            user_message=user_message,
+            ocr_context=ocr_context,
+            summary=session.summary or "",
+            recent_messages=recent_dicts,
         )
 
-        ai_content = response.choices[0].message.content
-
+        # 2. 메시지 저장 및 횟수 증가
         async with in_transaction():
             message = await self.message_repo.create(
                 session_id=session_id,
@@ -120,6 +127,32 @@ class ChatService:
                 is_faq=False,
             )
             await self.session_repo.increment_message_count(session)
+
+        # 3. 5턴(메시지 누적 5쌍) 초과 시 Background Task로 요약 트리거
+        # 여기서 message_count는 user+assistant 합쳐서 카운트 됨.
+        # (save_message에서 1 증가, get_ai_response에서 1 증가 = 1턴당 2 증가)
+        # 따라서 10 (5턴 * 2) 시점 단위로 요약 실행
+        if session.message_count > 0 and session.message_count % 10 == 0:
+
+            async def trigger_summarization(sess_id: int):
+                sess = await self.session_repo.get_by_id(sess_id)
+                if not sess:
+                    return
+                msgs = await self.message_repo.get_by_session_id(sess_id)
+                msgs_dicts = [
+                    {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content}
+                    for m in msgs[-10:]  # 방금 생성된 5턴치
+                ]
+                new_summary = await summarize_and_deidentify_chat(msgs_dicts)
+
+                # 기존 요약이 있다면 합치거나 대체
+                if sess.summary:
+                    sess.summary = sess.summary + " | " + new_summary
+                else:
+                    sess.summary = new_summary
+                await sess.save(update_fields=["summary"])
+
+            background_tasks.add_task(trigger_summarization, session_id)
 
         return message
 

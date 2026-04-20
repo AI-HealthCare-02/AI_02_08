@@ -200,3 +200,65 @@ async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str,
         return {
             med["name"]: "서비스 지연으로 약품 정보를 불러오지 못했습니다." for med in unmatched_meds if "name" in med
         }
+
+
+async def generate_chat_answer(user_message: str, ocr_context: str, summary: str, recent_messages: list[dict]) -> str:
+    """
+    환자의 질문에 답변을 생성합니다. (PII 요약 반영)
+    """
+    system_prompt = f"""당신은 복약 정보 전문 AI 어시스턴트입니다.
+약학 및 복약 관련 질문에만 답변하고, 그 외 질문은 정중히 거절하세요.
+답변 끝에 반드시 '[출처: 식품의약품안전처 e약은요]' 문구를 추가하세요.
+{"이전 대화 요약: " + summary if summary else ""}
+{"처방전 분석 결과: " + ocr_context if ocr_context else ""}"""
+
+    # GPT 대화 구성
+    messages = [{"role": "system", "content": system_prompt}]
+
+    # 최근 이전 메시지 덧붙이기 (Assistant/User 교차)
+    for msg in recent_messages:
+        messages.append({"role": msg["role"], "content": msg["content"]})
+
+    # 현재 질문
+    messages.append({"role": "user", "content": user_message})
+
+    try:
+        response = await client.chat.completions.create(
+            model=settings.openai_chat_model,
+            messages=messages,
+            temperature=0.5,  # 정보성 문서는 조금 낮게
+            max_tokens=500,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"OpenAI 챗봇 생성 에러: {e}")
+        return "현재 답변을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요."
+
+
+async def summarize_and_deidentify_chat(messages: list[dict]) -> str:
+    """
+    최대 5턴의 대화를 넘겨받아 개인정보나 사담을 날리고, 상태/의학적 내용 위주로 한 줄 요약합니다.
+    """
+    messages_str = "\\n".join([f"{m['role']}: {m['content']}" for m in messages])
+
+    system_prompt = """
+    당신은 의료 채팅 기록 요약 어시스턴트입니다.
+    사용자와 챗봇이 나눈 다음 대화를 확인하고 짧게 1~2문장으로 '요약'해주세요.
+
+    [핵심 규칙]
+    1. 사람 이름, 나이, 등 개인을 식별할 수 있는 정보(PII)는 절대 요약본에 포함하지 마세요. (예: "환자는~" 으로 대체)
+    2. 불필요한 사소한 인사말이나 농담은 모두 배제하세요.
+    3. 어떤 약품에 대해 물어봤는지, 주요 증상이나 궁금증이 무엇인지만 의료적 관점으로 압축하세요.
+    """
+
+    try:
+        response = await client.chat.completions.create(
+            model=settings.openai_chat_model,
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": messages_str}],
+            temperature=0.3,
+            max_tokens=300,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"OpenAI 요약 에러: {e}")
+        return ""

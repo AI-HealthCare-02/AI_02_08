@@ -20,4 +20,4 @@ class ChatMessageRepository:
         )
 
     async def get_by_session_id(self, session_id: int) -> list[ChatMessage]:
-        return await self._model.filter(session_id=session_id).order_by("created_at")
+        return await self._model.filter(session_id=session_id, is_deleted=False).order_by("created_at")

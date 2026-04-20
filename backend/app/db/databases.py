@@ -11,7 +11,6 @@ TORTOISE_APP_MODELS = [
     "app.models.users",
     "app.models.drugs",
     "app.models.medications",
-    "app.models.medications",
     "app.models.email_verification",
     "app.models.refresh_token",
     "app.models.chat_session",

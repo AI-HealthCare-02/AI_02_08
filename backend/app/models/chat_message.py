@@ -18,6 +18,7 @@ class ChatMessage(models.Model):
     sender = fields.CharEnumField(enum_type=SenderType)
     content = fields.TextField()
     is_faq = fields.BooleanField(default=False)
+    is_deleted = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
