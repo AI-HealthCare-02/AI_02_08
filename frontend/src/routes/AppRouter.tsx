@@ -1,7 +1,8 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import ProtectedRoute from '../components/common/ProtectedRoute';
+import { useAuth } from '../hooks/useAuth';
 
 import HomePage from '../pages/home/HomePage';
 import LandingPage from '../pages/home/LandingPage';
@@ -15,14 +16,20 @@ import MyPage from '../pages/mypage/MyPage';
 import TermsAgreementPage from '../pages/auth/TermsAgreementPage';
 
 const AppRoutes: React.FC = () => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <Routes>
       <Route
         path="/"
         element={
-          <MainLayout>
-            <LandingPage />
-          </MainLayout>
+          isLoggedIn ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <MainLayout>
+              <LandingPage />
+            </MainLayout>
+          )
         }
       />
 
@@ -62,18 +69,26 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/login"
         element={
-          <MainLayout>
-            <LoginPage />
-          </MainLayout>
+          isLoggedIn ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <MainLayout>
+              <LoginPage />
+            </MainLayout>
+          )
         }
       />
 
       <Route
         path="/signup"
         element={
-          <MainLayout>
-            <SignupPage />
-          </MainLayout>
+          isLoggedIn ? (
+            <Navigate to="/home" replace />
+          ) : (
+            <MainLayout>
+              <SignupPage />
+            </MainLayout>
+          )
         }
       />
 
