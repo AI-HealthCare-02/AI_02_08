@@ -43,17 +43,16 @@ class Config(BaseSettings):
     # OpenAI
     OPENAI_API_KEY: str = ""
 
-    # AWS S3
+    # AWS 공통 설정 (S3 + SES 통합)
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
-    AWS_S3_BUCKET: str = ""
-    AWS_S3_REGION: str = "ap-northeast-2"
+    AWS_REGION: str = "ap-northeast-2"
 
-    MAIL_USERNAME: str = ""
-    MAIL_PASSWORD: str = ""
-    MAIL_FROM: str = ""
-    MAIL_SERVER: str = "smtp.gmail.com"
-    MAIL_PORT: int = 587
+    # AWS S3
+    AWS_S3_BUCKET: str = ""
+
+    # AWS SES (Boto3 SDK 방식)
+    SES_FROM_EMAIL: str = ""  # 인증된 발신 이메일
 
     # Kakao OAuth
     KAKAO_CLIENT_ID: str = ""
