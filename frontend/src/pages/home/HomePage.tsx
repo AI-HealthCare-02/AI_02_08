@@ -7,6 +7,7 @@ import {
   sendMessageAndGetAIResponse,
   ChatMessage
 } from '../../api/chatApi';
+import yakssoriImg from '../../assets/images/yakssori.png';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -443,9 +444,12 @@ const HomePage: React.FC = () => {
         <div className="home-page__right">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
-              <div>
-                <h2 className="home-page__section-title">🤖 약속이 상담소</h2>
-                <p className="home-page__chatbot-ai-label">AI 기반 건강 상담 서비스</p>
+              <div className="home-page__chatbot-title-row">
+                <img src={yakssoriImg} alt="약속이" className="home-page__chatbot-icon" />
+                <div>
+                  <h2 className="home-page__section-title">약속이 상담소</h2>
+                  <p className="home-page__chatbot-ai-label">AI 기반 건강 상담 서비스</p>
+                </div>
               </div>
               {isChatLoading && <span className="home-page__chatbot-status">답변 준비 중...</span>}
             </div>
