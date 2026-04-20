@@ -34,8 +34,8 @@ const Navbar: React.FC<NavbarProps> = ({
     return location.pathname === path;
   };
 
-  // 현재 페이지가 로그인/회원가입 페이지인지 확인
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  // 현재 페이지가 로그인/회원가입/비밀번호 재설정 페이지인지 확인
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname === '/forgot-password';
 
   return (
     <nav className="navbar">
@@ -105,8 +105,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
         {/* 우측 액션 버튼 */}
         <div className="navbar__actions">
-          {isLoggedIn ? (
-            // 로그인 후 - 사용자 아이콘 + 로그아웃 버튼
+          {isLoggedIn && !isAuthPage ? (
+            // 로그인 후 - 사용자 아이콘 + 로그아웃 버튼 (인증 페이지에서는 숨김)
             <div className="navbar__user">
               <div className="navbar__user-avatar">
                 {user?.profileImage ? (
