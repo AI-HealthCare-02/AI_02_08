@@ -1,7 +1,7 @@
 import json
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, status
 from fastapi.responses import JSONResponse
 
 from app.dependencies.security import get_request_user
@@ -11,7 +11,7 @@ from app.dtos.chat import (
     ChatMessageResponse,
     ChatSessionCreateRequest,
     ChatSessionResponse,
-    FaqItemResponse,
+    # FaqItemResponse, # FAQ 우선 비활성화
 )
 from app.models.users import User
 from app.services.chat import ChatService
@@ -168,11 +168,13 @@ async def get_ai_response(
     request: AiResponseRequest,
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
+    background_tasks: BackgroundTasks,
 ) -> JSONResponse:
     message = await chat_service.get_ai_response(
         session_id=session_id,
         user_id=user.id,
         user_message=request.user_message,
+        background_tasks=background_tasks,
     )
     return JSONResponse(
         content=json.loads(
@@ -189,20 +191,20 @@ async def get_ai_response(
     )
 
 
-@chat_router.get("/faq", status_code=status.HTTP_200_OK)
-async def get_faqs(
-    chat_service: Annotated[ChatService, Depends(ChatService)],
-) -> JSONResponse:
-    faqs = await chat_service.get_faqs()
-    return JSONResponse(
-        content=[
-            FaqItemResponse(
-                id=f.id,
-                question=f.question,
-                answer=f.answer,
-                display_order=f.display_order,
-            ).model_dump()
-            for f in faqs
-        ],
-        status_code=status.HTTP_200_OK,
-    )
+# @chat_router.get("/faq", status_code=status.HTTP_200_OK)
+# async def get_faqs(
+#     chat_service: Annotated[ChatService, Depends(ChatService)],
+# ) -> JSONResponse:
+#     faqs = await chat_service.get_faqs()
+#     return JSONResponse(
+#         content=[
+#             FaqItemResponse(
+#                 id=f.id,
+#                 question=f.question,
+#                 answer=f.answer,
+#                 display_order=f.display_order,
+#             ).model_dump()
+#             for f in faqs
+#         ],
+#         status_code=status.HTTP_200_OK,
+#     )
