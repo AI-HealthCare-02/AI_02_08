@@ -6,8 +6,9 @@ import './HomePage.css';
 const HomePage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle');
+  const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'partial_failure' | 'error'>('idle');
   const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(null);
+  const [ocrErrorMessage, setOcrErrorMessage] = useState<string>('');
   const [showManualInput, setShowManualInput] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -23,8 +24,8 @@ const HomePage: React.FC = () => {
 
   const displayName = user?.name || '사용자';
 
-  // 실제 OCR API 호출
-  const MAX_FILE_SIZE = 15 * 1024 * 1024;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const MAX_IMAGE_DIMENSION = 2000;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
   const validateFile = (file: File): string | null => {
@@ -32,9 +33,40 @@ const HomePage: React.FC = () => {
       return 'JPG, PNG, PDF 형식만 업로드 가능합니다.';
     }
     if (file.size > MAX_FILE_SIZE) {
-      return '파일 크기는 15MB 이하만 가능합니다.';
+      return '파일 크기는 5MB 이하만 가능합니다.';
     }
     return null;
+  };
+
+  const resizeImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      if (file.type === 'application/pdf') {
+        resolve(file);
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        const { width, height } = img;
+        if (width <= MAX_IMAGE_DIMENSION && height <= MAX_IMAGE_DIMENSION) {
+          resolve(file);
+          return;
+        }
+        const ratio = Math.min(MAX_IMAGE_DIMENSION / width, MAX_IMAGE_DIMENSION / height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: file.type }));
+          } else {
+            resolve(file);
+          }
+        }, file.type, 0.9);
+      };
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,27 +80,35 @@ const HomePage: React.FC = () => {
       return;
     }
 
-    setSelectedImage(file);
     setOcrStatus('uploading');
+    const resized = await resizeImage(file);
+    setSelectedImage(resized);
 
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewUrl(e.target?.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(resized);
 
     try {
       setOcrStatus('processing');
-      const result = await analyzePrescription(file);
-      setOcrResults(result.medications);
-      setOcrStatus('completed');
-    } catch (error) {
-      console.error('OCR 분석 실패:', error);
+      setOcrErrorMessage('');
+      const result = await analyzePrescription(resized);
+
+      if (result.status === 'partial_failure' || !result.medications?.length) {
+        setOcrResults([]);
+        setOcrStatus('partial_failure');
+      } else {
+        setOcrResults(result.medications);
+        setOcrStatus('completed');
+      }
+    } catch (err) {
+      console.error('OCR 분석 실패:', err);
+      setOcrErrorMessage(err instanceof Error ? err.message : '처방전 분석 중 오류가 발생했습니다.');
       setOcrStatus('error');
     }
   };
 
-  // 카메라 촬영 후 OCR 호출
   const handleCapturedImage = async (file: File) => {
     const error = validateFile(file);
     if (error) {
@@ -76,22 +116,31 @@ const HomePage: React.FC = () => {
       return;
     }
 
-    setSelectedImage(file);
     setOcrStatus('uploading');
+    const resized = await resizeImage(file);
+    setSelectedImage(resized);
 
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreviewUrl(e.target?.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(resized);
 
     try {
       setOcrStatus('processing');
-      const result = await analyzePrescription(file);
-      setOcrResults(result.medications);
-      setOcrStatus('completed');
-    } catch (error) {
-      console.error('OCR 분석 실패:', error);
+      setOcrErrorMessage('');
+      const result = await analyzePrescription(resized);
+
+      if (result.status === 'partial_failure' || !result.medications?.length) {
+        setOcrResults([]);
+        setOcrStatus('partial_failure');
+      } else {
+        setOcrResults(result.medications);
+        setOcrStatus('completed');
+      }
+    } catch (err) {
+      console.error('OCR 분석 실패:', err);
+      setOcrErrorMessage(err instanceof Error ? err.message : '처방전 분석 중 오류가 발생했습니다.');
       setOcrStatus('error');
     }
   };
@@ -102,6 +151,7 @@ const HomePage: React.FC = () => {
       case 'uploading': return '업로드 중...';
       case 'processing': return 'OCR 처리 중...';
       case 'completed': return '분석완료 ✓';
+      case 'partial_failure': return '부분 인식 ⚠';
       case 'error': return '오류 발생';
       default: return '대기중';
     }
@@ -113,6 +163,7 @@ const HomePage: React.FC = () => {
       case 'uploading': return '#3498db';
       case 'processing': return '#f39c12';
       case 'completed': return '#27ae60';
+      case 'partial_failure': return '#f39c12';
       case 'error': return '#e74c3c';
       default: return '#9A8058';
     }
@@ -137,6 +188,7 @@ const HomePage: React.FC = () => {
     setSelectedImage(null);
     setOcrStatus('idle');
     setOcrResults(null);
+    setOcrErrorMessage('');
     openCameraModal();
   };
 
@@ -253,7 +305,7 @@ const HomePage: React.FC = () => {
                       처방전 이미지를 업로드 하거나<br />
                       드래그 & 드롭하세요
                     </p>
-                    <p className="home-page__upload-formats">JPG, PNG, PDF 최대 15MB</p>
+                    <p className="home-page__upload-formats">JPG, PNG, PDF 최대 5MB (2000x2000px 자동 리사이즈)</p>
                     <p className="home-page__upload-notice">💡 텍스트 인식은 밝기가 중요해요. 밝은 곳에서 촬영해주세요!</p>
                   </label>
                   <div className="home-page__camera-section">
@@ -388,22 +440,42 @@ const HomePage: React.FC = () => {
         </div>
       )}
 
-      {/* OCR 실패 모달 */}
-      {ocrStatus === 'error' && (
+      {/* OCR 부분 실패 모달 (partial_failure) */}
+      {ocrStatus === 'partial_failure' && (
         <div className="home-page__modal-overlay">
           <div className="home-page__modal">
             <button onClick={() => setOcrStatus('idle')} className="home-page__modal-close">✕</button>
+            <div className="home-page__error-icon"></div>
+            <h3 className="home-page__modal-title home-page__modal-title--warning">
+              처방전에서 약물 정보를 찾지 못했습니다.
+            </h3>
+            <p className="home-page__modal-subtitle">
+              이미지가 흐리거나 처방전 형식이 아닐 수 있습니다.<br />
+              더 선명한 이미지로 다시 시도하거나, 직접 입력해주세요.
+            </p>
+            <div className="home-page__modal-buttons">
+              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">재촬영하기</button>
+              <button onClick={() => { setOcrStatus('idle'); setShowManualInput(true); }} className="home-page__modal-btn home-page__modal-btn--secondary">직접 입력하기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* OCR 실패 모달 (서버 에러) */}
+      {ocrStatus === 'error' && (
+        <div className="home-page__modal-overlay">
+          <div className="home-page__modal">
+            <button onClick={() => { setOcrStatus('idle'); setOcrErrorMessage(''); }} className="home-page__modal-close">✕</button>
             <div className="home-page__error-icon"></div>
             <h3 className="home-page__modal-title home-page__modal-title--error">
               처방전 인식에 실패했습니다.
             </h3>
             <p className="home-page__modal-subtitle">
-              이미지가 명확하지 않아 인식에 실패했습니다.<br />
-              다시 촬영하거나 직접 입력해주세요.
+              {ocrErrorMessage || '알 수 없는 오류가 발생했습니다.'}
             </p>
             <div className="home-page__modal-buttons">
               <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">재촬영하기</button>
-              <button onClick={() => setShowManualInput(true)} className="home-page__modal-btn home-page__modal-btn--secondary">수동입력</button>
+              <button onClick={() => { setOcrStatus('idle'); setOcrErrorMessage(''); setShowManualInput(true); }} className="home-page__modal-btn home-page__modal-btn--secondary">직접 입력하기</button>
             </div>
           </div>
         </div>
