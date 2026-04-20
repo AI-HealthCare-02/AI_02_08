@@ -885,11 +885,32 @@
 }
 
 .home-page__chatbot-header {
-  padding: 1.5rem;
+  padding: 0.6rem 1rem;
   border-bottom: 1px solid #ecf0f1;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.home-page__chatbot-icon {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+  clip-path: circle(45%);
+  flex-shrink: 0;
+  margin: -10px -12px -10px -18px;
+}
+
+.home-page__chatbot-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+
+.home-page__chatbot-title-row .home-page__section-title {
+  margin-bottom: 0;
 }
 
 .home-page__chatbot-status {
@@ -900,7 +921,7 @@
 .home-page__chatbot-ai-label {
   font-size: 0.8rem;
   color: #95a5a6;
-  margin: 0.2rem 0 0;
+  margin: 0;
 }
 
 .home-page__chatbot-disclaimer {
