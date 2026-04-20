@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { analyzePrescription, OcrMedicationItem } from '../../api/ocrApi';
+import {
+  createChatSession,
+  getChatMessages,
+  sendMessageAndGetAIResponse,
+  ChatMessage
+} from '../../api/chatApi';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -19,10 +25,33 @@ const HomePage: React.FC = () => {
     usage: '',
     timing: ''
   });
-  const [chatMessage, setChatMessage] = useState('');
-  const { user } = useAuth();
 
+  // 챗봇 관련 state
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatSessionId, setChatSessionId] = useState<number | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const { user } = useAuth();
   const displayName = user?.name || '사용자';
+
+  // 컴포넌트 마운트 시 채팅 세션 생성
+  useEffect(() => {
+    const initChatSession = async () => {
+      try {
+        const session = await createChatSession();
+        setChatSessionId(session.session_id);
+
+        // 초기 메시지 로드
+        const messages = await getChatMessages(session.session_id);
+        setChatMessages(messages);
+      } catch (error) {
+        console.error('채팅 세션 생성 실패:', error);
+      }
+    };
+
+    initChatSession();
+  }, []);
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_IMAGE_DIMENSION = 2000;
@@ -247,11 +276,52 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleChatSubmit = () => {
-    if (chatMessage.trim()) {
-      console.log('챗봇 메시지:', chatMessage);
-      setChatMessage('');
+  // 챗봇 메시지 전송 함수
+  const handleChatSubmit = async () => {
+    if (!chatMessage.trim() || !chatSessionId || isChatLoading) return;
+
+    const userMessageText = chatMessage.trim();
+    setChatMessage('');
+    setIsChatLoading(true);
+
+    // 사용자 메시지 UI에 즉시 표시
+    const tempUserMessage: ChatMessage = {
+      message_id: Date.now(), // 임시 ID
+      session_id: chatSessionId,
+      sender: 'user',
+      content: userMessageText,
+      is_faq: false,
+      created_at: new Date().toISOString(),
+    };
+    setChatMessages(prev => [...prev, tempUserMessage]);
+
+    try {
+      // AI 응답 받기
+      const aiMessage = await sendMessageAndGetAIResponse(chatSessionId, userMessageText);
+
+      // AI 응답 추가
+      setChatMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('챗봇 응답 실패:', error);
+
+      // 에러 메시지 표시
+      const errorMessage: ChatMessage = {
+        message_id: Date.now(),
+        session_id: chatSessionId,
+        sender: 'assistant',
+        content: '죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.',
+        is_faq: false,
+        created_at: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsChatLoading(false);
     }
+  };
+
+  // 추천 질문 클릭 핸들러
+  const handleSuggestionClick = (suggestion: string) => {
+    setChatMessage(suggestion);
   };
 
   return (
@@ -369,7 +439,7 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* 챗봇 섹션 */}
+        {/* 🔧 챗봇 섹션 - 수정 */}
         <div className="home-page__right">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
@@ -377,21 +447,66 @@ const HomePage: React.FC = () => {
                 <h2 className="home-page__section-title">🤖 약속이 상담소</h2>
                 <p className="home-page__chatbot-ai-label">AI 기반 건강 상담 서비스</p>
               </div>
-              {chatMessage.trim() && <span className="home-page__chatbot-status">답변 준비 중</span>}
+              {isChatLoading && <span className="home-page__chatbot-status">답변 준비 중...</span>}
             </div>
+
             <div className="home-page__chat-messages">
               <div className="home-page__chatbot-disclaimer">
                 ⚠️ AI가 제공하는 정보는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다. 정확한 복약 상담은 전문 의료진과 상담해주세요.
               </div>
-              <div className="home-page__chat-message home-page__chat-message--bot">
-                안녕하세요! 복약 관련 궁금한 점을 물어보세요
-              </div>
-              <div className="home-page__chat-suggestions">
-                <button className="home-page__suggestion-btn">부작용이 있나요?</button>
-                <button className="home-page__suggestion-btn">주의사항 알려주세요</button>
-                <button className="home-page__suggestion-btn">몇 번 먹어야 하나요?</button>
-              </div>
+
+              {/* 🆕 실제 채팅 메시지 렌더링 */}
+              {chatMessages.length === 0 ? (
+                <div className="home-page__chat-message home-page__chat-message--bot">
+                  안녕하세요! 복약 관련 궁금한 점을 물어보세요
+                </div>
+              ) : (
+                chatMessages.map((msg) => (
+                  <div
+                    key={msg.message_id}
+                    className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}
+                  >
+                    {msg.content}
+                  </div>
+                ))
+              )}
+
+              {/* 로딩 표시 */}
+              {isChatLoading && (
+                <div className="home-page__chat-message home-page__chat-message--bot">
+                  <div className="home-page__typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              )}
+
+              {/* 추천 질문 (메시지가 없을 때만 표시) */}
+              {chatMessages.length === 0 && (
+                <div className="home-page__chat-suggestions">
+                  <button
+                    className="home-page__suggestion-btn"
+                    onClick={() => handleSuggestionClick('부작용이 있나요?')}
+                  >
+                    부작용이 있나요?
+                  </button>
+                  <button
+                    className="home-page__suggestion-btn"
+                    onClick={() => handleSuggestionClick('주의사항 알려주세요')}
+                  >
+                    주의사항 알려주세요
+                  </button>
+                  <button
+                    className="home-page__suggestion-btn"
+                    onClick={() => handleSuggestionClick('몇 번 먹어야 하나요?')}
+                  >
+                    몇 번 먹어야 하나요?
+                  </button>
+                </div>
+              )}
             </div>
+
             <div className="home-page__chat-input-area">
               <div className="home-page__chat-input-wrapper">
                 <input
@@ -400,9 +515,16 @@ const HomePage: React.FC = () => {
                   onChange={(e) => setChatMessage(e.target.value)}
                   placeholder="궁금한 내용을 물어보세요"
                   className="home-page__chat-input"
-                  onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
+                  onKeyPress={(e) => e.key === 'Enter' && !isChatLoading && handleChatSubmit()}
+                  disabled={isChatLoading}
                 />
-                <button onClick={handleChatSubmit} className="home-page__send-btn">전송</button>
+                <button
+                  onClick={handleChatSubmit}
+                  className="home-page__send-btn"
+                  disabled={!chatMessage.trim() || isChatLoading}
+                >
+                  {isChatLoading ? '...' : '전송'}
+                </button>
               </div>
             </div>
           </div>
