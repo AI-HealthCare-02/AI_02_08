@@ -24,7 +24,7 @@ async def upload_image_to_s3(file: UploadFile) -> str:
     session = aioboto3.Session(
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        region_name=settings.AWS_S3_REGION,
+        region_name=settings.AWS_REGION,  # ← 수정
     )
 
     async with session.client("s3") as s3:
