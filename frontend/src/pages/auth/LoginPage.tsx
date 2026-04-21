@@ -155,32 +155,30 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* 카카오 로그인 버튼 */}
-        <button
-          type="button"
-          onClick={handleKakaoLogin}
-          style={{
-            width: '100%',
-            padding: '12px',
-            backgroundColor: '#FEE500',
-            color: '#000',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '15px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
-        >
-          <img
-            src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
-            alt="카카오"
-            style={{ width: '20px', height: '20px' }}
-          />
-          카카오로 로그인
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+          <button
+            type="button"
+            onClick={handleKakaoLogin}
+            style={{
+              width: '52px',
+              height: '52px',
+              backgroundColor: '#FEE500',
+              border: 'none',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <img
+              src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
+              alt="카카오"
+              style={{ width: '24px', height: '24px' }}
+            />
+          </button>
+          <span style={{ color: '#fff', fontSize: '12px' }}>카카오톡</span>
+        </div>
 
         <div className="login-page__footer">
           <Link to="/forgot-password" className="login-page__link">
