@@ -1,10 +1,9 @@
 import os
-import uuid
 import zoneinfo
-from dataclasses import field
 from enum import StrEnum
 from pathlib import Path
 
+from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,14 +17,14 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
 
     ENV: Env = Env.LOCAL
-    SECRET_KEY: str = f"default-secret-key{uuid.uuid4().hex}"
-    TIMEZONE: zoneinfo.ZoneInfo = field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
+    SECRET_KEY: str = Field(..., alias="SECRET_KEY")
+    TIMEZONE: zoneinfo.ZoneInfo = Field(default_factory=lambda: zoneinfo.ZoneInfo("Asia/Seoul"))
     TEMPLATE_DIR: str = os.path.join(Path(__file__).resolve().parent.parent, "templates")
 
     DB_HOST: str = "localhost"
     DB_PORT: int = 3306
     DB_USER: str = "root"
-    DB_PASSWORD: str = "pw1234"
+    DB_PASSWORD: str = Field(..., alias="DB_PASSWORD")
     DB_NAME: str = "ai_health"
     DB_CONNECT_TIMEOUT: int = 5
     DB_CONNECTION_POOL_MAXSIZE: int = 10
@@ -36,3 +35,58 @@ class Config(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 14 * 24 * 60
     JWT_LEEWAY: int = 5
+
+    # Naver Clova OCR
+    CLOVA_OCR_SECRET: str = ""
+    CLOVA_OCR_URL: str = ""
+
+    # OpenAI
+    OPENAI_API_KEY: str = ""
+
+    # AWS 공통 설정 (S3 + SES 통합)
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "ap-northeast-2"
+
+    # AWS S3
+    AWS_S3_BUCKET: str = ""
+
+    # AWS SES (Boto3 SDK 방식)
+    SES_FROM_EMAIL: str = ""  # 인증된 발신 이메일
+
+    # Kakao OAuth
+    KAKAO_CLIENT_ID: str = ""
+    KAKAO_REDIRECT_URI: str = "http://localhost:3000/auth/kakao/callback"
+
+    @computed_field
+    @property
+    def openai_chat_model(self) -> str:
+        if self.ENV == Env.PROD:
+            return "gpt-4o"
+        return "gpt-4o-mini"
+
+    @computed_field
+    @property
+    def openai_embedding_model(self) -> str:
+        if self.ENV == Env.PROD:
+            return "text-embedding-3-large"
+        return "text-embedding-3-small"
+
+
+# 1. Config 인스턴스 생성
+settings = Config()
+
+# 2. Aerich 및 Tortoise-ORM을 위한 설정 딕셔너리 추가
+TORTOISE_ORM = {
+    "connections": {
+        "default": f"mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+    },
+    "apps": {
+        "models": {
+            "models": ["app.models.users", "aerich.models"],
+            "default_connection": "default",
+        },
+    },
+    "use_tz": True,
+    "timezone": "Asia/Seoul",
+}

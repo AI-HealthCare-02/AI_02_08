@@ -1,0 +1,337 @@
+/* LandingPage.css - 원래 디자인 + 스킵 버튼 추가 */
+
+.landing-page {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* 배경 이미지 */
+.landing-page__background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.62;
+}
+
+.landing-page__background-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #fdf5ee;
+  opacity: 0.28;
+}
+
+/* 컨텐츠 영역 */
+.landing-page__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 슬라이드 영역 - 원형 배경 */
+.landing-page__slide {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.landing-page__slide-content {
+  padding: var(--spacing-8);
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.landing-page__subtitle {
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: var(--spacing-6);
+}
+
+.landing-page__title {
+  font-family: 'IsYun', var(--font-sans);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-regular);
+  color: #ffffff;
+  line-height: var(--line-height-tight);
+  margin-bottom: var(--spacing-6);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.landing-page__description {
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+  white-space: nowrap; /* 한 줄로 표시 */
+}
+
+/* 슬라이드 도트 - 하단 고정 */
+.landing-page__dots {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-2);
+  z-index: 2;
+}
+
+.landing-page__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.landing-page__dot--active {
+  width: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.landing-page__dot:hover {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* CTA 슬라이드 - 원형 배경 */
+.landing-page__cta {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.landing-page__cta-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-6);
+  padding: var(--spacing-8);
+}
+
+.landing-page__cta-logo {
+  height: 180px; /* 랜딩 페이지 로고 대폭 증가 */
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.landing-page__cta-title {
+  font-family: 'IsYun', var(--font-sans);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-regular);
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.landing-page__cta-subtitle {
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.landing-page__cta-button {
+  width: 200px;
+  height: 52px;
+  background-color: var(--color-primary-300);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-base);
+  margin-top: var(--spacing-4);
+}
+
+.landing-page__cta-button:hover {
+  background-color: var(--color-primary-400);
+  box-shadow: var(--shadow-brand);
+  transform: translateY(-2px);
+}
+
+/* 스킵 버튼 - 원 안에 위치 */
+.landing-page__skip-button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-top: calc(var(--spacing-8) + 20px); /* 5px에서 20px로 더 아래로 */
+  transition: var(--transition-base);
+}
+
+.landing-page__skip-button:hover {
+  transform: translateY(-2px);
+  opacity: 0.8;
+}
+
+.landing-page__skip-circle {
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
+}
+
+.landing-page__skip-button:hover .landing-page__skip-circle {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.landing-page__skip-icon {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.landing-page__skip-button:hover .landing-page__skip-icon {
+  color: #ffffff;
+}
+
+.landing-page__skip-text {
+  font-family: 'IsYun', var(--font-sans); /* 이서윤체 */
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  margin-top: var(--spacing-1);
+}
+
+/* 반응형 - 태블릿 */
+@media (max-width: 1024px) {
+  .landing-page__slide,
+  .landing-page__cta {
+    width: 500px;
+    height: 500px;
+  }
+  
+  .landing-page__title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .landing-page__cta-title {
+    font-size: var(--font-size-3xl);
+  }
+  
+  .landing-page__skip-button {
+    margin-top: var(--spacing-6);
+  }
+  
+  .landing-page__skip-circle {
+    width: 55px;
+    height: 55px;
+  }
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 768px) {
+  .landing-page__slide,
+  .landing-page__cta {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .landing-page__slide-content,
+  .landing-page__cta-content {
+    padding: var(--spacing-6);
+  }
+  
+  .landing-page__title {
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .landing-page__description {
+    font-size: var(--font-size-sm);
+  }
+  
+  .landing-page__subtitle {
+    font-size: var(--font-size-xs);
+  }
+  
+  .landing-page__cta-logo {
+    height: 140px; /* 모바일에서도 대폭 증가 */
+  }
+  
+  .landing-page__cta-title {
+    font-size: var(--font-size-2xl);
+  }
+  
+  .landing-page__cta-subtitle {
+    font-size: var(--font-size-md);
+  }
+  
+  .landing-page__cta-button {
+    width: 180px;
+    height: 48px;
+    font-size: var(--font-size-md);
+  }
+  
+  .landing-page__dots {
+    bottom: 60px;
+  }
+  
+  .landing-page__skip-button {
+    margin-top: var(--spacing-6);
+  }
+  
+  .landing-page__skip-circle {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .landing-page__skip-icon {
+    font-size: 20px;
+  }
+  
+  .landing-page__skip-text {
+    font-size: var(--font-size-xs);
+  }
+}

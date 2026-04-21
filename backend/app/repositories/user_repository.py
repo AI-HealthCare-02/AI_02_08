@@ -3,8 +3,10 @@ from typing import Any
 
 from pydantic import EmailStr
 
-from app.core import config
+from app.core.config import Config
 from app.models.users import Gender, User
+
+config = Config()
 
 ALLOWED_UPDATE_FIELDS = ["name", "phone_number", "gender", "birthday"]
 UPDATED_AT_FIELD = "updated_at"
@@ -29,6 +31,8 @@ class UserRepository:
         gender: Gender,
         birthday: date,
         *,
+        agree_terms: bool,
+        agree_privacy: bool,
         is_active: bool = True,
         is_admin: bool = False,
     ) -> User:
@@ -39,6 +43,8 @@ class UserRepository:
             phone_number=phone_number,
             gender=gender,
             birthday=birthday,
+            agree_terms=agree_terms,
+            agree_privacy=agree_privacy,
             is_active=is_active,
             is_admin=is_admin,
         )
@@ -46,11 +52,30 @@ class UserRepository:
     async def get_user_by_email(self, email: str) -> User | None:
         return await self._model.get_or_none(email=email)
 
+    async def get_user_by_kakao_id(self, kakao_id: str) -> User | None:
+        return await self._model.get_or_none(kakao_id=kakao_id)
+
+    async def create_kakao_user(
+        self,
+        kakao_id: str,
+        name: str,
+        email: str | None = None,
+    ) -> User:
+        return await self._model.create(
+            kakao_id=kakao_id,
+            name=name,
+            email=email,
+            is_active=True,
+            is_verified=True,
+            agree_terms=False,
+            agree_privacy=False,
+        )
+
     async def exists_by_email(self, email: str) -> bool:
-        return await self._model.filter(email=email).exists()
+        return await self._model.filter(email=email, is_active=True).exists()
 
     async def exists_by_phone_number(self, phone_number: str) -> bool:
-        return await self._model.filter(phone_number=phone_number).exists()
+        return await self._model.filter(phone_number=phone_number, is_active=True).exists()
 
     async def update_last_login(self, user_id: int) -> None:
         await self._model.filter(id=user_id).update(last_login=datetime.now(config.TIMEZONE))
@@ -59,8 +84,11 @@ class UserRepository:
         update_fields = []
         for key, value in data.items():
             if value is not None:
-                setattr(user, key, value)
-                update_fields.append(key)
+                # birth_date → birthday 변환
+                field_name = "birthday" if key == "birth_date" else key
+                if field_name in ALLOWED_UPDATE_FIELDS:
+                    setattr(user, field_name, value)
+                    update_fields.append(field_name)
         if update_fields:
             user.updated_at = datetime.now(config.TIMEZONE)
             update_fields.append(UPDATED_AT_FIELD)

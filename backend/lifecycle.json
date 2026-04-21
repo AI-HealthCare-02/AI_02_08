@@ -1,0 +1,14 @@
+{
+  "Rules": [
+    {
+      "Id": "delete-prescription-images-after-1-day",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "prescriptions/"
+      },
+      "Expiration": {
+        "Days": 1
+      }
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, patch
+
 from httpx import ASGITransport, AsyncClient
 from starlette import status
 from tortoise.contrib.test import TestCase
@@ -14,12 +16,15 @@ class TestSignupAPI(TestCase):
             "gender": "MALE",
             "birth_date": "1990-01-01",
             "phone_number": "01012345678",
+            "agree_terms": True,
+            "agree_privacy": True,
         }
 
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            response = await client.post("/api/v1/auth/signup", json=signup_data)
+        with patch("app.services.email.EmailService.send_verification_email", new_callable=AsyncMock):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post("/api/v1/auth/signup", json=signup_data)
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.json() == {"detail": "회원가입이 성공적으로 완료되었습니다."}
+        assert response.json() == {"detail": "회원가입이 성공적으로 완료되었습니다. 이메일을 확인해주세요."}
 
     async def test_signup_invalid_email(self):
         signup_data = {

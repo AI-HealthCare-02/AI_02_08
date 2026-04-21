@@ -1,0 +1,284 @@
+/* LoginPage.css - 피그마 디자인 정확히 반영 */
+
+.login-page {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4);
+}
+
+/* 배경 이미지 */
+.login-page__background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.62; /* 피그마 디자인 기준 */
+}
+
+.login-page__background-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #fdf5ee; /* 딤 처리 */
+  opacity: 0.28;
+}
+
+/* 로그인 카드 */
+.login-page__card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px; /* 피그마 디자인 기준 */
+  min-height: 520px;
+  background-color: rgba(255, 255, 255, 0.97); /* 97% 불투명도 */
+  border-radius: 20px; /* 피그마 디자인 기준 */
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+/* 카드 상단 라인 */
+.login-page__card-line {
+  height: 3px; /* 피그마 디자인 기준 */
+  background-color: var(--color-primary-300); /* #78a085 */
+  border-radius: var(--radius-full);
+  width: 100%;
+  margin-bottom: var(--spacing-6);
+}
+
+/* 헤더 영역 */
+.login-page__header {
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.login-page__logo {
+  height: 160px; /* 로그인 페이지 로고 대폭 증가 */
+  width: auto;
+  margin: 0 auto var(--spacing-4);
+}
+
+.login-page__title {
+  font-family: 'IsYun', var(--font-sans); /* 이서윤체 */
+  font-size: var(--font-size-2xl); /* 24px */
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+/* 폼 영역 */
+.login-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+  flex: 1;
+}
+
+/* 전체 에러 메시지 */
+.login-page__error-general {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-dark);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  border: 1px solid var(--color-warning);
+}
+
+/* 입력 필드 */
+.login-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.login-page__input {
+  width: 100%;
+  max-width: 400px; /* 피그마 디자인 기준 */
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-base); /* #f5f5dc 오트밀 색상 */
+  border: 1.5px solid var(--color-border-default);
+  border-radius: var(--radius-md); /* 8px */
+  outline: none;
+  transition: var(--transition-base);
+  margin: 0 auto;
+}
+
+.login-page__input::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.login-page__input:focus {
+  border-color: var(--color-border-focus);
+  background-color: #ffffff;
+}
+
+.login-page__input--error {
+  border-color: var(--color-border-error);
+  background-color: #ffffff;
+}
+
+.login-page__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 비밀번호 필드 래퍼 */
+.login-page__password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-page__password-toggle {
+  position: absolute;
+  right: calc(50% - 200px + var(--spacing-3)); /* 중앙 정렬된 input 기준 */
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  padding: var(--spacing-1);
+  transition: var(--transition-base);
+}
+
+.login-page__password-toggle:hover {
+  color: var(--color-text-brand);
+}
+
+.login-page__password-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 필드별 에러 메시지 */
+.login-page__error {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-warning);
+  text-align: center;
+  margin-top: var(--spacing-1);
+}
+
+/* 로그인 버튼 */
+.login-page__submit {
+  width: 100%;
+  max-width: 400px; /* 피그마 디자인 기준 */
+  height: 48px;
+  background-color: var(--color-primary-300); /* #78a085 */
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg); /* 12px */
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-base);
+  margin: var(--spacing-2) auto 0;
+}
+
+.login-page__submit:hover:not(:disabled) {
+  background-color: var(--color-primary-400);
+  box-shadow: var(--shadow-brand);
+}
+
+.login-page__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 하단 링크 */
+.login-page__footer {
+  text-align: center;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+/* 스킵 버튼 - 흰색 눈에 띄게 */
+.login-page__skip-button {
+  background-color: #ffffff;
+  border: 2px solid var(--color-primary-300);
+  color: var(--color-primary-300);
+  padding: var(--spacing-3) var(--spacing-6);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-base);
+  margin-bottom: var(--spacing-4);
+  position: relative;
+  z-index: 100; /* 더 높은 z-index */
+  pointer-events: auto;
+  box-shadow: var(--shadow-md);
+}
+
+.login-page__skip-button:hover {
+  background-color: var(--color-primary-300);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-brand);
+}
+
+.login-page__link {
+  color: var(--color-text-brand);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-base);
+}
+
+.login-page__link:hover {
+  color: var(--color-primary-400);
+  text-decoration: underline;
+}
+
+.login-page__link--primary {
+  color: var(--color-primary-300);
+  font-weight: var(--font-weight-semibold);
+}
+
+.login-page__signup-prompt {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 768px) {
+  .login-page__card {
+    max-width: 100%;
+    margin: var(--spacing-4);
+    padding: var(--spacing-6);
+    min-height: auto;
+  }
+  
+  .login-page__input,
+  .login-page__submit {
+    max-width: 100%;
+  }
+  
+  .login-page__password-toggle {
+    right: var(--spacing-3);
+  }
+  
+  .login-page__title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .login-page__logo {
+    height: 120px; /* 모바일에서도 대폭 증가 */
+  }
+}

@@ -1,0 +1,197 @@
+.kakao-additional__page {
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4);
+}
+
+.kakao-additional__background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.62;
+}
+
+.kakao-additional__background-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #fdf5ee;
+  opacity: 0.28;
+}
+
+.kakao-additional__container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  background-color: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.kakao-additional__card-line {
+  height: 3px;
+  background-color: var(--color-primary-300);
+  border-radius: var(--radius-full);
+  width: 100%;
+  margin-bottom: var(--spacing-6);
+}
+
+.kakao-additional__header {
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+}
+
+.kakao-additional__logo {
+  height: 160px;
+  width: auto;
+  margin: 0 auto var(--spacing-4);
+}
+
+.kakao-additional__title {
+  font-family: 'IsYun', var(--font-sans);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.kakao-additional__subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-2);
+}
+
+.kakao-additional__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+}
+
+.kakao-additional__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.kakao-additional__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.kakao-additional__select,
+.kakao-additional__input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  background-color: #fff;
+  transition: var(--transition-base);
+}
+
+.kakao-additional__select:focus,
+.kakao-additional__input:focus {
+  outline: none;
+  border-color: var(--color-primary-300);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 100, 160, 120), 0.1);
+}
+
+.kakao-additional__error {
+  color: #ef4444;
+  font-size: var(--font-size-xs);
+  margin-top: var(--spacing-1);
+}
+
+.kakao-additional__terms-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-secondary, #f9fafb);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-border, #e5e7eb);
+}
+
+.kakao-additional__terms-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kakao-additional__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.kakao-additional__terms-view {
+  background: none;
+  border: none;
+  color: var(--color-text-brand, #6b7280);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.kakao-additional__terms-view:hover {
+  color: var(--color-primary-400);
+}
+
+.kakao-additional__submit {
+  width: 100%;
+  height: 48px;
+  background-color: var(--color-primary-300);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: 'Pretendard', var(--font-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-base);
+  margin-top: var(--spacing-4);
+}
+
+.kakao-additional__submit:hover:not(:disabled) {
+  background-color: var(--color-primary-400);
+  box-shadow: var(--shadow-brand);
+}
+
+.kakao-additional__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .kakao-additional__container {
+    max-width: 100%;
+    margin: var(--spacing-4);
+    padding: var(--spacing-6);
+  }
+
+  .kakao-additional__logo {
+    height: 120px;
+  }
+
+  .kakao-additional__title {
+    font-size: var(--font-size-xl);
+  }
+}

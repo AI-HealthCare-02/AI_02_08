@@ -1,0 +1,378 @@
+/* ==============================================
+   components.css — 공통 컴포넌트 스타일
+   이루도담 | Branch: feature/common-components
+   ============================================== */
+
+/* ── Button Base ──────────────────────────────
+   모든 버튼 공통 스타일
+   ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ── Button Variants ──────────────────────────*/
+
+/* Primary: 초록 채우기 버튼 */
+.btn-primary {
+  background-color: var(--color-primary-300);
+  color: #ffffff;
+  border-color: var(--color-primary-300);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-400);
+  border-color: var(--color-primary-400);
+  box-shadow: var(--shadow-brand);
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: var(--color-primary-500);
+}
+
+/* Secondary: 테두리만 있는 버튼 */
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary-300);
+  border-color: var(--color-primary-300);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-primary-100);
+}
+
+.btn-secondary:active:not(:disabled) {
+  background-color: var(--color-primary-200);
+}
+
+/* Warning: 경고 빨간 버튼 */
+.btn-warning {
+  background-color: var(--color-warning-dark);
+  color: #ffffff;
+  border-color: var(--color-warning-dark);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: var(--color-error-dark);
+  box-shadow: var(--shadow-warning);
+}
+
+/* ── Button Sizes ─────────────────────────────*/
+.btn-sm {
+  height: 32px;
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+}
+
+.btn-md {
+  height: 44px;
+  padding: 0 var(--spacing-6);
+  font-size: var(--font-size-md);
+}
+
+.btn-lg {
+  height: 52px;
+  padding: 0 var(--spacing-8);
+  font-size: var(--font-size-lg);
+}
+
+/* ── Button Utils ─────────────────────────────*/
+.btn-full {
+  width: 100%;
+}
+
+/* 로딩 스피너 */
+.btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+}
+
+.btn-text-loading {
+  opacity: 0.8;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Input ────────────────────────────────────
+   텍스트 인풋 컴포넌트 스타일
+   ─────────────────────────────────────────── */
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  width: 100%;
+}
+
+/* 레이블 */
+.input-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* 인풋 컨테이너 */
+.input-container {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-neutral-100);
+  border: 1.5px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-base);
+  overflow: hidden;
+}
+
+.input-container:focus-within {
+  border-color: var(--color-border-focus);
+  background-color: #ffffff;
+}
+
+/* 에러 상태 */
+.input-container.input-error {
+  border-color: var(--color-border-error);
+  background-color: #ffffff;
+}
+
+/* 인풋 필드 */
+.input-field {
+  flex: 1;
+  height: 48px;
+  padding: 0 var(--spacing-4);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+}
+
+.input-field::placeholder {
+  color: var(--color-text-placeholder);
+}
+
+.input-field:disabled {
+  cursor: not-allowed;
+  color: var(--color-text-disabled);
+}
+
+/* 비밀번호 토글 버튼 */
+.input-toggle {
+  padding: 0 var(--spacing-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-base);
+}
+
+.input-toggle:hover {
+  color: var(--color-text-brand);
+}
+
+/* 에러 메시지 */
+.input-error-msg {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-warning);
+}
+
+/* 힌트 텍스트 */
+.input-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ── Modal ────────────────────────────────────
+   모달/팝업 컴포넌트 스타일
+   ─────────────────────────────────────────── */
+ 
+/* 딤 배경 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal);
+  padding: var(--spacing-4);
+}
+ 
+/* 모달 카드 */
+.modal-card {
+  background-color: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 24px rgba(71, 72, 56, 0.15);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+ 
+/* 모달 사이즈 */
+.modal-sm { max-width: 400px; }
+.modal-md { max-width: 480px; }
+.modal-lg { max-width: 600px; }
+ 
+/* 경고 모달 */
+.modal-warning {
+  border-top: 3px solid var(--color-warning);
+}
+ 
+/* 모달 헤더 */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-6) var(--spacing-6) 0;
+}
+ 
+/* 모달 제목 */
+.modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+ 
+.modal-title-warning {
+  color: var(--color-warning-dark);
+}
+ 
+/* 닫기 버튼 */
+.modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  background: none;
+  border: none;
+  margin-left: auto;
+}
+ 
+.modal-close:hover {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-primary);
+}
+ 
+/* 모달 내용 */
+.modal-body {
+  padding: var(--spacing-6);
+}
+
+/* ── Loading ──────────────────────────────────
+   로딩 스피너 컴포넌트 스타일
+   ─────────────────────────────────────────── */
+
+/* 래퍼 */
+.loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+}
+
+/* 전체화면 로딩 */
+.loading-fullscreen {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: var(--z-index-modal);
+}
+
+/* 원형 스피너 컨테이너 */
+.loading-spinner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 스피너 사이즈 */
+.loading-sm { width: 32px;  height: 32px; }
+.loading-md { width: 56px;  height: 56px; }
+.loading-lg { width: 80px;  height: 80px; }
+
+/* 뒤 회색 트랙 원 */
+.loading-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid var(--color-primary-100);
+}
+
+/* 앞 초록 돌아가는 원 */
+.loading-circle {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  border-top-color: var(--color-primary-300);
+  animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 로딩 텍스트 */
+.loading-text {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: 0;
+}
+
+/* 서브 텍스트 */
+.loading-subtext {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: 0;
+}
+
+/* 진행바 트랙 */
+.loading-progress-track {
+  width: 300px;
+  height: 6px;
+  background-color: var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+/* 진행바 */
+.loading-progress-bar {
+  height: 100%;
+  background-color: var(--color-primary-300);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}

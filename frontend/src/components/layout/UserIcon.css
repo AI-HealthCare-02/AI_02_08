@@ -1,0 +1,31 @@
+/* 사용자 아이콘을 CSS로 구현 */
+.navbar__user-icon-css {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.navbar__user-icon-css::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.navbar__user-icon-css::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 10px;
+  background-color: white;
+  border-radius: 8px 8px 0 0;
+}
