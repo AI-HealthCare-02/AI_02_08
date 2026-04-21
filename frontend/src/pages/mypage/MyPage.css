@@ -633,6 +633,26 @@
   transition: all 0.2s;
 }
 
+.mypage__input-wrapper {
+  position: relative;
+}
+
+.mypage__input-wrapper .mypage__form-input {
+  padding-right: 3.5rem;
+}
+
+.mypage__pw-toggle {
+  position: absolute;
+  right: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
 .mypage__form-input:focus {
   outline: none;
   border-color: #78a085;
