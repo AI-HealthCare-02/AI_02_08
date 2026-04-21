@@ -28,6 +28,14 @@ const MyPage: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+  const togglePwVisibility = (setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setter(true);
+    setTimeout(() => setter(false), 1000);
+  };
 
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -442,15 +450,24 @@ const MyPage: React.FC = () => {
             <div className="mypage__modal-form">
               <div className="mypage__form-group">
                 <label>현재 비밀번호</label>
-                <input type="password" placeholder="현재 비밀번호를 입력하세요" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} className="mypage__form-input" />
+                <div className="mypage__input-wrapper">
+                  <input type={showCurrentPw ? 'text' : 'password'} placeholder="현재 비밀번호를 입력하세요" value={passwordData.currentPassword} onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} className="mypage__form-input" />
+                  <button type="button" className="mypage__pw-toggle" onClick={() => togglePwVisibility(setShowCurrentPw)}>{showCurrentPw ? '숨기기' : '보기'}</button>
+                </div>
               </div>
               <div className="mypage__form-group">
                 <label>새 비밀번호</label>
-                <input type="password" placeholder="새 비밀번호를 입력하세요" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="mypage__form-input" />
+                <div className="mypage__input-wrapper">
+                  <input type={showNewPw ? 'text' : 'password'} placeholder="새 비밀번호를 입력하세요" value={passwordData.newPassword} onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})} className="mypage__form-input" />
+                  <button type="button" className="mypage__pw-toggle" onClick={() => togglePwVisibility(setShowNewPw)}>{showNewPw ? '숨기기' : '보기'}</button>
+                </div>
               </div>
               <div className="mypage__form-group">
                 <label>새 비밀번호 확인</label>
-                <input type="password" placeholder="새 비밀번호를 다시 입력하세요" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} className="mypage__form-input" />
+                <div className="mypage__input-wrapper">
+                  <input type={showConfirmPw ? 'text' : 'password'} placeholder="새 비밀번호를 다시 입력하세요" value={passwordData.confirmPassword} onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})} className="mypage__form-input" />
+                  <button type="button" className="mypage__pw-toggle" onClick={() => togglePwVisibility(setShowConfirmPw)}>{showConfirmPw ? '숨기기' : '보기'}</button>
+                </div>
               </div>
             </div>
             <div className="mypage__modal-buttons">
