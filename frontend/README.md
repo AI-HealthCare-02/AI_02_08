@@ -15,14 +15,14 @@
 ```
 frontend/
 ├── public/                  # 정적 파일
-│   ├── favicon.svg
-│   └── icons.svg
 ├── src/
 │   ├── api/                 # 백엔드 API 호출 함수
 │   │   ├── apiClient.ts     # axios 인스턴스 + 토큰 인터셉터
-│   │   └── authApi.ts       # 인증 관련 API (로그인, 회원가입, 토큰 갱신)
+│   │   ├── authApi.ts       # 인증 관련 API (로그인, 회원가입, 토큰 갱신)
+│   │   ├── chatApi.ts       # AI 챗봇 API (메시지 전송, 응답)
+│   │   └── ocrApi.ts        # OCR API (처방전 이미지 업로드, 약 정보 파싱)
 │   ├── assets/
-│   │   ├── images/          # 이미지 리소스 (로고, 배경 등)
+│   │   ├── images/          # 이미지 리소스 (마스코트, 배경 등)
 │   │   └── styles/          # CSS 파일 및 디자인 토큰
 │   │       ├── global.css   # 글로벌 스타일 리셋
 │   │       ├── colors.css   # 색상 변수
@@ -35,29 +35,45 @@ frontend/
 │   │   │   ├── Input.tsx    # 인풋 컴포넌트
 │   │   │   ├── Modal.tsx    # 모달 컴포넌트
 │   │   │   ├── Loading.tsx  # 로딩 컴포넌트
+│   │   │   ├── ProtectedRoute.tsx # 인증 보호 라우트
+│   │   │   ├── ToastContainer.tsx # 토스트 알림
 │   │   │   └── index.ts     # 컴포넌트 export
 │   │   └── layout/          # 레이아웃 컴포넌트
-│   │       └── MainLayout.tsx
+│   │       ├── MainLayout.tsx # 메인 레이아웃
+│   │       └── Navbar.tsx   # 네비게이션 바
+│   ├── contexts/            # React Context
+│   │   └── ToastContext.tsx # 토스트 알림 컨텍스트
+│   ├── hooks/               # 커스텀 훅
+│   │   └── useAuth.ts       # 인증 상태 관리 훅
 │   ├── pages/               # 페이지 단위 컴포넌트
 │   │   ├── auth/
-│   │   │   ├── LoginPage.tsx
-│   │   │   └── SignupPage.tsx
-│   │   └── home/
-│   │       └── HomePage.tsx
+│   │   │   ├── LoginPage.tsx          # 로그인
+│   │   │   ├── SignupPage.tsx         # 회원가입
+│   │   │   ├── ForgotPasswordPage.tsx # 비밀번호 찾기
+│   │   │   ├── KakaoCallbackPage.tsx  # 카카오 로그인 콜백
+│   │   │   ├── KakaoAdditionalInfoPage.tsx # 카카오 추가정보 입력
+│   │   │   ├── TermsAgreementPage.tsx # 약관 동의
+│   │   │   ├── TermsContent.tsx       # 이용약관 내용
+│   │   │   └── PrivacyContent.tsx     # 개인정보처리방침 내용
+│   │   ├── home/
+│   │   │   ├── HomePage.tsx   # 메인 홈 (OCR + 챗봇)
+│   │   │   └── LandingPage.tsx # 랜딩 페이지
+│   │   ├── medication/
+│   │   │   └── MedicationPage.tsx # 복약 관리
+│   │   └── mypage/
+│   │       └── MyPage.tsx     # 마이페이지
 │   ├── routes/              # 라우팅 설정
 │   │   └── AppRouter.tsx
 │   ├── types/               # TypeScript 타입 정의
+│   │   ├── auth.ts          # 인증 관련 타입
 │   │   └── index.ts
-│   ├── App.css              # 앱 스타일
 │   ├── App.tsx              # 루트 컴포넌트
-│   ├── index.css            # 기본 스타일
 │   ├── main.tsx             # 앱 진입점
 │   └── vite-env.d.ts        # Vite 환경 타입
 ├── .gitignore               # Git 무시 파일
 ├── eslint.config.js         # ESLint 설정
 ├── index.html               # HTML 템플릿
 ├── package.json             # 패키지 정보
-├── package-lock.json        # npm 락 파일
 ├── pnpm-lock.yaml           # pnpm 락 파일
 ├── tsconfig.json            # TypeScript 설정
 ├── tsconfig.node.json       # Node.js용 TypeScript 설정
@@ -98,6 +114,8 @@ pnpm preview
 - **Input.tsx** - 레이블, 에러 메시지를 지원하는 인풋
 - **Modal.tsx** - 다양한 크기를 지원하는 모달
 - **Loading.tsx** - 로딩 스피너 컴포넌트
+- **ProtectedRoute.tsx** - 인증된 사용자만 접근 가능한 보호 라우트
+- **ToastContainer.tsx** - 토스트 알림 컴포넌트
 
 사용 예시:
 ```tsx
@@ -118,8 +136,14 @@ import { Button, Input, Modal } from './components/common';
 ```
 
 #### 레이아웃 컴포넌트
-- `src/components/layout/` - 레이아웃 관련 컴포넌트
-- `src/pages/` - 페이지별 컴포넌트
+- **MainLayout.tsx** - 공통 레이아웃 (Navbar 포함)
+- **Navbar.tsx** - 네비게이션 바 (로그인 상태에 따른 UI 분기)
+
+#### 페이지 컴포넌트
+- `pages/auth/` - 인증 관련 (로그인, 회원가입, 카카오 로그인, 비밀번호 찾기, 약관)
+- `pages/home/` - 메인 홈 (OCR 처방전 업로드 + AI 챗봇), 랜딩 페이지
+- `pages/medication/` - 복약 관리
+- `pages/mypage/` - 마이페이지
 
 ### 디자인 시스템
 
@@ -143,12 +167,19 @@ import { Button, Input, Modal } from './components/common';
 
 ### API 호출
 
-- `src/api/apiClient.ts` - axios 인스턴스 및 인터셉터 설정
-- `src/api/` - 도메인별 API 함수들
+- `apiClient.ts` - axios 인스턴스 및 인터셉터 설정 (토큰 자동 갱신)
+- `authApi.ts` - 인증 API (로그인, 회원가입, 토큰 갱신, 카카오 로그인)
+- `chatApi.ts` - AI 챗봇 API (메시지 전송, AI 응답)
+- `ocrApi.ts` - OCR API (처방전 이미지 업로드, 약 정보 파싱, 에러 핸들링)
+
+### 커스텀 훅
+
+- `useAuth.ts` - 로그인 상태 확인 훅
 
 ### 타입 정의
 
-- `src/types/` - TypeScript 타입 및 인터페이스 정의
+- `src/types/auth.ts` - 인증 관련 타입
+- `src/types/index.ts` - 공통 타입
 
 ## 스크립트
 
@@ -160,8 +191,6 @@ import { Button, Input, Modal } from './components/common';
 
 ## 추가 예정 기능
 
-다음 폴더들은 필요에 따라 추가될 예정입니다:
-- `src/hooks/` - 커스텀 훅
 - `src/stores/` - 전역 상태 관리
 - `src/utils/` - 유틸리티 함수
 
