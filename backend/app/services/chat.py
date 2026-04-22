@@ -1,5 +1,3 @@
-import json
-
 from fastapi import BackgroundTasks, HTTPException
 from starlette import status
 from tortoise.transactions import in_transaction
@@ -92,8 +90,8 @@ class ChatService:
     ) -> ChatMessage:
         from app.services.openai_service import (
             generate_chat_answer,
-            summarize_and_deidentify_chat,
             get_medication_context_for_chatbot,
+            summarize_and_deidentify_chat,
         )
 
         session = await self.get_session(session_id=session_id, user_id=user_id)
