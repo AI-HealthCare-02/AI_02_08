@@ -90,16 +90,16 @@ class ChatService:
         user_message: str,
         background_tasks: BackgroundTasks,
     ) -> ChatMessage:
-        from app.services.openai_service import generate_chat_answer, summarize_and_deidentify_chat
+        from app.services.openai_service import (
+            generate_chat_answer,
+            summarize_and_deidentify_chat,
+            get_medication_context_for_chatbot,
+        )
 
         session = await self.get_session(session_id=session_id, user_id=user_id)
 
-        # OCR 컨텍스트 조회
-        ocr_context = ""
-        if session.ocr_id:
-            await session.fetch_related("ocr")
-            if session.ocr and session.ocr.extracted_data:
-                ocr_context = json.dumps(session.ocr.extracted_data, ensure_ascii=False)
+        # 현재 복용 중인 약물 컨텍스트 조회 (OCR 원본 JSON 대신 정제된 데이터 활용)
+        ocr_context = await get_medication_context_for_chatbot(user_id)
 
         # 현재 저장된 최근 메시지 조회 (Assistant 생성을 위한 컨텍스트, 최대 6건)
         recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)

@@ -24,7 +24,7 @@ async def upload_image_to_s3(file: UploadFile) -> str:
     session = aioboto3.Session(
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        region_name=settings.AWS_REGION,  # ← 수정
+        region_name=settings.AWS_REGION,
     )
 
     async with session.client("s3") as s3:
@@ -46,24 +46,24 @@ async def extract_medication_structure(extracted_texts: list[str]) -> list[dict]
     text_joined = "\n".join(extracted_texts)
 
     prompt = f"""
-다음은 한국 처방전에서 OCR로 추출한 텍스트입니다.
-이 텍스트에서 약물 정보를 추출하여 JSON 배열로 반환해주세요.
+다음은 한국 처방전에서 OCR로 추출한 텍스트 덩어리입니다.
+이 텍스트에서 '약품 목록' 부분만 판별하여 각 약물 정보를 추출하고 JSON 배열로 반환해주세요.
 
-추출 규칙:
-1. 약물명은 정제, 캡슐, 액, 정 등이 포함된 실제 약품명을 추출하세요. (예: 타이레놀8시간이알서방정)
-2. dosage는 1회 복용량 (예: "1정", "1포", "5ml")
-3. frequency는 1일 복용 횟수 (예: "1일 3회", "1일 2회")
-4. timing은 복용 시점 (예: "식후 30분", "식전", "취침 전")
-5. 처방전 왼쪽의 약품 목록에 있는 약품명만 추출하세요. 괄호 안에 성분명이 포함된 약품명 형식을 참고하세요.
-6. 제조사명, 병원명, 환자정보 등 불필요한 정보는 제외하세요.
+[추출 규칙 및 고도화 가이드]
+1. 약물명(name): 정제, 캡슐, 액, 연고 등이 포함된 실제 '처방 약품명'을 추출하세요. OCR 오타가 의심되더라도 최대한 처방전에 적힌 고유명사를 보존하세요. (예: 타이레놀8시간이알서방정)
+2. 복용량(dosage): 1회 투약량 또는 복용량 (예: "1정", "1포", "5ml", "0.5정")
+3. 복용 횟수(frequency): 1일 투약 횟수 (예: "1일 3회", "1일 2회", "필요시")
+4. 복용 시점(timing): 복용하는 시간대나 조건 (예: "식후 30분", "식전", "취침 전", "아침/저녁")
+5. 처방전에 기재된 여러 약품이 누락되지 않도록 모두 찾아내어 배열(Array)에 담아주세요.
+6. 주의: 제조사명, 환자명, 병원명, 보험코드 등 약품 복용과 관계없는 텍스트는 완전히 제외하세요.
 
-반드시 아래 JSON 형식으로만 응답하세요. 마크다운 코드블록 없이 순수 JSON만 반환하세요:
+반드시 아래 JSON 형식으로만 응답해야 하며, 마크다운 코드블록(```json 등)이나 부가 설명 없이 순수 JSON만 반환하세요:
 [
   {{
-    "name": "약물명",
-    "dosage": "1회 복용량",
-    "frequency": "1일 복용 횟수",
-    "timing": "복용 시점"
+    "name": "string (약물명)",
+    "dosage": "string (1회 복용량)",
+    "frequency": "string (1일 복용 횟수)",
+    "timing": "string (복용 시점)"
   }}
 ]
 
