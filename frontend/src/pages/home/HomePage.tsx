@@ -227,13 +227,13 @@ const HomePage: React.FC = () => {
 
   const getStatusColor = () => {
     switch (ocrStatus) {
-      case 'idle': return '#9A8058';
-      case 'uploading': return '#3498db';
-      case 'processing': return '#f39c12';
-      case 'completed': return '#27ae60';
-      case 'partial_failure': return '#f39c12';
-      case 'error': return '#e74c3c';
-      default: return '#9A8058';
+      case 'idle': return '#8B7355';
+      case 'uploading': return '#6B5E4E';
+      case 'processing': return '#B8860B';
+      case 'completed': return '#8B7355';
+      case 'partial_failure': return '#B8860B';
+      case 'error': return '#A0522D';
+      default: return '#8B7355';
     }
   };
 
@@ -532,7 +532,7 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* 챗봇 섹션 */}
-        <div className="home-page__right">
+        <div className="home-page__right" id="chatbot-section">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
               <div className="home-page__chatbot-title-row">
@@ -802,6 +802,14 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 모바일 챗봇 플로팅 버튼 */}
+      <button
+        className="home-page__chatbot-fab"
+        onClick={() => document.getElementById('chatbot-section')?.scrollIntoView({ behavior: 'smooth' })}
+      >
+        <img src={yakssoriImg} alt="약속이" className="home-page__chatbot-fab-img" />
+      </button>
     </div>
   );
 };

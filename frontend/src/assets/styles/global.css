@@ -39,7 +39,7 @@ body {
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-normal);
   color: var(--color-text-primary);
-  background-color: #ffffff;
+  background-color: #F5F0E8;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
@@ -115,11 +115,14 @@ select {
   font-size: var(--font-size-md);
   color: var(--color-text-primary);
   outline: none;
+  background-color: #FAF7F2;
+  border: 1px solid #C4B49A;
+  border-radius: 8px;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--color-text-placeholder);
+  color: #A89880;
 }
 
 /* ── 리스트 리셋 ──────────────────────────────*/
@@ -141,22 +144,22 @@ ul, ol {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-subtle);
+  background: #EDE5D8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-neutral-300);
+  background: #C4B49A;
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neutral-400);
+  background: #A89880;
 }
 
 /* ── 선택 텍스트 ──────────────────────────────*/
 ::selection {
-  background-color: var(--color-primary-100);
-  color: var(--color-text-primary);
+  background-color: #EDE5D8;
+  color: #2C2416;
 }
 
 /* ── Utility Classes ──────────────────────────

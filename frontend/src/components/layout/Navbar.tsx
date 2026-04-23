@@ -145,7 +145,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         fontSize: '16px',
                         fontWeight: 'bold',
                         color: 'white',
-                        backgroundColor: '#78a085',
+                        backgroundColor: '#8B7355',
                         width: '36px',
                         height: '36px',
                         borderRadius: '50%'

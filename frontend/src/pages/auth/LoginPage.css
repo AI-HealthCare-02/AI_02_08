@@ -45,7 +45,7 @@
 /* 카드 상단 라인 */
 .login-page__card-line {
   height: 3px; /* 피그마 디자인 기준 */
-  background-color: var(--color-primary-300); /* #78a085 */
+  background-color: var(--color-primary-300); /* #8B7355 */
   border-radius: var(--radius-full);
   width: 100%;
   margin-bottom: var(--spacing-6);
@@ -176,7 +176,7 @@
   width: 100%;
   max-width: 400px; /* 피그마 디자인 기준 */
   height: 48px;
-  background-color: var(--color-primary-300); /* #78a085 */
+  background-color: var(--color-primary-300); /* #8B7355 */
   color: #ffffff;
   border: none;
   border-radius: var(--radius-lg); /* 12px */

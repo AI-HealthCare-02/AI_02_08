@@ -2,8 +2,8 @@
 
 .navbar {
   width: 100%;
-  background-color: var(--color-bg-base); /* #f5f5dc */
-  border-bottom: var(--border-width-thin) solid var(--color-border-default);
+  background-color: #F5F0E8;
+  border-bottom: 1px solid #C4B49A;
 }
 
 .navbar__container {
@@ -60,13 +60,14 @@
 }
 
 .navbar__nav-item:hover {
-  color: var(--color-text-brand);
-  background-color: rgba(120, 160, 133, 0.1);
+  color: #5B8C7A;
+  background-color: rgba(91, 140, 122, 0.08);
 }
 
 .navbar__nav-item--active {
-  color: var(--color-primary-300); /* #78a085 */
-  font-weight: var(--font-weight-regular); /* IsYun은 regular만 사용 */
+  color: #5B8C7A;
+  font-weight: var(--font-weight-regular);
+  border-bottom: 2px solid #5B8C7A;
 }
 
 /* 액션 버튼 영역 */
@@ -102,7 +103,7 @@
 }
 
 .navbar__profile-trigger:hover {
-  background-color: rgba(120, 160, 133, 0.1);
+  background-color: rgba(139, 115, 85, 0.1);
 }
 
 .navbar__dropdown-arrow {
@@ -138,7 +139,7 @@
 }
 
 .navbar__dropdown-item:hover {
-  background-color: rgba(120, 160, 133, 0.08);
+  background-color: rgba(139, 115, 85, 0.08);
 }
 
 .navbar__dropdown-item--logout {
@@ -157,7 +158,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-primary-300);
+  background-color: #8B7355;
 }
 
 .navbar__user-avatar-img {
@@ -218,26 +219,24 @@
 
 /* Primary 버튼 (회원가입) - 채우기 */
 .navbar__button--primary {
-  background-color: var(--color-primary-300); /* #78a085 */
+  background-color: #3D3228;
   color: #ffffff;
-  border-color: var(--color-primary-300);
+  border-color: #3D3228;
 }
 
 .navbar__button--primary:hover {
-  background-color: var(--color-primary-400);
-  border-color: var(--color-primary-400);
-  box-shadow: var(--shadow-brand);
+  opacity: 0.85;
 }
 
 /* Secondary 버튼 (로그인) - 테두리만 */
 .navbar__button--secondary {
   background-color: transparent;
-  color: var(--color-primary-300); /* #78a085 */
-  border-color: var(--color-primary-300);
+  color: #3D3228;
+  border-color: #3D3228;
 }
 
 .navbar__button--secondary:hover {
-  background-color: var(--color-primary-300);
+  background-color: #3D3228;
   color: #ffffff;
 }
 
@@ -353,7 +352,7 @@
     padding: var(--spacing-3) var(--spacing-4);
     text-align: center;
     width: 100%;
-    border-bottom: 1px solid rgba(120, 160, 133, 0.1);
+    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
   }
   
   .navbar__nav-item:last-child {

@@ -113,6 +113,7 @@ const MyPage: React.FC = () => {
         phone_number?: string;
         birth_date?: string;
         gender?: string;
+        profile_image?: string;
       } = {};
 
       if (profileData.name && profileData.name !== user?.name) {
@@ -126,6 +127,9 @@ const MyPage: React.FC = () => {
       }
       if (profileData.gender && profileData.gender !== user?.gender) {
         updateData.gender = profileData.gender;
+      }
+      if (profileData.profileImage !== user?.profileImage) {
+        updateData.profile_image = profileData.profileImage;
       }
 
       await updateUserInfo(updateData);
