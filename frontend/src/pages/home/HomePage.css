@@ -1227,3 +1227,39 @@
   overflow-y: auto;
   max-height: 500px;
 }
+
+
+/* 복약관리 추가 버튼 (타이틀 옆 작은 버튼) */
+.home-page__ocr-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.home-page__ocr-results-header .home-page__section-title {
+  margin-bottom: 0;
+}
+
+.home-page__add-medication-btn-sm {
+  background-color: #78a085;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.home-page__add-medication-btn-sm:hover:not(:disabled) {
+  background-color: #6a8f77;
+  transform: translateY(-1px);
+}
+
+.home-page__add-medication-btn-sm--done {
+  background-color: #27ae60;
+  cursor: default;
+}
