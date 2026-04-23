@@ -11,7 +11,6 @@ OCR 전처리 효과 비교 (A/B) 테스트 — 실제 촬영 이미지
 
 import asyncio
 import json
-import math
 import os
 import struct
 import sys
@@ -48,7 +47,7 @@ GROUND_TRUTH = {
 # ──────────────────────────────────────────────
 # 순수 Python PNG 읽기/쓰기
 # ──────────────────────────────────────────────
-def read_png(file_path: str) -> tuple[int, int, list[list[tuple[int, int, int, int]]]]:
+def read_png(file_path: str) -> tuple[int, int, list[list[tuple[int, int, int, int]]]]:  # noqa: C901
     """PNG 파일을 읽어 (width, height, pixels) 반환."""
     with open(file_path, "rb") as f:
         data = f.read()
@@ -191,18 +190,22 @@ def calculate_match_score(extracted: list[dict], ground_truth: list[dict]) -> di
             if gt_name in ext_name or ext_name in gt_name or (len(gt_name) >= 3 and gt_name[:3] in ext_name):
                 matched += 1
                 found = True
-                match_details.append({
-                    "gt_name": gt["name"],
-                    "ext_name": ext_name,
-                    "matched": True,
-                })
+                match_details.append(
+                    {
+                        "gt_name": gt["name"],
+                        "ext_name": ext_name,
+                        "matched": True,
+                    }
+                )
                 break
         if not found:
-            match_details.append({
-                "gt_name": gt["name"],
-                "ext_name": "(누락)",
-                "matched": False,
-            })
+            match_details.append(
+                {
+                    "gt_name": gt["name"],
+                    "ext_name": "(누락)",
+                    "matched": False,
+                }
+            )
 
     extra = max(0, len(extracted) - len(ground_truth))
 
@@ -217,9 +220,9 @@ def calculate_match_score(extracted: list[dict], ground_truth: list[dict]) -> di
 
 
 def print_divider(title: str):
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  {title}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
 
 async def run_ocr_test(image_path: str, label: str) -> dict | None:
@@ -237,7 +240,7 @@ async def run_ocr_test(image_path: str, label: str) -> dict | None:
             upload_file = UploadFile(filename=file_name, file=tmp)
             s3_url = await upload_image_to_s3(upload_file)
 
-        print(f"  • S3 업로드: ✅ 완료")
+        print("  • S3 업로드: ✅ 완료")
 
         ocr_start = time.time()
         raw_json, parsed_medications = await analyze_prescription_via_clova(s3_url)
@@ -265,6 +268,7 @@ async def run_ocr_test(image_path: str, label: str) -> dict | None:
     except Exception as e:
         print(f"  ❌ {label} 테스트 실패: {e}")
         import traceback
+
         traceback.print_exc()
         return None
 
@@ -318,25 +322,35 @@ async def run_comparison():
         score_b = calculate_match_score(result_b["medications"], GROUND_TRUTH["medications"])
 
         print(f"\n  {'항목':<24} {'A (원본)':>14} {'B (전처리)':>14} {'비교':>10}")
-        print(f"  {'─'*62}")
-        print(f"  {'추출 약물 수':<22} {len(result_a['medications']):>12}개 {len(result_b['medications']):>12}개 {'':>10}")
+        print(f"  {'─' * 62}")
+        print(
+            f"  {'추출 약물 수':<22} {len(result_a['medications']):>12}개 {len(result_b['medications']):>12}개 {'':>10}"
+        )
         print(f"  {'정답 매칭 수':<22} {score_a['matched']:>12}개 {score_b['matched']:>12}개 {'':>10}")
 
-        recall_a = f"{score_a['recall']*100:.0f}%"
-        recall_b = f"{score_b['recall']*100:.0f}%"
-        recall_diff = score_b['recall'] - score_a['recall']
-        recall_comp = f"+{recall_diff*100:.0f}%" if recall_diff > 0 else f"{recall_diff*100:.0f}%" if recall_diff < 0 else "동일"
+        recall_a = f"{score_a['recall'] * 100:.0f}%"
+        recall_b = f"{score_b['recall'] * 100:.0f}%"
+        recall_diff = score_b["recall"] - score_a["recall"]
+        recall_comp = (
+            f"+{recall_diff * 100:.0f}%"
+            if recall_diff > 0
+            else f"{recall_diff * 100:.0f}%"
+            if recall_diff < 0
+            else "동일"
+        )
         print(f"  {'재현율 (Recall)':<22} {recall_a:>12} {recall_b:>12} {recall_comp:>10}")
 
-        prec_a = f"{score_a['precision']*100:.0f}%"
-        prec_b = f"{score_b['precision']*100:.0f}%"
-        prec_diff = score_b['precision'] - score_a['precision']
-        prec_comp = f"+{prec_diff*100:.0f}%" if prec_diff > 0 else f"{prec_diff*100:.0f}%" if prec_diff < 0 else "동일"
+        prec_a = f"{score_a['precision'] * 100:.0f}%"
+        prec_b = f"{score_b['precision'] * 100:.0f}%"
+        prec_diff = score_b["precision"] - score_a["precision"]
+        prec_comp = (
+            f"+{prec_diff * 100:.0f}%" if prec_diff > 0 else f"{prec_diff * 100:.0f}%" if prec_diff < 0 else "동일"
+        )
         print(f"  {'정밀도 (Precision)':<22} {prec_a:>12} {prec_b:>12} {prec_comp:>10}")
 
         time_a = f"{result_a['time']:.1f}초"
         time_b = f"{result_b['time']:.1f}초"
-        time_diff = result_b['time'] - result_a['time']
+        time_diff = result_b["time"] - result_a["time"]
         time_comp = f"+{time_diff:.1f}초" if time_diff > 0 else f"{time_diff:.1f}초"
         print(f"  {'OCR 처리 시간':<22} {time_a:>12} {time_b:>12} {time_comp:>10}")
 
@@ -345,8 +359,8 @@ async def run_comparison():
         print(f"  {'과잉 추출':<22} {score_a['extra_extracted']:>12}개 {score_b['extra_extracted']:>12}개 {'':>10}")
 
         # 세부 매칭
-        print(f"\n  📋 약물별 매칭 상세:")
-        print(f"  {'─'*62}")
+        print("\n  📋 약물별 매칭 상세:")
+        print(f"  {'─' * 62}")
         for i, gt_med in enumerate(GROUND_TRUTH["medications"]):
             gt_name = gt_med["name"]
             detail_a = score_a["details"][i]

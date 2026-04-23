@@ -94,7 +94,7 @@ async def analyze_prescription(
             status=OcrStatus.PENDING,
             extracted_data={
                 "raw": raw_json,
-                "parsed": [m.model_dump() for m in parsed_medications] if parsed_medications else []
+                "parsed": [m.model_dump() for m in parsed_medications] if parsed_medications else [],
             },
         )
     except Exception as e:

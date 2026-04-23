@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from openai import AsyncOpenAI
 
 from app.core.config import settings
-from app.models.medications import AiReport, MedicationIntakeLog, MedicationLog, ReportStatus
+from app.models.medications import AiReport, MedicationIntakeLog, ReportStatus
 
 # 비동기 OpenAI 클라이언트 초기화
 # 오픈AI API 키가 .env 안의 OPENAI_API_KEY 환경변수에 있어야 작동됩니다.
@@ -137,59 +137,79 @@ async def process_ai_report_worker(report_id: str, user_id: int, period: str):
         await AiReport.filter(report_id=report_id).update(status=ReportStatus.FAILED)
 
 
+async def _get_unconfirmed_ocr_context(ocr_id: str) -> list[str]:
+    """방금 분석된 최신 OCR(확정 전) 정보를 텍스트 리스트로 변환합니다."""
+    from app.models.medications import OcrPrescription
+
+    ocr_record = await OcrPrescription.get_or_none(ocr_id=ocr_id)
+    if not ocr_record or not ocr_record.extracted_data:
+        return []
+
+    extracted = ocr_record.extracted_data
+    parsed_list = extracted.get("parsed", []) if isinstance(extracted, dict) else []
+
+    if not parsed_list:
+        return []
+
+    lines = ["[방금 분석된 새 처방전 약물 목록 - 아직 확정되지 않음]"]
+    for med in parsed_list:
+        name, dosage, freq, timing = (
+            med.get("name", ""),
+            med.get("dosage", ""),
+            med.get("frequency", ""),
+            med.get("timing", ""),
+        )
+        desc = med.get("description", "")
+        line = f"- {name}: {dosage} (복용법: {freq}, {timing})"
+        if desc:
+            line += f" -> 특징/설명: {desc}"
+        lines.append(line)
+    lines.append("")  # 구분을 위한 줄바꿈
+    return lines
+
+
+async def _get_confirmed_medication_context(user_id: int) -> list[str]:
+    """사용자가 이미 확정하여 복용 중인 약물 정보를 텍스트 리스트로 변환합니다."""
+    from tortoise.expressions import Q
+
+    from app.models.medications import MedicationLog
+
+    logs = await MedicationLog.filter(
+        Q(user_id=user_id),
+        Q(end_date__gte=datetime.today().date()) | Q(end_date__isnull=True),
+    ).order_by("-created_at")
+
+    if not logs:
+        return []
+
+    lines = ["[현재 복용 중인 약물 목록]"]
+    for log in logs:
+        line = f"- {log.name}: {log.dosage or ''} (복용법: {log.frequency or ''}, {log.timing or ''})"
+        if log.caution:
+            line += f" -> 주의사항: {log.caution}"
+        lines.append(line)
+    return lines
+
+
 async def get_medication_context_for_chatbot(user_id: int, ocr_id: str | None = None) -> str:
     """
     [타 팀원 지원용 브릿지 함수]
     챗봇 파트를 담당하는 팀원이 환자의 '현재 복약 정보'를 GPT 프롬프트에 통째로
     주입할 수 있도록, DB 쿼리를 거쳐 깔끔한 텍스트 덩어리로 반환합니다.
-    end_date가 NULL(미정)인 약품도 '현재 복용 중'으로 간주합니다.
     """
-    from app.models.medications import OcrPrescription, MedicationLog
-    from tortoise.expressions import Q
-
     context_lines = []
 
-    # 1. 특정 처방전(OCR) 세션인 경우 해당 처방전의 분석 결과 포함
+    # 1. OCR 기반 최신(확정 전) 정보 추가
     if ocr_id:
-        ocr_record = await OcrPrescription.get_or_none(ocr_id=ocr_id)
-        if ocr_record and ocr_record.extracted_data:
-            extracted = ocr_record.extracted_data
-            parsed_list = []
-            if isinstance(extracted, dict) and "parsed" in extracted:
-                parsed_list = extracted.get("parsed", [])
-            
-            if parsed_list:
-                context_lines.append("[방금 분석된 새 처방전 약물 목록 - 아직 확정되지 않음]")
-                for med in parsed_list:
-                    name = med.get("name", "")
-                    dosage = med.get("dosage", "")
-                    frequency = med.get("frequency", "")
-                    timing = med.get("timing", "")
-                    desc = med.get("description", "")
-                    line = f"- {name}: {dosage} (복용법: {frequency}, {timing})"
-                    if desc:
-                        line += f" -> 특징/설명: {desc}"
-                    context_lines.append(line)
-                context_lines.append("") # 줄바꿈용
+        context_lines.extend(await _get_unconfirmed_ocr_context(ocr_id))
 
-    # 2. 확정되어 복용 중인 약물 목록 포함
-    logs = await MedicationLog.filter(
-        Q(user_id=user_id),
-        Q(end_date__gte=datetime.today().date()) | Q(end_date__isnull=True),
-    )
+    # 2. 기존 확정된 복용 정보 추가
+    context_lines.extend(await _get_confirmed_medication_context(user_id))
 
-    if not logs and not context_lines:
-        return "현재 복용 중인 약물이 없습니다."
+    if not context_lines:
+        return "현재 복용 중이거나 분석된 약물이 없습니다."
 
-    if logs:
-        context_lines.append("[현재 복용 중인 약물 목록]")
-        for log in logs:
-            line = f"- {log.name}: {log.dosage or ''} (복용법: {log.frequency or ''}, {log.timing or ''})"
-            if log.caution:
-                line += f" -> 주의사항: {log.caution}"
-            context_lines.append(line)
-
-    return "\n".join(context_lines)
+    return "\n".join(context_lines).strip()
 
 
 async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str, str]:

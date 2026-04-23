@@ -4,15 +4,16 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from tortoise import Tortoise
 from httpx import ASGITransport, AsyncClient
+from tortoise import Tortoise
 
 from app.db.databases import TORTOISE_ORM
-from app.main import app
 from app.dependencies.security import get_request_user
+from app.main import app
 from app.models.users import User
 
 TEST_IMAGE_PATH = "/Users/admin/PycharmProjects/8_project/backend/ocr_test_image/rx_01_design_A.png"
+
 
 async def mock_get_user():
     user = await User.get_or_none(email="test_full_flow@example.com")
@@ -23,6 +24,7 @@ async def mock_get_user():
             password_hash="fake",
         )
     return user
+
 
 async def run_test():
     await Tortoise.init(config=TORTOISE_ORM)
@@ -41,7 +43,7 @@ async def run_test():
 
         files = {"image": ("prescription.png", file_bytes, "image/png")}
         response = await ac.post("/api/v1/ai/ocr/prescription", files=files, timeout=60.0)
-        
+
         if response.status_code != 200:
             print("❌ OCR Failed:", response.status_code, response.text)
             return
@@ -53,11 +55,11 @@ async def run_test():
 
         print("\n2. Creating Chat Session...")
         session_resp = await ac.post("/api/v1/chat/sessions", json={"ocr_id": ocr_id})
-        
+
         if session_resp.status_code != 201:
             print("❌ Session Create Failed:", session_resp.status_code, session_resp.text)
             return
-        
+
         session_data = session_resp.json()
         session_id = session_data.get("session_id")
         print(f"✅ Chat Session Created! session_id: {session_id}")
@@ -67,11 +69,9 @@ async def run_test():
         print(f"🙍‍♂️ User: {question}")
 
         chat_resp = await ac.post(
-            f"/api/v1/chat/sessions/{session_id}/ai-response",
-            json={"user_message": question},
-            timeout=60.0
+            f"/api/v1/chat/sessions/{session_id}/ai-response", json={"user_message": question}, timeout=60.0
         )
-        
+
         if chat_resp.status_code != 201:
             print("❌ Chatbot Failed:", chat_resp.status_code, chat_resp.text)
             return
@@ -80,6 +80,7 @@ async def run_test():
         print(f"🤖 AI Answer:\n{chat_data.get('content')}")
 
     await Tortoise.close_connections()
+
 
 if __name__ == "__main__":
     asyncio.run(run_test())
