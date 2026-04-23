@@ -92,7 +92,10 @@ async def analyze_prescription(
             user_id=user.id,
             image_url=s3_url,
             status=OcrStatus.PENDING,
-            extracted_data=raw_json,
+            extracted_data={
+                "raw": raw_json,
+                "parsed": [m.model_dump() for m in parsed_medications] if parsed_medications else []
+            },
         )
     except Exception as e:
         traceback.print_exc()

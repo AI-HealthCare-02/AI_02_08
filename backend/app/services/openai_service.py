@@ -137,30 +137,57 @@ async def process_ai_report_worker(report_id: str, user_id: int, period: str):
         await AiReport.filter(report_id=report_id).update(status=ReportStatus.FAILED)
 
 
-async def get_medication_context_for_chatbot(user_id: int) -> str:
+async def get_medication_context_for_chatbot(user_id: int, ocr_id: str | None = None) -> str:
     """
     [타 팀원 지원용 브릿지 함수]
     챗봇 파트를 담당하는 팀원이 환자의 '현재 복약 정보'를 GPT 프롬프트에 통째로
     주입할 수 있도록, DB 쿼리를 거쳐 깔끔한 텍스트 덩어리로 반환합니다.
     end_date가 NULL(미정)인 약품도 '현재 복용 중'으로 간주합니다.
     """
+    from app.models.medications import OcrPrescription, MedicationLog
     from tortoise.expressions import Q
 
+    context_lines = []
+
+    # 1. 특정 처방전(OCR) 세션인 경우 해당 처방전의 분석 결과 포함
+    if ocr_id:
+        ocr_record = await OcrPrescription.get_or_none(ocr_id=ocr_id)
+        if ocr_record and ocr_record.extracted_data:
+            extracted = ocr_record.extracted_data
+            parsed_list = []
+            if isinstance(extracted, dict) and "parsed" in extracted:
+                parsed_list = extracted.get("parsed", [])
+            
+            if parsed_list:
+                context_lines.append("[방금 분석된 새 처방전 약물 목록 - 아직 확정되지 않음]")
+                for med in parsed_list:
+                    name = med.get("name", "")
+                    dosage = med.get("dosage", "")
+                    frequency = med.get("frequency", "")
+                    timing = med.get("timing", "")
+                    desc = med.get("description", "")
+                    line = f"- {name}: {dosage} (복용법: {frequency}, {timing})"
+                    if desc:
+                        line += f" -> 특징/설명: {desc}"
+                    context_lines.append(line)
+                context_lines.append("") # 줄바꿈용
+
+    # 2. 확정되어 복용 중인 약물 목록 포함
     logs = await MedicationLog.filter(
         Q(user_id=user_id),
         Q(end_date__gte=datetime.today().date()) | Q(end_date__isnull=True),
     )
 
-    if not logs:
+    if not logs and not context_lines:
         return "현재 복용 중인 약물이 없습니다."
 
-    context_lines = []
-    context_lines.append("[현재 복용 중인 약물 목록]")
-    for log in logs:
-        line = f"- {log.name}: {log.dosage or ''} (복용법: {log.frequency or ''}, {log.timing or ''})"
-        if log.caution:
-            line += f" -> 주의사항: {log.caution}"
-        context_lines.append(line)
+    if logs:
+        context_lines.append("[현재 복용 중인 약물 목록]")
+        for log in logs:
+            line = f"- {log.name}: {log.dosage or ''} (복용법: {log.frequency or ''}, {log.timing or ''})"
+            if log.caution:
+                line += f" -> 주의사항: {log.caution}"
+            context_lines.append(line)
 
     return "\n".join(context_lines)
 
@@ -214,9 +241,9 @@ async def generate_chat_answer(user_message: str, ocr_context: str, summary: str
     """
     system_prompt = f"""당신은 복약 정보 전문 AI 어시스턴트입니다.
 약학 및 복약 관련 질문에만 답변하고, 그 외 질문은 정중히 거절하세요.
-답변 끝에 반드시 '[출처: 식품의약품안전처 e약은요]' 문구를 추가하세요.
+답변을 작성할 때, 제공된 [처방전 분석 결과]나 [현재 복용 중인 약물 목록] 등 실제 약품 정보를 인용하거나 참조하여 설명하는 경우에만 답변 제일 끝부분에 '[출처: 식품의약품안전처 e약은요]' 문구를 추가하세요. 단순한 인사말이나 약품 정보가 포함되지 않은 일반적인 대화에는 출처를 표기하지 마세요.
 {"이전 대화 요약: " + summary if summary else ""}
-{"처방전 분석 결과: " + ocr_context if ocr_context else ""}"""
+{"처방전 분석 결과(현재 복용 기록 포함): " + ocr_context if ocr_context else ""}"""
 
     # GPT 대화 구성
     messages = [{"role": "system", "content": system_prompt}]
