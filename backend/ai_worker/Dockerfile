@@ -23,4 +23,4 @@ RUN uv sync --group ai --no-dev
 # 5. 코드 복사
 COPY ./ai_worker ./app
 
-CMD ["echo", "'hello world'"]
+CMD ["tail", "-f", "/dev/null"]
