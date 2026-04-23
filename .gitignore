@@ -73,7 +73,9 @@ $RECYCLE.BIN/
 *.lnkdata/
 
 # AI/Agent Rules
+.agent/
 .agents/
+.planning/
 .gemini/
 .cursorrules
 .clinerules

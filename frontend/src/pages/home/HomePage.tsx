@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { analyzePrescription, OcrMedicationItem } from '../../api/ocrApi';
 import {
@@ -7,15 +7,23 @@ import {
   sendMessageAndGetAIResponse,
   ChatMessage
 } from '../../api/chatApi';
+import {
+  saveOcrResults, loadOcrResults,
+  saveOcrStatus, loadOcrStatus,
+  saveOcrPreview, loadOcrPreview,
+  loadMedications, saveMedications,
+  ocrToMedication
+} from '../../utils/ocrStorage';
 import yakssoriImg from '../../assets/images/yakssori.png';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'partial_failure' | 'error'>('idle');
-  const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(loadOcrPreview());
+  const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'partial_failure' | 'error'>(loadOcrStatus() as any || 'idle');
+  const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(loadOcrResults());
   const [ocrErrorMessage, setOcrErrorMessage] = useState<string>('');
+  const [addedToMedication, setAddedToMedication] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -32,6 +40,28 @@ const HomePage: React.FC = () => {
   const [chatSessionId, setChatSessionId] = useState<number | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
+
+  // 채팅 메시지 변경 시 자동 스크롤
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  }, [chatMessages, isChatLoading]);
+
+  const handleChatScroll = () => {
+    if (chatMessagesRef.current) {
+      setShowScrollTop(chatMessagesRef.current.scrollTop > 200);
+    }
+  };
+
+  const scrollToTop = () => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const { user } = useAuth();
   const displayName = user?.name || '사용자';
@@ -116,7 +146,9 @@ const HomePage: React.FC = () => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
+      const url = e.target?.result as string;
+      setPreviewUrl(url);
+      saveOcrPreview(url);
     };
     reader.readAsDataURL(resized);
 
@@ -131,6 +163,8 @@ const HomePage: React.FC = () => {
       } else {
         setOcrResults(result.medications);
         setOcrStatus('completed');
+        saveOcrResults(result.medications);
+        saveOcrStatus('completed');
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
@@ -152,7 +186,9 @@ const HomePage: React.FC = () => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
+      const url = e.target?.result as string;
+      setPreviewUrl(url);
+      saveOcrPreview(url);
     };
     reader.readAsDataURL(resized);
 
@@ -167,6 +203,8 @@ const HomePage: React.FC = () => {
       } else {
         setOcrResults(result.medications);
         setOcrStatus('completed');
+        saveOcrResults(result.medications);
+        saveOcrStatus('completed');
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
@@ -201,13 +239,16 @@ const HomePage: React.FC = () => {
 
   const handleManualInputSubmit = () => {
     if (manualInputData.name && manualInputData.dosage) {
-      setOcrResults([{
+      const results: OcrMedicationItem[] = [{
         name: manualInputData.name,
         dosage: manualInputData.dosage,
         frequency: manualInputData.usage || '',
         timing: manualInputData.timing || '',
-      }]);
+      }];
+      setOcrResults(results);
       setOcrStatus('completed');
+      saveOcrResults(results);
+      saveOcrStatus('completed');
       setShowManualInput(false);
       setManualInputData({ name: '', dosage: '', usage: '', timing: '' });
     }
@@ -219,7 +260,19 @@ const HomePage: React.FC = () => {
     setOcrStatus('idle');
     setOcrResults(null);
     setOcrErrorMessage('');
+    setAddedToMedication(false);
+    saveOcrStatus('idle');
+    sessionStorage.removeItem('ocr_results');
+    sessionStorage.removeItem('ocr_preview');
     openCameraModal();
+  };
+
+  const handleAddToMedication = () => {
+    if (!ocrResults?.length) return;
+    const existing = loadMedications();
+    const newMeds = ocrResults.map(ocrToMedication);
+    saveMedications([...existing, ...newMeds]);
+    setAddedToMedication(true);
   };
 
   const openCameraModal = () => {
@@ -321,8 +374,39 @@ const HomePage: React.FC = () => {
   };
 
   // 추천 질문 클릭 핸들러
-  const handleSuggestionClick = (suggestion: string) => {
-    setChatMessage(suggestion);
+  const handleSuggestionClick = async (suggestion: string) => {
+    setChatMessage('');
+    setShowFaq(false);
+    if (!chatSessionId || isChatLoading) return;
+
+    setIsChatLoading(true);
+    const tempUserMessage: ChatMessage = {
+      message_id: Date.now(),
+      session_id: chatSessionId,
+      sender: 'user',
+      content: suggestion,
+      is_faq: false,
+      created_at: new Date().toISOString(),
+    };
+    setChatMessages(prev => [...prev, tempUserMessage]);
+
+    try {
+      const aiMessage = await sendMessageAndGetAIResponse(chatSessionId, suggestion);
+      setChatMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('챗봇 응답 실패:', error);
+      const errorMsg: ChatMessage = {
+        message_id: Date.now(),
+        session_id: chatSessionId,
+        sender: 'assistant',
+        content: '죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.',
+        is_faq: false,
+        created_at: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   return (
@@ -392,9 +476,20 @@ const HomePage: React.FC = () => {
 
           {/* OCR 결과 섹션 */}
           <div className="home-page__ocr-results">
-            <h2 className="home-page__section-title">
-              처방전 인식 결과 {ocrResults ? '✓' : ''}
-            </h2>
+            <div className="home-page__ocr-results-header">
+              <h2 className="home-page__section-title">
+                처방전 인식 결과 {ocrResults ? '✓' : ''}
+              </h2>
+              {ocrResults && ocrResults.length > 0 && (
+                <button
+                  onClick={handleAddToMedication}
+                  className={`home-page__add-medication-btn-sm ${addedToMedication ? 'home-page__add-medication-btn-sm--done' : ''}`}
+                  disabled={addedToMedication}
+                >
+                  {addedToMedication ? '✓ 추가됨' : '💊 복약관리에 추가'}
+                </button>
+              )}
+            </div>
 
             <div className="home-page__medicine-categories">
               {/* 약 목록 */}
@@ -402,11 +497,13 @@ const HomePage: React.FC = () => {
                 <h3 className="home-page__category-title home-page__category-title--blue">약 목록</h3>
                 <div className="home-page__medicine-tags">
                   {ocrResults && ocrResults.length > 0 ? (
-                    ocrResults.map((med, index) => (
-                      <span key={index} className="home-page__medicine-tag home-page__medicine-tag--blue">
-                        {med.name}{med.dosage ? ` ${med.dosage}` : ''}
-                      </span>
-                    ))
+                    <>
+                      {ocrResults.map((med, index) => (
+                        <span key={index} className="home-page__medicine-tag home-page__medicine-tag--blue">
+                          {med.name}{med.dosage ? ` ${med.dosage}` : ''}
+                        </span>
+                      ))}
+                    </>
                   ) : (
                     <div className="home-page__empty-state">처방전을 업로드하면 약 목록이 표시됩니다</div>
                   )}
@@ -429,18 +526,12 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 상호작용 - 추후 연동 예정 */}
-              <div className="home-page__medicine-category">
-                <h3 className="home-page__category-title home-page__category-title--teal">상호작용</h3>
-                <div className="home-page__medicine-tags">
-                  <div className="home-page__empty-state">상호작용 정보가 표시됩니다</div>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>
 
-        {/* 🔧 챗봇 섹션 - 수정 */}
+        {/* 챗봇 섹션 */}
         <div className="home-page__right">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
@@ -454,10 +545,11 @@ const HomePage: React.FC = () => {
               {isChatLoading && <span className="home-page__chatbot-status">답변 준비 중...</span>}
             </div>
 
-            <div className="home-page__chat-messages">
-              <div className="home-page__chatbot-disclaimer">
-                ⚠️ AI가 제공하는 정보는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다. 정확한 복약 상담은 전문 의료진과 상담해주세요.
-              </div>
+            <div className="home-page__chatbot-disclaimer">
+              ⚠️ AI가 제공하는 정보는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다. 정확한 복약 상담은 전문 의료진과 상담해주세요.
+            </div>
+
+            <div className="home-page__chat-messages" ref={chatMessagesRef} onScroll={handleChatScroll}>
 
               {/* 🆕 실제 채팅 메시지 렌더링 */}
               {chatMessages.length === 0 ? (
@@ -486,27 +578,28 @@ const HomePage: React.FC = () => {
                 </div>
               )}
 
-              {/* 추천 질문 (메시지가 없을 때만 표시) */}
-              {chatMessages.length === 0 && (
-                <div className="home-page__chat-suggestions">
-                  <button
-                    className="home-page__suggestion-btn"
-                    onClick={() => handleSuggestionClick('부작용이 있나요?')}
-                  >
-                    부작용이 있나요?
-                  </button>
-                  <button
-                    className="home-page__suggestion-btn"
-                    onClick={() => handleSuggestionClick('주의사항 알려주세요')}
-                  >
-                    주의사항 알려주세요
-                  </button>
-                  <button
-                    className="home-page__suggestion-btn"
-                    onClick={() => handleSuggestionClick('몇 번 먹어야 하나요?')}
-                  >
-                    몇 번 먹어야 하나요?
-                  </button>
+              {showScrollTop && (
+                <button onClick={scrollToTop} className="home-page__scroll-top-btn">
+                  ↑ 맨위로
+                </button>
+              )}
+            </div>
+
+            <div className="home-page__faq-wrapper">
+              <button
+                className={`home-page__faq-bubble ${showFaq ? 'home-page__faq-bubble--active' : ''}`}
+                onClick={() => setShowFaq(!showFaq)}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <ellipse cx="12" cy="11" rx="9" ry="8"/>
+                  <path d="M17 17.5C17 17.5 19.5 19.5 21 20c-1-0.5-2.5-1-3.5-3"/>
+                </svg>
+              </button>
+              {showFaq && (
+                <div className="home-page__faq-popup">
+                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('부작용이 있나요?')}>부작용이 있나요?</button>
+                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('주의사항 알려주세요')}>주의사항 알려주세요</button>
+                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('몇 번 먹어야 하나요?')}>몇 번 먹어야 하나요?</button>
                 </div>
               )}
             </div>

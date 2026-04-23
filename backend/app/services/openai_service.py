@@ -142,8 +142,14 @@ async def get_medication_context_for_chatbot(user_id: int) -> str:
     [타 팀원 지원용 브릿지 함수]
     챗봇 파트를 담당하는 팀원이 환자의 '현재 복약 정보'를 GPT 프롬프트에 통째로
     주입할 수 있도록, DB 쿼리를 거쳐 깔끔한 텍스트 덩어리로 반환합니다.
+    end_date가 NULL(미정)인 약품도 '현재 복용 중'으로 간주합니다.
     """
-    logs = await MedicationLog.filter(user_id=user_id, end_date__gte=datetime.today().date())
+    from tortoise.expressions import Q
+
+    logs = await MedicationLog.filter(
+        Q(user_id=user_id),
+        Q(end_date__gte=datetime.today().date()) | Q(end_date__isnull=True),
+    )
 
     if not logs:
         return "현재 복용 중인 약물이 없습니다."

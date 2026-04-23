@@ -191,7 +191,7 @@ const SignupPage: React.FC = () => {
 
   const handleKakaoSignup = () => {
     const KAKAO_CLIENT_ID = import.meta.env.VITE_KAKAO_CLIENT_ID;
-    const REDIRECT_URI = 'http://localhost:3000/auth/kakao/callback';
+    const REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI || 'http://localhost:3000/auth/kakao/callback';
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
     window.location.href = kakaoAuthUrl;
   };
