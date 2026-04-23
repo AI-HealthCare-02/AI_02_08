@@ -1,42 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { loadMedications, saveMedications, StoredMedication } from '../../utils/ocrStorage';
 import './MedicationPage.css';
 
-interface Medication {
-  id: string;
-  name: string;
-  dosage: string;
-  frequency: string;
-  timing: string;
-  startDate: string;
-  endDate?: string;
-  notes?: string;
-  isActive: boolean;
-}
+type Medication = StoredMedication;
 
 const MedicationPage: React.FC = () => {
-  const [medications, setMedications] = useState<Medication[]>([
-    {
-      id: '1',
-      name: '타이레놀정',
-      dosage: '500mg',
-      frequency: '1일 3회',
-      timing: '식후',
-      startDate: '2024-04-01',
-      endDate: '2024-04-15',
-      notes: '두통이 심할 때만 복용',
-      isActive: true
-    },
-    {
-      id: '2',
-      name: '루코페트정',
-      dosage: '250mg',
-      frequency: '1일 2회',
-      timing: '식전',
-      startDate: '2024-04-05',
-      notes: '위장 보호를 위해 복용',
-      isActive: false
-    }
-  ]);
+  const [medications, setMedications] = useState<Medication[]>(() => {
+    const stored = loadMedications();
+    return stored.length > 0 ? stored : [];
+  });
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -50,6 +22,19 @@ const MedicationPage: React.FC = () => {
     notes: '',
     isActive: true
   });
+
+  // 페이지 진입 시 sessionStorage에서 최신 데이터 로드
+  useEffect(() => {
+    const stored = loadMedications();
+    if (stored.length > 0) {
+      setMedications(stored);
+    }
+  }, []);
+
+  // medications 변경 시 sessionStorage에 저장
+  useEffect(() => {
+    saveMedications(medications);
+  }, [medications]);
 
   const handleAddMedication = () => {
     if (newMedication.name && newMedication.dosage) {
@@ -81,13 +66,13 @@ const MedicationPage: React.FC = () => {
   };
 
   const toggleMedicationStatus = (id: string) => {
-    setMedications(medications.map(med => 
+    setMedications(prev => prev.map(med => 
       med.id === id ? { ...med, isActive: !med.isActive } : med
     ));
   };
 
   const deleteMedication = (id: string) => {
-    setMedications(medications.filter(med => med.id !== id));
+    setMedications(prev => prev.filter(med => med.id !== id));
   };
 
   // 필터링된 약물 목록 가져오기

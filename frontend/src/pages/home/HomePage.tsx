@@ -7,15 +7,23 @@ import {
   sendMessageAndGetAIResponse,
   ChatMessage
 } from '../../api/chatApi';
+import {
+  saveOcrResults, loadOcrResults,
+  saveOcrStatus, loadOcrStatus,
+  saveOcrPreview, loadOcrPreview,
+  loadMedications, saveMedications,
+  ocrToMedication
+} from '../../utils/ocrStorage';
 import yakssoriImg from '../../assets/images/yakssori.png';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'partial_failure' | 'error'>('idle');
-  const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(loadOcrPreview());
+  const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'partial_failure' | 'error'>(loadOcrStatus() as any || 'idle');
+  const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(loadOcrResults());
   const [ocrErrorMessage, setOcrErrorMessage] = useState<string>('');
+  const [addedToMedication, setAddedToMedication] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -116,7 +124,9 @@ const HomePage: React.FC = () => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
+      const url = e.target?.result as string;
+      setPreviewUrl(url);
+      saveOcrPreview(url);
     };
     reader.readAsDataURL(resized);
 
@@ -131,6 +141,8 @@ const HomePage: React.FC = () => {
       } else {
         setOcrResults(result.medications);
         setOcrStatus('completed');
+        saveOcrResults(result.medications);
+        saveOcrStatus('completed');
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
@@ -152,7 +164,9 @@ const HomePage: React.FC = () => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
+      const url = e.target?.result as string;
+      setPreviewUrl(url);
+      saveOcrPreview(url);
     };
     reader.readAsDataURL(resized);
 
@@ -167,6 +181,8 @@ const HomePage: React.FC = () => {
       } else {
         setOcrResults(result.medications);
         setOcrStatus('completed');
+        saveOcrResults(result.medications);
+        saveOcrStatus('completed');
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
@@ -201,13 +217,16 @@ const HomePage: React.FC = () => {
 
   const handleManualInputSubmit = () => {
     if (manualInputData.name && manualInputData.dosage) {
-      setOcrResults([{
+      const results: OcrMedicationItem[] = [{
         name: manualInputData.name,
         dosage: manualInputData.dosage,
         frequency: manualInputData.usage || '',
         timing: manualInputData.timing || '',
-      }]);
+      }];
+      setOcrResults(results);
       setOcrStatus('completed');
+      saveOcrResults(results);
+      saveOcrStatus('completed');
       setShowManualInput(false);
       setManualInputData({ name: '', dosage: '', usage: '', timing: '' });
     }
@@ -219,7 +238,19 @@ const HomePage: React.FC = () => {
     setOcrStatus('idle');
     setOcrResults(null);
     setOcrErrorMessage('');
+    setAddedToMedication(false);
+    saveOcrStatus('idle');
+    sessionStorage.removeItem('ocr_results');
+    sessionStorage.removeItem('ocr_preview');
     openCameraModal();
+  };
+
+  const handleAddToMedication = () => {
+    if (!ocrResults?.length) return;
+    const existing = loadMedications();
+    const newMeds = ocrResults.map(ocrToMedication);
+    saveMedications([...existing, ...newMeds]);
+    setAddedToMedication(true);
   };
 
   const openCameraModal = () => {
@@ -392,9 +423,20 @@ const HomePage: React.FC = () => {
 
           {/* OCR 결과 섹션 */}
           <div className="home-page__ocr-results">
-            <h2 className="home-page__section-title">
-              처방전 인식 결과 {ocrResults ? '✓' : ''}
-            </h2>
+            <div className="home-page__ocr-results-header">
+              <h2 className="home-page__section-title">
+                처방전 인식 결과 {ocrResults ? '✓' : ''}
+              </h2>
+              {ocrResults && ocrResults.length > 0 && (
+                <button
+                  onClick={handleAddToMedication}
+                  className={`home-page__add-medication-btn-sm ${addedToMedication ? 'home-page__add-medication-btn-sm--done' : ''}`}
+                  disabled={addedToMedication}
+                >
+                  {addedToMedication ? '✓ 추가됨' : '💊 복약관리에 추가'}
+                </button>
+              )}
+            </div>
 
             <div className="home-page__medicine-categories">
               {/* 약 목록 */}
@@ -402,11 +444,13 @@ const HomePage: React.FC = () => {
                 <h3 className="home-page__category-title home-page__category-title--blue">약 목록</h3>
                 <div className="home-page__medicine-tags">
                   {ocrResults && ocrResults.length > 0 ? (
-                    ocrResults.map((med, index) => (
-                      <span key={index} className="home-page__medicine-tag home-page__medicine-tag--blue">
-                        {med.name}{med.dosage ? ` ${med.dosage}` : ''}
-                      </span>
-                    ))
+                    <>
+                      {ocrResults.map((med, index) => (
+                        <span key={index} className="home-page__medicine-tag home-page__medicine-tag--blue">
+                          {med.name}{med.dosage ? ` ${med.dosage}` : ''}
+                        </span>
+                      ))}
+                    </>
                   ) : (
                     <div className="home-page__empty-state">처방전을 업로드하면 약 목록이 표시됩니다</div>
                   )}
@@ -429,13 +473,7 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 상호작용 - 추후 연동 예정 */}
-              <div className="home-page__medicine-category">
-                <h3 className="home-page__category-title home-page__category-title--teal">상호작용</h3>
-                <div className="home-page__medicine-tags">
-                  <div className="home-page__empty-state">상호작용 정보가 표시됩니다</div>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>
