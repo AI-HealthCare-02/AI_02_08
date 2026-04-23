@@ -1,0 +1,27 @@
+{
+  "ocrId": "ocr_20260422_test01",
+  "status": "success",
+  "medications": [
+    {
+      "name": "아세트아미노펜정",
+      "dosage": "1정",
+      "frequency": "1일 3회",
+      "timing": "식후 30분",
+      "description": "이 약은 감기로 인한 발열 및 동통(통증), 두통, 신경통, 근육통, 월경통, 염좌통(삔 통증)과 치통, 관절통, 류마티양 동통(통증)에 사용합니다."
+    },
+    {
+      "name": "슈도에페드린염산염정",
+      "dosage": "1정",
+      "frequency": "1일 3회",
+      "timing": "식후",
+      "description": "비충혈 완화제로 코막힘을 완화하는 데 사용됩니다."
+    },
+    {
+      "name": "브롬헥신염산염캡슐",
+      "dosage": "1캡슐",
+      "frequency": "1일 3회",
+      "timing": "식후",
+      "description": "가래를 묽게 하여 기침을 완화하는 데 도움을 줍니다."
+    }
+  ]
+}

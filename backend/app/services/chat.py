@@ -96,8 +96,8 @@ class ChatService:
 
         session = await self.get_session(session_id=session_id, user_id=user_id)
 
-        # 현재 복용 중인 약물 컨텍스트 조회 (OCR 원본 JSON 대신 정제된 데이터 활용)
-        ocr_context = await get_medication_context_for_chatbot(user_id)
+        # 현재 복용 중인 약물 컨텍스트 조회 (OCR 원본 JSON 대신 정제된 데이터 활용 + 현재 OCR 세션 데이터 포함)
+        ocr_context = await get_medication_context_for_chatbot(user_id, session.ocr_id)
 
         # 현재 저장된 최근 메시지 조회 (Assistant 생성을 위한 컨텍스트, 최대 6건)
         recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)
