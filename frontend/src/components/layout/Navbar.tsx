@@ -129,10 +129,9 @@ const Navbar: React.FC<NavbarProps> = ({
                       alt="프로필" 
                       className="navbar__user-avatar-image"
                       style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        objectFit: 'cover'
+                        width: '24px',
+                        height: '24px',
+                        objectFit: 'contain'
                       }}
                     />
                   ) : (

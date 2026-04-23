@@ -486,7 +486,7 @@ const HomePage: React.FC = () => {
                   className={`home-page__add-medication-btn-sm ${addedToMedication ? 'home-page__add-medication-btn-sm--done' : ''}`}
                   disabled={addedToMedication}
                 >
-                  {addedToMedication ? '✓ 추가됨' : '💊 복약관리에 추가'}
+                  {addedToMedication ? '✓ 추가됨' : '복약관리에 추가'}
                 </button>
               )}
             </div>

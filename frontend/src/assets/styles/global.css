@@ -43,6 +43,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  cursor: url('/yakssori_cursor_32.png') 4 0, auto !important;
+}
+
+*, *::before, *::after {
+  cursor: url('/yakssori_cursor_32.png') 4 0, auto !important;
 }
 
 /* 이서윤체 강제 적용 */

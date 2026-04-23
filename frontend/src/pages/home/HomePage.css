@@ -330,7 +330,9 @@
 }
 
 .home-page__modal-btn--secondary:hover {
-  background-color: #F5F0E8;
+  background-color: #8B7355;
+  color: white;
+  border-color: #8B7355;
 }
 
 /* 수동 입력 모달 */
@@ -607,7 +609,8 @@
 }
 
 .home-page__camera-capture-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .home-page__camera-spacer {
@@ -632,9 +635,9 @@
 }
 
 .home-page__medicine-categories {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem; /* 간격 줄임 */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
 }
 
 .home-page__medicine-category {
@@ -848,13 +851,13 @@
 
 .home-page__chatbot-disclaimer {
   font-size: 0.75rem;
-  color: #8B6914;
-  background-color: #F0E8D8;
-  border: 1px solid #C4B49A;
+  color: #996515;
+  background-color: #FDF6E3;
+  border: 1px solid #D4A843;
   border-radius: 8px;
   padding: 0.6rem 0.8rem;
   line-height: 1.5;
-  margin: 0 1rem;
+  margin: 0.5rem 1rem 0;
   flex-shrink: 0;
 }
 
@@ -1087,6 +1090,10 @@
     grid-template-columns: 1fr;
   }
   
+  .home-page__medicine-categories {
+    grid-template-columns: 1fr;
+  }
+  
   .home-page__title {
     font-size: 1.5rem;
   }
@@ -1194,9 +1201,9 @@
 }
 
 .home-page__add-medication-btn-sm {
-  background-color: #8B7355;
-  color: white;
-  border: none;
+  background-color: transparent;
+  color: #8B7355;
+  border: 2px solid #8B7355;
   padding: 0.4rem 0.8rem;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -1207,12 +1214,15 @@
 }
 
 .home-page__add-medication-btn-sm:hover:not(:disabled) {
-  background-color: #6B5E4E;
+  background-color: #8B7355;
+  color: white;
   transform: translateY(-1px);
 }
 
 .home-page__add-medication-btn-sm--done {
-  background-color: #8B7355;
+  background-color: transparent;
+  border-color: #8B7355;
+  color: #8B7355;
   cursor: default;
 }
 

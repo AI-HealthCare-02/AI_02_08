@@ -128,7 +128,7 @@
 }
 
 .mypage__nav-item--active {
-  background-color: #EAF2EF;
+  background-color: rgba(123, 169, 154, 0.15);
   color: #5B8C7A;
   border-left-color: #5B8C7A;
   font-weight: 500;
