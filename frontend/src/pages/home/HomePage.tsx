@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { analyzePrescription, OcrMedicationItem } from '../../api/ocrApi';
 import {
@@ -40,6 +40,28 @@ const HomePage: React.FC = () => {
   const [chatSessionId, setChatSessionId] = useState<number | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
+
+  // 채팅 메시지 변경 시 자동 스크롤
+  useEffect(() => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+    }
+  }, [chatMessages, isChatLoading]);
+
+  const handleChatScroll = () => {
+    if (chatMessagesRef.current) {
+      setShowScrollTop(chatMessagesRef.current.scrollTop > 200);
+    }
+  };
+
+  const scrollToTop = () => {
+    if (chatMessagesRef.current) {
+      chatMessagesRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const { user } = useAuth();
   const displayName = user?.name || '사용자';
@@ -352,8 +374,39 @@ const HomePage: React.FC = () => {
   };
 
   // 추천 질문 클릭 핸들러
-  const handleSuggestionClick = (suggestion: string) => {
-    setChatMessage(suggestion);
+  const handleSuggestionClick = async (suggestion: string) => {
+    setChatMessage('');
+    setShowFaq(false);
+    if (!chatSessionId || isChatLoading) return;
+
+    setIsChatLoading(true);
+    const tempUserMessage: ChatMessage = {
+      message_id: Date.now(),
+      session_id: chatSessionId,
+      sender: 'user',
+      content: suggestion,
+      is_faq: false,
+      created_at: new Date().toISOString(),
+    };
+    setChatMessages(prev => [...prev, tempUserMessage]);
+
+    try {
+      const aiMessage = await sendMessageAndGetAIResponse(chatSessionId, suggestion);
+      setChatMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('챗봇 응답 실패:', error);
+      const errorMsg: ChatMessage = {
+        message_id: Date.now(),
+        session_id: chatSessionId,
+        sender: 'assistant',
+        content: '죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.',
+        is_faq: false,
+        created_at: new Date().toISOString(),
+      };
+      setChatMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsChatLoading(false);
+    }
   };
 
   return (
@@ -478,7 +531,7 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* 🔧 챗봇 섹션 - 수정 */}
+        {/* 챗봇 섹션 */}
         <div className="home-page__right">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
@@ -492,10 +545,11 @@ const HomePage: React.FC = () => {
               {isChatLoading && <span className="home-page__chatbot-status">답변 준비 중...</span>}
             </div>
 
-            <div className="home-page__chat-messages">
-              <div className="home-page__chatbot-disclaimer">
-                ⚠️ AI가 제공하는 정보는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다. 정확한 복약 상담은 전문 의료진과 상담해주세요.
-              </div>
+            <div className="home-page__chatbot-disclaimer">
+              ⚠️ AI가 제공하는 정보는 참고용이며, 의료적 진단이나 치료를 대체하지 않습니다. 정확한 복약 상담은 전문 의료진과 상담해주세요.
+            </div>
+
+            <div className="home-page__chat-messages" ref={chatMessagesRef} onScroll={handleChatScroll}>
 
               {/* 🆕 실제 채팅 메시지 렌더링 */}
               {chatMessages.length === 0 ? (
@@ -524,27 +578,28 @@ const HomePage: React.FC = () => {
                 </div>
               )}
 
-              {/* 추천 질문 (메시지가 없을 때만 표시) */}
-              {chatMessages.length === 0 && (
-                <div className="home-page__chat-suggestions">
-                  <button
-                    className="home-page__suggestion-btn"
-                    onClick={() => handleSuggestionClick('부작용이 있나요?')}
-                  >
-                    부작용이 있나요?
-                  </button>
-                  <button
-                    className="home-page__suggestion-btn"
-                    onClick={() => handleSuggestionClick('주의사항 알려주세요')}
-                  >
-                    주의사항 알려주세요
-                  </button>
-                  <button
-                    className="home-page__suggestion-btn"
-                    onClick={() => handleSuggestionClick('몇 번 먹어야 하나요?')}
-                  >
-                    몇 번 먹어야 하나요?
-                  </button>
+              {showScrollTop && (
+                <button onClick={scrollToTop} className="home-page__scroll-top-btn">
+                  ↑ 맨위로
+                </button>
+              )}
+            </div>
+
+            <div className="home-page__faq-wrapper">
+              <button
+                className={`home-page__faq-bubble ${showFaq ? 'home-page__faq-bubble--active' : ''}`}
+                onClick={() => setShowFaq(!showFaq)}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <ellipse cx="12" cy="11" rx="9" ry="8"/>
+                  <path d="M17 17.5C17 17.5 19.5 19.5 21 20c-1-0.5-2.5-1-3.5-3"/>
+                </svg>
+              </button>
+              {showFaq && (
+                <div className="home-page__faq-popup">
+                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('부작용이 있나요?')}>부작용이 있나요?</button>
+                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('주의사항 알려주세요')}>주의사항 알려주세요</button>
+                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('몇 번 먹어야 하나요?')}>몇 번 먹어야 하나요?</button>
                 </div>
               )}
             </div>
