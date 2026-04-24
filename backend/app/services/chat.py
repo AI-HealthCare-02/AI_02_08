@@ -28,6 +28,17 @@ class ChatService:
             ocr_id=ocr_id,
         )
 
+    async def update_session_ocr_id(
+        self,
+        session_id: int,
+        user_id: int,
+        ocr_id: str,
+    ) -> ChatSession:
+        session = await self.get_session(session_id=session_id, user_id=user_id)
+        session.ocr_id = ocr_id
+        await session.save(update_fields=["ocr_id"])
+        return session
+
     async def get_sessions(self, user_id: int) -> list[ChatSession]:
         return await self.session_repo.get_by_user_id(user_id=user_id)
 
