@@ -11,6 +11,7 @@ from app.dtos.chat import (
     ChatMessageResponse,
     ChatSessionCreateRequest,
     ChatSessionResponse,
+    ChatSessionUpdateRequest,
     # FaqItemResponse, # FAQ 우선 비활성화
 )
 from app.models.users import User
@@ -45,6 +46,37 @@ async def create_session(
             ).model_dump_json()
         ),
         status_code=status.HTTP_201_CREATED,
+    )
+
+
+@chat_router.patch(
+    "/sessions/{session_id}",
+    status_code=status.HTTP_200_OK,
+    summary="챗봇 세션(채팅방) 연동 정보 업데이트",
+    description="기존 채팅방에 처방전(OCR) ID를 연동합니다.",
+)
+async def update_session(
+    session_id: int,
+    request: ChatSessionUpdateRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    chat_service: Annotated[ChatService, Depends(ChatService)],
+) -> JSONResponse:
+    session = await chat_service.update_session_ocr_id(
+        session_id=session_id,
+        user_id=user.id,
+        ocr_id=request.ocr_id,
+    )
+    return JSONResponse(
+        content=json.loads(
+            ChatSessionResponse(
+                session_id=session.id,
+                user_id=session.user_id,
+                ocr_id=session.ocr_id,
+                message_count=session.message_count,
+                created_at=session.created_at,
+            ).model_dump_json()
+        ),
+        status_code=status.HTTP_200_OK,
     )
 
 

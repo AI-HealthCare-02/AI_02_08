@@ -10,6 +10,10 @@ class ChatSessionCreateRequest(BaseModel):
     ocr_id: Annotated[str | None, Field(None, description="OCR 처방전 ID")]
 
 
+class ChatSessionUpdateRequest(BaseModel):
+    ocr_id: Annotated[str, Field(..., description="연동할 OCR 처방전 ID")]
+
+
 class ChatSessionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
