@@ -41,6 +41,7 @@ const HomePage: React.FC = () => {
   // 챗봇 관련 state
   const [chatMessage, setChatMessage] = useState('');
   const [chatSessionId, setChatSessionId] = useState<number | null>(null);
+  const chatSessionIdRef = useRef<number | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
@@ -73,8 +74,10 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const initChatSession = async () => {
       try {
-        const session = await createChatSession(undefined);
+        const savedOcrId = loadOcrId();
+        const session = await createChatSession(savedOcrId || undefined);
         setChatSessionId(session.session_id);
+        chatSessionIdRef.current = session.session_id;
 
         // 초기 메시지 로드
         const messages = await getChatMessages(session.session_id);
@@ -166,14 +169,18 @@ const HomePage: React.FC = () => {
       } else {
         setOcrResults(result.medications);
         setOcrId(result.ocrId);
-        setOcrStatus('completed');
         saveOcrResults(result.medications);
-        saveOcrStatus('completed');
         saveOcrId(result.ocrId);
-        // OCR 성공 시 기존 채팅 세션에 ocrId 연결
-        if (chatSessionId) {
-          updateChatSession(chatSessionId, result.ocrId).catch(console.error);
+        // 챗봇 연결 완료 후에 completed 표시
+        if (chatSessionIdRef.current) {
+          try {
+            await updateChatSession(chatSessionIdRef.current, result.ocrId);
+          } catch (e) {
+            console.error('OCR-챗봇 연결 실패:', e);
+          }
         }
+        setOcrStatus('completed');
+        saveOcrStatus('completed');
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
@@ -212,13 +219,17 @@ const HomePage: React.FC = () => {
       } else {
         setOcrResults(result.medications);
         setOcrId(result.ocrId);
-        setOcrStatus('completed');
         saveOcrResults(result.medications);
-        saveOcrStatus('completed');
         saveOcrId(result.ocrId);
-        if (chatSessionId) {
-          updateChatSession(chatSessionId, result.ocrId).catch(console.error);
+        if (chatSessionIdRef.current) {
+          try {
+            await updateChatSession(chatSessionIdRef.current, result.ocrId);
+          } catch (e) {
+            console.error('OCR-챗봇 연결 실패:', e);
+          }
         }
+        setOcrStatus('completed');
+        saveOcrStatus('completed');
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
