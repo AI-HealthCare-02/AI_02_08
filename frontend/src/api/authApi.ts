@@ -104,6 +104,7 @@ export const updateUserInfo = async (data: {
   phone_number?: string;
   birth_date?: string;
   gender?: string;
+  profile_image?: string;
 }): Promise<void> => {
   await apiClient.patch('/users/me', data);
 };

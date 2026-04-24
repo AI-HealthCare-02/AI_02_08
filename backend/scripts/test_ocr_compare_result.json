@@ -1,0 +1,70 @@
+{
+  "test_image": "rx_01_design_A.png",
+  "ground_truth_count": 3,
+  "A_original": {
+    "extracted_count": 3,
+    "recall": 1.0,
+    "precision": 1.0,
+    "time_seconds": 12.17577600479126,
+    "medications": [
+      {
+        "name": "아세트아미노펜정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "이 약은 감기로 인한 발열 및 동통(통증), 두통, 신경통, 근육통, 월경통, 염좌통(삔 통증)과 치통, 관절통, 류마티양 동통(통증)에 사용합니다."
+      },
+      {
+        "name": "슈도에페드린염산염정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후",
+        "description": "비염 및 부비동염으로 인한 코막힘을 완화하는 데 사용됩니다."
+      },
+      {
+        "name": "브롬헥신염산염캡슐",
+        "dosage": "1캡슐",
+        "frequency": "1일 3회",
+        "timing": "식후",
+        "description": "가래를 묽게 하여 기침을 완화하는 데 도움을 주는 약물입니다."
+      }
+    ]
+  },
+  "B_preprocessed": {
+    "extracted_count": 4,
+    "recall": 1.0,
+    "precision": 0.75,
+    "time_seconds": 8.295374870300293,
+    "medications": [
+      {
+        "name": "아세트아미노펜정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "이 약은 감기로 인한 발열 및 동통(통증), 두통, 신경통, 근육통, 월경통, 염좌통(삔 통증)과 치통, 관절통, 류마티양 동통(통증)에 사용합니다."
+      },
+      {
+        "name": "슈도에페드린염산염정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후",
+        "description": "비염 및 부비동염으로 인한 코막힘을 완화하는 데 사용됩니다."
+      },
+      {
+        "name": "브롬헥신염산염캡슐",
+        "dosage": "1캡슐",
+        "frequency": "1일 3회",
+        "timing": "식후",
+        "description": "가래를 묽게 하여 기침을 완화하는 데 도움을 주는 약물입니다."
+      },
+      {
+        "name": "슈도어메드런정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후",
+        "description": "일치하는 약품 정보를 찾을 수 없습니다."
+      }
+    ],
+    "preprocessing": "Grayscale + Contrast(30)"
+  }
+}

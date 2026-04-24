@@ -3,15 +3,15 @@
 .mypage {
   display: flex;
   min-height: calc(100vh - 80px);
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   margin-top: 0;
 }
 
 /* 사이드바 */
 .mypage__sidebar {
   width: 280px;
-  background: white;
-  border-right: 1px solid #e9ecef;
+  background: #EDE5D8;
+  border-right: 1px solid #C4B49A;
   display: flex;
   flex-direction: column;
   height: fit-content;
@@ -20,13 +20,13 @@
 }
 
 .mypage__sidebar:hover {
-  box-shadow: 4px 0 20px rgba(120, 160, 133, 0.1);
+  box-shadow: 4px 0 20px rgba(139, 115, 85, 0.1);
 }
 
 .mypage__profile {
   padding: 2rem;
   text-align: center;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
   transition: all 0.3s ease;
 }
 
@@ -42,11 +42,11 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: #78a085;
+  background-color: #8B7355;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: bold;
   color: white;
   margin: 0 auto;
@@ -57,17 +57,17 @@
 
 .mypage__avatar-circle:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 15px rgba(120, 160, 133, 0.3);
+  box-shadow: 0 4px 15px rgba(139, 115, 85, 0.3);
 }
 
 .mypage__avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
 }
 
 .mypage__avatar-text {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: bold;
   color: white;
 }
@@ -75,13 +75,13 @@
 .mypage__username {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0 0 0.25rem 0;
 }
 
 .mypage__user-email {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
   margin: 0;
 }
 
@@ -98,7 +98,7 @@
   border: none;
   text-align: left;
   font-size: 1rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
   cursor: pointer;
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
@@ -113,13 +113,13 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 115, 85, 0.05), transparent);
   transition: left 0.6s ease;
 }
 
 .mypage__nav-item:hover {
-  background-color: #f8f9fa;
-  color: #2c3e50;
+  background-color: #F5F0E8;
+  color: #2C2416;
   transform: translateX(8px);
 }
 
@@ -128,21 +128,21 @@
 }
 
 .mypage__nav-item--active {
-  background-color: #f0f7f2;
-  color: #78a085;
-  border-left-color: #78a085;
+  background-color: rgba(123, 169, 154, 0.15);
+  color: #5B8C7A;
+  border-left-color: #5B8C7A;
   font-weight: 500;
 }
 
 /* 사이드바 푸터 */
 .mypage__sidebar-footer {
   padding: 1rem 2rem 2rem;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #C4B49A;
 }
 
 .mypage__logout-btn {
   width: 100%;
-  background-color: #e74c3c;
+  background-color: #A0522D;
   color: white;
   border: none;
   padding: 0.8rem;
@@ -154,7 +154,7 @@
 }
 
 .mypage__logout-btn:hover {
-  background-color: #c0392b;
+  background-color: #7A3B1E;
 }
 
 /* 메인 콘텐츠 */
@@ -174,12 +174,12 @@
 .mypage__page-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #5B8C7A;
   margin: 0;
 }
 
 .mypage__edit-btn {
-  background-color: #78a085;
+  background-color: #8B7355;
   color: white;
   border: none;
   padding: 0.6rem 1.2rem;
@@ -190,23 +190,23 @@
 }
 
 .mypage__edit-btn:hover {
-  background-color: #6a8f77;
+  background-color: #6B5E4E;
 }
 
 /* 탭 콘텐츠 */
 .mypage__tab-content {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #EDE5D8;
+  border-radius: 16px;
+  box-shadow: none;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid #f1f3f4;
+  border: 1px solid #C4B49A;
 }
 
 .mypage__tab-content:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(120, 160, 133, 0.15);
-  border-color: #78a085;
+  box-shadow: 0 8px 25px rgba(139, 115, 85, 0.15);
+  border-color: #8B7355;
 }
 
 /* 프로필 탭 */
@@ -235,16 +235,16 @@
 .mypage__profile-field label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #7f8c8d;
+  color: #6B5E4E;
 }
 
 .mypage__profile-field span {
   font-size: 1rem;
-  color: #2c3e50;
+  color: #2C2416;
   padding: 0.8rem 1rem;
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #C4B49A;
 }
 
 /* 리포트 탭 */
@@ -253,48 +253,48 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   padding: 2rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
 }
 
 .mypage__report-card {
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 16px;
   text-align: center;
   transition: all 0.3s ease;
   cursor: pointer;
-  border: 1px solid #e9ecef;
+  border: 1px solid #C4B49A;
 }
 
 .mypage__report-card:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(120, 160, 133, 0.12);
-  border-color: #78a085;
-  background-color: #f0f7f2;
+  box-shadow: 0 8px 20px rgba(139, 115, 85, 0.12);
+  border-color: #8B7355;
+  background-color: #EDE5D8;
 }
 
 .mypage__report-label {
   display: block;
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
   margin-bottom: 0.5rem;
 }
 
 .mypage__report-value {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #78a085;
+  color: #5B8C7A;
 }
 
 .mypage__chart-section {
   padding: 2rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
 }
 
 .mypage__chart-section h4 {
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0 0 1rem 0;
 }
 
@@ -316,7 +316,7 @@
 
 .mypage__chart-fill {
   width: 100%;
-  background-color: #78a085;
+  background-color: #8B7355;
   border-radius: 4px 4px 0 0;
   min-height: 4px;
   transition: height 0.3s ease;
@@ -324,18 +324,18 @@
 
 .mypage__chart-label {
   font-size: 0.8rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
 }
 
 .mypage__medication-list {
   padding: 2rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
 }
 
 .mypage__medication-list h4 {
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0 0 1rem 0;
 }
 
@@ -344,7 +344,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.8rem 0;
-  border-bottom: 1px solid #f8f9fa;
+  border-bottom: 1px solid #F5F0E8;
 }
 
 .mypage__med-item:last-child {
@@ -352,11 +352,12 @@
 }
 
 .mypage__med-status {
-  background-color: #27ae60;
-  color: white;
+  background-color: #EAF2EF;
+  color: #5B8C7A;
   padding: 0.3rem 0.8rem;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 0.8rem;
+  border: 1px solid #7BA99A;
 }
 
 .mypage__tips {
@@ -366,7 +367,7 @@
 .mypage__tips h4 {
   font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0 0 1rem 0;
 }
 
@@ -378,12 +379,136 @@
 
 .mypage__tips li {
   padding: 0.5rem 0;
-  color: #7f8c8d;
+  color: #6B5E4E;
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
-/* 히스토리 탭 */
+/* 히스토리 탭 - 캠린더 */
+.mypage__calendar {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #C4B49A;
+}
+
+.mypage__calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.mypage__calendar-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2C2416;
+}
+
+.mypage__calendar-nav {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #8B7355;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.mypage__calendar-nav:hover {
+  background-color: #F5F0E8;
+}
+
+.mypage__calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.mypage__calendar-weekday {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #8B7355;
+  padding: 0.3rem 0;
+}
+
+.mypage__calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.mypage__calendar-day {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #2C2416;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mypage__calendar-day:hover:not(.mypage__calendar-day--empty) {
+  background-color: #F5F0E8;
+}
+
+.mypage__calendar-day--empty {
+  cursor: default;
+}
+
+.mypage__calendar-day--today {
+  font-weight: 700;
+  color: #5B8C7A;
+}
+
+.mypage__calendar-day--selected {
+  background-color: #8B7355;
+  color: white;
+  font-weight: 600;
+}
+
+.mypage__calendar-day--selected:hover {
+  background-color: #6B5E4E;
+}
+
+.mypage__calendar-dot {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #5B8C7A;
+}
+
+.mypage__calendar-day--selected .mypage__calendar-dot {
+  background-color: white;
+}
+
+.mypage__history-detail {
+  padding: 1.5rem 2rem;
+}
+
+.mypage__history-detail-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2C2416;
+  margin: 0 0 1rem 0;
+}
+
+.mypage__history-empty {
+  color: #6B5E4E;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* 히스토리 탭 - 목록 */
 .mypage__history-list {
   padding: 0;
 }
@@ -393,7 +518,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -406,14 +531,14 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 115, 85, 0.05), transparent);
   transition: left 0.6s ease;
 }
 
 .mypage__history-item:hover {
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   transform: translateX(8px);
-  border-left: 4px solid #78a085;
+  border-left: 4px solid #5B8C7A;
 }
 
 .mypage__history-item:hover::before {
@@ -427,30 +552,30 @@
 .mypage__history-info h4 {
   font-size: 1rem;
   font-weight: 500;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0 0 0.25rem 0;
 }
 
 .mypage__history-date {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
 }
 
 .mypage__history-status {
   padding: 0.4rem 0.8rem;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 500;
 }
 
 .mypage__history-status--completed {
-  background-color: #d1f2eb;
-  color: #27ae60;
+  background-color: #EAF2EF;
+  color: #5B8C7A;
 }
 
 .mypage__history-status--missed {
-  background-color: #fadbd8;
-  color: #e74c3c;
+  background-color: #F5E6E0;
+  color: #A0522D;
 }
 
 /* 계정 탭 */
@@ -463,7 +588,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -476,12 +601,12 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.05), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 115, 85, 0.05), transparent);
   transition: left 0.6s ease;
 }
 
 .mypage__account-item:hover {
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   transform: translateX(8px);
 }
 
@@ -505,19 +630,19 @@
   display: block;
   font-size: 1rem;
   font-weight: 500;
-  color: #2c3e50;
+  color: #2C2416;
   margin-bottom: 0.25rem;
 }
 
 .mypage__account-desc {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
 }
 
 .mypage__account-btn {
-  background-color: #f8f9fa;
-  color: #78a085;
-  border: 1px solid #78a085;
+  background-color: #EAF2EF;
+  color: #5B8C7A;
+  border: 1px solid #5B8C7A;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-size: 0.9rem;
@@ -526,17 +651,17 @@
 }
 
 .mypage__account-btn:hover {
-  background-color: #78a085;
+  background-color: #5B8C7A;
   color: white;
 }
 
 .mypage__account-btn--danger {
-  color: #e74c3c;
-  border-color: #e74c3c;
+  color: #A0522D;
+  border-color: #A0522D;
 }
 
 .mypage__account-btn--danger:hover {
-  background-color: #e74c3c;
+  background-color: #A0522D;
   color: white;
 }
 
@@ -555,7 +680,7 @@
 }
 
 .mypage__modal {
-  background: white;
+  background: #EDE5D8;
   border-radius: 16px;
   max-width: 500px;
   width: 90%;
@@ -567,13 +692,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
 }
 
 .mypage__modal-header h3 {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0;
 }
 
@@ -584,7 +709,7 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #95a5a6;
+  color: #A89880;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 50%;
@@ -592,8 +717,8 @@
 }
 
 .mypage__modal-close:hover {
-  background-color: #f8f9fa;
-  color: #2c3e50;
+  background-color: #F5F0E8;
+  color: #2C2416;
 }
 
 .mypage__modal-form {
@@ -607,7 +732,7 @@
 
 .mypage__modal-content p {
   margin: 0 0 1rem 0;
-  color: #7f8c8d;
+  color: #6B5E4E;
   line-height: 1.5;
 }
 
@@ -619,17 +744,17 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #2c3e50;
+  color: #2C2416;
   margin-bottom: 0.5rem;
 }
 
 .mypage__form-input {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid #C4B49A;
   border-radius: 8px;
   font-size: 1rem;
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   transition: all 0.2s;
 }
 
@@ -655,9 +780,9 @@
 
 .mypage__form-input:focus {
   outline: none;
-  border-color: #78a085;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(120, 160, 133, 0.1);
+  border-color: #5B8C7A;
+  background-color: #EDE5D8;
+  box-shadow: 0 0 0 3px rgba(91, 140, 122, 0.1);
 }
 
 .mypage__modal-buttons {
@@ -678,37 +803,37 @@
 }
 
 .mypage__modal-btn--primary {
-  background-color: #78a085;
+  background-color: #8B7355;
   color: white;
 }
 
 .mypage__modal-btn--primary:hover:not(:disabled) {
-  background-color: #6a8f77;
+  background-color: #6B5E4E;
   transform: translateY(-1px);
 }
 
 .mypage__modal-btn--primary:disabled {
-  background-color: #bdc3c7;
+  background-color: #A89880;
   cursor: not-allowed;
 }
 
 .mypage__modal-btn--secondary {
-  background-color: white;
-  color: #78a085;
-  border: 2px solid #78a085;
+  background-color: #EDE5D8;
+  color: #8B7355;
+  border: 2px solid #8B7355;
 }
 
 .mypage__modal-btn--secondary:hover {
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
 }
 
 .mypage__modal-btn--danger {
-  background-color: #e74c3c;
+  background-color: #A0522D;
   color: white;
 }
 
 .mypage__modal-btn--danger:hover {
-  background-color: #c0392b;
+  background-color: #7A3B1E;
   transform: translateY(-1px);
 }
 
@@ -724,7 +849,7 @@
   height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid #e9ecef;
+  border: 2px solid #C4B49A;
 }
 
 .mypage__profile-image {
@@ -736,7 +861,7 @@
 .mypage__profile-image-placeholder {
   width: 100%;
   height: 100%;
-  background-color: #78a085;
+  background-color: #8B7355;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -766,21 +891,21 @@
 }
 
 .mypage__image-btn--upload {
-  background-color: #78a085;
+  background-color: #8B7355;
   color: white;
 }
 
 .mypage__image-btn--upload:hover {
-  background-color: #6a8f77;
+  background-color: #6B5E4E;
 }
 
 .mypage__image-btn--remove {
-  background-color: #e74c3c;
+  background-color: #A0522D;
   color: white;
 }
 
 .mypage__image-btn--remove:hover {
-  background-color: #c0392b;
+  background-color: #7A3B1E;
 }
 
 /* 반응형 */
@@ -828,7 +953,7 @@
   
   .mypage__nav-item--active {
     border-left: none;
-    border-bottom-color: #78a085;
+    border-bottom-color: #8B7355;
   }
   
   .mypage__modal {

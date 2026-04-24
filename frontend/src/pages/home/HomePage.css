@@ -2,7 +2,7 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   min-height: 100vh;
 }
 
@@ -14,13 +14,13 @@
 .home-page__title {
   font-size: 2rem;
   font-weight: bold;
-  color: #2c3e50;
+  color: #2C2416;
   margin-bottom: 0.5rem;
 }
 
 .home-page__subtitle {
   font-size: 1rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
 }
 
 /* 메인 콘텐츠 레이아웃 */
@@ -41,24 +41,24 @@
 .home-page__section-title {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #5B8C7A;
   margin-bottom: 1rem;
 }
 
 /* OCR 업로드 영역 */
 .home-page__ocr-section {
-  background: white;
+  background: #EDE5D8;
   padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  box-shadow: none;
   transition: all 0.3s ease;
-  border: 1px solid #f1f3f4;
+  border: 1px solid #C4B49A;
 }
 
 .home-page__ocr-section:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(120, 160, 133, 0.15);
-  border-color: #78a085;
+  box-shadow: 0 8px 25px rgba(139, 115, 85, 0.15);
+  border-color: #8B7355;
 }
 
 .home-page__ocr-header {
@@ -70,16 +70,16 @@
 
 .home-page__upload-status {
   font-size: 0.9rem;
-  color: #9A8058;
+  color: #5B8C7A;
   margin: 0;
 }
 
 .home-page__upload-area {
-  border: 2px dashed #bdc3c7;
+  border: 2px dashed #7BA99A;
   border-radius: 8px;
   padding: 3rem 2rem;
   text-align: center;
-  background: #f8f9fa;
+  background: #F5F0E8;
 }
 
 .home-page__file-input {
@@ -98,14 +98,14 @@
 
 .home-page__upload-text {
   font-size: 1rem;
-  color: #2c3e50;
+  color: #2C2416;
   margin-bottom: 0.5rem;
   line-height: 1.5;
 }
 
 .home-page__upload-formats {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
 }
 
 .home-page__upload-notice {
@@ -163,7 +163,7 @@
   color: white;
   border: none;
   padding: 6px 12px;
-  border-radius: 16px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
   font-weight: 500;
@@ -208,8 +208,8 @@
 }
 
 .home-page__modal {
-  background: white;
-  border-radius: 16px;
+  background: #EDE5D8;
+  border-radius: 8px;
   padding: 3rem 2rem;
   text-align: center;
   max-width: 400px;
@@ -222,7 +222,7 @@
   width: 60px;
   height: 60px;
   border: 4px solid #e3e3e3;
-  border-top: 4px solid #78a085;
+  border-top: 4px solid #8B7355;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 1.5rem;
@@ -236,13 +236,13 @@
 .home-page__modal-title {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0 0 0.5rem 0;
 }
 
 .home-page__modal-subtitle {
   font-size: 0.9rem;
-  color: #7f8c8d;
+  color: #6B5E4E;
   margin: 0 0 2rem 0;
 }
 
@@ -253,14 +253,14 @@
 .home-page__modal-progress-bar {
   width: 100%;
   height: 8px;
-  background-color: #e9ecef;
+  background-color: #C4B49A;
   border-radius: 4px;
   overflow: hidden;
 }
 
 .home-page__modal-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #78a085, #9bb89a);
+  background: linear-gradient(90deg, #8B7355, #C4B49A);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -286,7 +286,7 @@
 }
 
 .home-page__modal-title--error {
-  color: #e74c3c;
+  color: #A0522D;
 }
 
 .home-page__modal-buttons {
@@ -319,18 +319,20 @@
 }
 
 .home-page__modal-btn--primary:disabled {
-  background-color: #bdc3c7;
+  background-color: #A89880;
   cursor: not-allowed;
 }
 
 .home-page__modal-btn--secondary {
-  background-color: white;
+  background-color: #EDE5D8;
   color: #B95C3B;
   border: 2px solid #B95C3B;
 }
 
 .home-page__modal-btn--secondary:hover {
-  background-color: #f8f9fa;
+  background-color: #8B7355;
+  color: white;
+  border-color: #8B7355;
 }
 
 /* 수동 입력 모달 */
@@ -344,7 +346,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid #C4B49A;
 }
 
 .home-page__modal-close {
@@ -354,7 +356,7 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #95a5a6;
+  color: #A89880;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 50%;
@@ -368,8 +370,8 @@
 }
 
 .home-page__modal-close:hover {
-  background-color: #f8f9fa;
-  color: #2c3e50;
+  background-color: #F5F0E8;
+  color: #2C2416;
 }
 
 .home-page__modal-form {
@@ -384,38 +386,38 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #2c3e50;
+  color: #2C2416;
   margin-bottom: 0.5rem;
 }
 
 .home-page__form-input {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid #C4B49A;
   border-radius: 8px;
   font-size: 1rem;
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   transition: all 0.2s;
 }
 
 .home-page__form-input:focus {
   outline: none;
-  border-color: #78a085;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(120, 160, 133, 0.1);
+  border-color: #8B7355;
+  background-color: #EDE5D8;
+  box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
 }
 
 .home-page__form-input::placeholder {
-  color: #95a5a6;
+  color: #A89880;
 }
 
 .home-page__form-select {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid #C4B49A;
   border-radius: 8px;
   font-size: 1rem;
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   transition: all 0.2s;
   cursor: pointer;
   appearance: none;
@@ -427,15 +429,15 @@
 
 .home-page__form-select:focus {
   outline: none;
-  border-color: #78a085;
-  background-color: white;
-  box-shadow: 0 0 0 3px rgba(120, 160, 133, 0.1);
+  border-color: #8B7355;
+  background-color: #EDE5D8;
+  box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
 }
 
 .home-page__form-select option {
   padding: 0.5rem;
-  background-color: white;
-  color: #2c3e50;
+  background-color: #EDE5D8;
+  color: #2C2416;
 }
 
 /* 카메라 섹션 */
@@ -457,7 +459,7 @@
   content: '';
   flex: 1;
   height: 1px;
-  background-color: #dee2e6;
+  background-color: #C4B49A;
   margin-right: 1rem;
 }
 
@@ -465,20 +467,20 @@
   content: '';
   flex: 1;
   height: 1px;
-  background-color: #dee2e6;
+  background-color: #C4B49A;
   margin-left: 1rem;
 }
 
 .home-page__divider span {
-  background-color: #f8f9fa;
+  background-color: #F5F0E8;
   padding: 0 0.5rem;
-  color: #95a5a6;
+  color: #A89880;
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
 .home-page__camera-btn {
-  background-color: #78a085;
+  background-color: #8B7355;
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
@@ -491,7 +493,7 @@
 }
 
 .home-page__camera-btn:hover {
-  background-color: #6a8f77;
+  background-color: #6B5E4E;
   transform: translateY(-1px);
 }
 
@@ -551,7 +553,7 @@
   color: white;
   background-color: rgba(0, 0, 0, 0.7);
   padding: 0.5rem 1rem;
-  border-radius: 20px;
+  border-radius: 8px;
   font-size: 0.9rem;
   margin: 0;
 }
@@ -589,7 +591,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background-color: white;
+  background-color: #EDE5D8;
   gap: 2rem;
 }
 
@@ -607,7 +609,8 @@
 }
 
 .home-page__camera-capture-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .home-page__camera-spacer {
@@ -616,78 +619,47 @@
 
 /* OCR 결과 섹션 */
 .home-page__ocr-results {
-  background: white;
+  background: #EDE5D8;
   padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border: 1px solid #f1f3f4;
+  border-radius: 16px;
+  box-shadow: none;
+  border: 1px solid #C4B49A;
   transition: all 0.3s ease;
-  min-height: auto; /* 고정 높이 제거 */
+  min-height: auto;
 }
 
 .home-page__ocr-results:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(120, 160, 133, 0.15);
-  border-color: #78a085;
+  box-shadow: 0 8px 25px rgba(139, 115, 85, 0.15);
+  border-color: #8B7355;
 }
 
 .home-page__medicine-categories {
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem; /* 간격 줄임 */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
 }
 
 .home-page__medicine-category {
-  background: linear-gradient(135deg, #fafbfc 0%, #f8f9fa 100%);
-  padding: 1.2rem; /* 패딩 줄임 */
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
+  background: #F5F0E8;
+  padding: 1.2rem;
+  border-radius: 8px;
+  border: 1px solid #C4B49A;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  min-height: auto; /* 최소 높이 제거 */
-}
-
-.home-page__medicine-category::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, #78a085 0%, #9bb89a 100%);
-  transition: width 0.3s ease;
+  min-height: auto;
 }
 
 .home-page__medicine-category:hover {
-  transform: translateX(8px);
-  box-shadow: 0 4px 20px rgba(120, 160, 133, 0.12);
-  border-color: #78a085;
-}
-
-.home-page__medicine-category:hover::before {
-  width: 8px;
+  border-color: #8B7355;
 }
 
 .home-page__medicine-category h3 {
-  font-size: 1rem; /* 폰트 크기 줄임 */
+  font-size: 1rem;
   font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 0.8rem; /* 마진 줄임 */
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  position: relative;
-  z-index: 1;
-}
-
-.home-page__medicine-category h3::after {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, #78a085, #9bb89a);
-  box-shadow: 0 0 10px rgba(120, 160, 133, 0.3);
+  color: #2C2416;
+  margin-bottom: 0.8rem;
 }
 
 /* 카테고리 소제목 색상 */
@@ -711,7 +683,7 @@
 
 .home-page__medicine-tag {
   padding: 0.5rem 1rem; /* 패딩 줄임 */
-  border-radius: 20px; /* 둥글기 줄임 */
+  border-radius: 8px; /* 둥글기 줄임 */
   font-size: 0.85rem; /* 폰트 크기 줄임 */
   font-weight: 500;
   border: 1px solid transparent;
@@ -753,7 +725,7 @@
 }
 
 .home-page__medicine-tag--green {
-  background-color: #e8f5e8;
+  background-color: #EDE5D8;
   color: #2d5a2d;
 }
 
@@ -782,58 +754,21 @@
 
 .home-page__medicine-tag--teal {
   background: linear-gradient(135deg, #e8f5f0 0%, #d1ebe0 100%);
-  color: #2d5a3d;
+  color: #2C2416;
   border-color: #b8dcc8;
 }
 
 .home-page__medicine-tag--teal:hover {
   background: linear-gradient(135deg, #d1ebe0 0%, #b8dcc8 100%);
-  border-color: #2d5a3d;
+  border-color: #2C2416;
 }
 
 /* OCR 결과 빈 상태 */
 .home-page__empty-state {
-  color: #95a5a6;
-  font-size: 0.85rem; /* 폰트 크기 줄임 */
-  font-style: italic;
-  padding: 1rem; /* 패딩 줄임 */
+  color: #A89880;
+  font-size: 0.9rem;
+  padding: 2rem 1rem;
   text-align: center;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 8px; /* 둥글기 줄임 */
-  border: 2px dashed #dee2e6;
-  position: relative;
-  overflow: hidden;
-}
-
-.home-page__empty-state::before {
-  content: '📋';
-  font-size: 1.5rem; /* 아이콘 크기 줄임 */
-  display: block;
-  margin-bottom: 0.3rem; /* 마진 줄임 */
-  opacity: 0.5;
-}
-
-.home-page__empty-state::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 10px,
-    rgba(255,255,255,0.1) 10px,
-    rgba(255,255,255,0.1) 20px
-  );
-  animation: shimmer 3s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%) translateY(-100%); }
-  100% { transform: translateX(100%) translateY(100%); }
 }
 
 /* 오른쪽 챗봇 섹션 */
@@ -843,30 +778,20 @@
 }
 
 .home-page__chatbot-section {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: #EDE5D8;
+  border-radius: 16px;
+  box-shadow: none;
   height: 600px;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-  border: 1px solid #f1f3f4;
+  border: 1px solid #C4B49A;
   position: relative;
   overflow: visible;
 }
 
 .home-page__chatbot-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #78a085, #9bb89a, #78a085);
-  background-size: 200% 100%;
-  animation: gradientFlow 3s ease-in-out infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  display: none;
 }
 
 @keyframes gradientFlow {
@@ -876,8 +801,8 @@
 
 .home-page__chatbot-section:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(120, 160, 133, 0.15);
-  border-color: #78a085;
+  box-shadow: 0 8px 25px rgba(139, 115, 85, 0.15);
+  border-color: #8B7355;
 }
 
 .home-page__chatbot-section:hover::before {
@@ -886,7 +811,7 @@
 
 .home-page__chatbot-header {
   padding: 0.6rem 1rem;
-  border-bottom: 1px solid #ecf0f1;
+  border-bottom: 1px solid #C4B49A;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -915,24 +840,24 @@
 
 .home-page__chatbot-status {
   font-size: 0.9rem;
-  color: #27ae60;
+  color: #8B7355;
 }
 
 .home-page__chatbot-ai-label {
   font-size: 0.8rem;
-  color: #95a5a6;
+  color: #A89880;
   margin: 0;
 }
 
 .home-page__chatbot-disclaimer {
   font-size: 0.75rem;
-  color: #e67e22;
-  background-color: #fef9f3;
-  border: 1px solid #fdebd0;
+  color: #996515;
+  background-color: #FDF6E3;
+  border: 1px solid #D4A843;
   border-radius: 8px;
   padding: 0.6rem 0.8rem;
   line-height: 1.5;
-  margin: 0 1rem;
+  margin: 0.5rem 1rem 0;
   flex-shrink: 0;
 }
 
@@ -946,12 +871,12 @@
 
 .home-page__chat-message {
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: 8px;
   max-width: 80%;
 }
 
 .home-page__chat-message--bot {
-  background-color: #e8f5e8;
+  background-color: #EDE5D8;
   color: #2d5a2d;
   align-self: flex-start;
 }
@@ -965,21 +890,21 @@
 
 .home-page__suggestion-btn {
   padding: 0.5rem 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 20px;
+  background-color: #F5F0E8;
+  border: 1px solid #C4B49A;
+  border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .home-page__suggestion-btn:hover {
-  background-color: #e9ecef;
+  background-color: #C4B49A;
 }
 
 .home-page__chat-input-area {
   padding: 1.5rem;
-  border-top: 1px solid #ecf0f1;
+  border-top: 1px solid #C4B49A;
 }
 
 .home-page__chat-input-wrapper {
@@ -990,33 +915,34 @@
 .home-page__chat-input {
   flex: 1;
   padding: 0.8rem 1rem;
-  border: 1px solid #dee2e6;
-  border-radius: 25px;
+  border: 1px solid #C4B49A;
+  border-radius: 8px;
   font-size: 0.9rem;
   outline: none;
 }
 
 .home-page__chat-input:focus {
-  border-color: #74b9ff;
+  border-color: #5B8C7A;
+  box-shadow: 0 0 0 3px rgba(91, 140, 122, 0.1);
 }
 
 .home-page__send-btn {
-  background-color: #00b894;
+  background-color: #3D3228;
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
-  border-radius: 25px;
+  border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
 }
 
 /* 생활습관 가이드 섹션 */
 .home-page__lifestyle-guide {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #F5F0E8 100%);
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border: 1px solid #e9ecef;
+  border: 1px solid #C4B49A;
   position: relative;
   overflow: hidden;
 }
@@ -1028,7 +954,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #78a085, #9bb89a, #78a085);
+  background: linear-gradient(90deg, #8B7355, #C4B49A, #8B7355);
   background-size: 200% 100%;
   animation: gradientShift 3s ease-in-out infinite;
 }
@@ -1046,16 +972,16 @@
 }
 
 .home-page__guide-card {
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #F5F0E8 0%, #ffffff 100%);
   padding: 2.5rem 1.5rem;
-  border-radius: 16px;
+  border-radius: 32px;
   text-align: center;
   min-height: 140px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px solid #e9ecef;
+  border: 2px solid #C4B49A;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -1069,14 +995,14 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(120, 160, 133, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 115, 85, 0.1), transparent);
   transition: left 0.6s ease;
 }
 
 .home-page__guide-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(120, 160, 133, 0.15);
-  border-color: #78a085;
+  box-shadow: 0 12px 40px rgba(139, 115, 85, 0.15);
+  border-color: #8B7355;
 }
 
 .home-page__guide-card:hover::before {
@@ -1085,7 +1011,7 @@
 
 .home-page__guide-card h3 {
   font-size: 1.2rem;
-  color: #2c3e50;
+  color: #2C2416;
   margin: 0;
   font-weight: 600;
   position: relative;
@@ -1093,15 +1019,15 @@
 }
 
 .home-page__guide-card--diet {
-  border-left: 4px solid #e74c3c;
+  border-left: 4px solid #5B8C7A;
 }
 
 .home-page__guide-card--exercise {
-  border-left: 4px solid #3498db;
+  border-left: 4px solid #7BA99A;
 }
 
 .home-page__guide-card--sleep {
-  border-left: 4px solid #9b59b6;
+  border-left: 4px solid #5B8C7A;
 }
 
 .home-page__guide-card::after {
@@ -1131,7 +1057,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background-color: #78a085;
+  background-color: #5B8C7A;
   color: white;
   font-size: 0.7rem;
   padding: 0.2rem 0.5rem;
@@ -1147,7 +1073,7 @@
   }
   
   .home-page__right {
-    order: -1;
+    order: 1;
   }
   
   .home-page__chatbot-section {
@@ -1164,6 +1090,10 @@
     grid-template-columns: 1fr;
   }
   
+  .home-page__medicine-categories {
+    grid-template-columns: 1fr;
+  }
+  
   .home-page__title {
     font-size: 1.5rem;
   }
@@ -1171,24 +1101,25 @@
 
 /* 채팅 메시지 스타일 */
 .home-page__chat-message--user {
-  background: linear-gradient(135deg, #78a085, #6a8f77);
-  color: white;
+  background: #EAF2EF;
+  color: #2C2416;
   align-self: flex-end;
   max-width: 70%;
   padding: 12px 16px;
   border-radius: 18px 18px 4px 18px;
   margin-bottom: 8px;
+  border: 1px solid #7BA99A;
 }
 
 .home-page__chat-message--bot {
-  background-color: #f0f4f1;
-  color: #2c3e50;
+  background-color: #EDE5D8;
+  color: #2C2416;
   align-self: flex-start;
   max-width: 70%;
   padding: 12px 16px;
   border-radius: 18px 18px 18px 4px;
   margin-bottom: 8px;
-  border: 1px solid #e0e8e2;
+  border: 1px solid #C4B49A;
 }
 
 /* 타이핑 인디케이터 */
@@ -1240,11 +1171,11 @@
   position: sticky;
   bottom: 0;
   align-self: center;
-  background-color: rgba(120, 160, 133, 0.9);
+  background-color: rgba(139, 115, 85, 0.9);
   color: white;
   border: none;
   padding: 0.3rem 0.8rem;
-  border-radius: 16px;
+  border-radius: 8px;
   font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -1252,7 +1183,7 @@
 }
 
 .home-page__scroll-top-btn:hover {
-  background-color: #6a8f77;
+  background-color: #6B5E4E;
   transform: translateY(-1px);
 }
 
@@ -1270,11 +1201,11 @@
 }
 
 .home-page__add-medication-btn-sm {
-  background-color: #78a085;
-  color: white;
-  border: none;
+  background-color: transparent;
+  color: #8B7355;
+  border: 2px solid #8B7355;
   padding: 0.4rem 0.8rem;
-  border-radius: 16px;
+  border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
@@ -1283,12 +1214,15 @@
 }
 
 .home-page__add-medication-btn-sm:hover:not(:disabled) {
-  background-color: #6a8f77;
+  background-color: #8B7355;
+  color: white;
   transform: translateY(-1px);
 }
 
 .home-page__add-medication-btn-sm--done {
-  background-color: #27ae60;
+  background-color: transparent;
+  border-color: #8B7355;
+  color: #8B7355;
   cursor: default;
 }
 
@@ -1305,9 +1239,9 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: #dce5de;
-  border: none;
-  color: #5a7f67;
+  background: #EAF2EF;
+  border: 1px solid #7BA99A;
+  color: #5B8C7A;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1319,7 +1253,8 @@
 
 .home-page__faq-bubble:hover,
 .home-page__faq-bubble--active {
-  background: #c8d6cb;
+  background: #5B8C7A;
+  color: #fff;
   transform: scale(1.08);
 }
 
@@ -1328,9 +1263,9 @@
   position: absolute;
   bottom: 1rem;
   right: 60px;
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 16px;
+  background: #EDE5D8;
+  border: 1px solid #C4B49A;
+  border-radius: 8px;
   padding: 0.8rem;
   box-shadow: 0 4px 20px rgba(0,0,0,0.12);
   display: flex;
@@ -1342,17 +1277,57 @@
 
 .home-page__faq-item {
   padding: 0.5rem 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 20px;
+  background-color: #F5F0E8;
+  border: 1px solid #C4B49A;
+  border-radius: 8px;
   font-size: 0.85rem;
-  color: #2c3e50;
+  color: #2C2416;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .home-page__faq-item:hover {
-  background-color: #e9ecef;
-  border-color: #adb5bd;
+  background-color: #C4B49A;
+  border-color: #A89880;
+}
+
+
+/* 모바일 챗봇 플로팅 버튼 */
+.home-page__chatbot-fab {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #EDE5D8;
+  border: 2px solid #C4B49A;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(44, 36, 22, 0.15);
+  padding: 0;
+  transition: all 0.2s;
+  overflow: visible;
+}
+
+.home-page__chatbot-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(44, 36, 22, 0.2);
+}
+
+.home-page__chatbot-fab-img {
+  width: 140%;
+  height: 140%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+@media (max-width: 1024px) {
+  .home-page__chatbot-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

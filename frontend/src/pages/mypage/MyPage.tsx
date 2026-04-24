@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { changePassword, deleteAccount, updateUserInfo } from '../../api/authApi';
 import './MyPage.css';
 
-type TabType = 'profile' | 'report' | 'history' | 'account';
+type TabType = 'profile' | 'history' | 'account';
 
 const MyPage: React.FC = () => {
   const { user, logout, setUser, setIsLoggedIn } = useAuth();
@@ -16,12 +16,38 @@ const MyPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
 
+  // 캠린더 state
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  const getCalendarDays = (year: number, month: number) => {
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+    const days: (number | null)[] = Array(firstDay).fill(null);
+    for (let d = 1; d <= lastDate; d++) days.push(d);
+    return days;
+  };
+
+  const calendarYear = calendarDate.getFullYear();
+  const calendarMonth = calendarDate.getMonth();
+  const calendarDays = getCalendarDays(calendarYear, calendarMonth);
+
+  const formatDateKey = (day: number) =>
+    `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  const goToPrevMonth = () => setCalendarDate(new Date(calendarYear, calendarMonth - 1, 1));
+  const goToNextMonth = () => setCalendarDate(new Date(calendarYear, calendarMonth + 1, 1));
+
+  // TODO: 백엔드 API 연동 후 실제 데이터로 교체
+  const medicationsByDate: Record<string, { name: string; dosage: string; frequency: string; timing: string }[]> = {};
+
   useEffect(() => {
     const tab = searchParams.get('tab') as TabType;
-    if (tab && ['profile', 'report', 'history', 'account'].includes(tab)) {
+    if (tab && ['profile', 'history', 'account'].includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
+
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -113,6 +139,7 @@ const MyPage: React.FC = () => {
         phone_number?: string;
         birth_date?: string;
         gender?: string;
+        profile_image?: string;
       } = {};
 
       if (profileData.name && profileData.name !== user?.name) {
@@ -126,6 +153,9 @@ const MyPage: React.FC = () => {
       }
       if (profileData.gender && profileData.gender !== user?.gender) {
         updateData.gender = profileData.gender;
+      }
+      if (profileData.profileImage !== user?.profileImage) {
+        updateData.profile_image = profileData.profileImage;
       }
 
       await updateUserInfo(updateData);
@@ -172,19 +202,6 @@ const MyPage: React.FC = () => {
     }
   };
 
-  const reportData = {
-    completionRate: 87,
-    streakDays: 14,
-    totalMedications: 3,
-    weeklyData: [85, 90, 78, 95, 88, 92, 87]
-  };
-
-  const historyData = [
-    { id: '1', name: '타이레놀정 500mg', date: '2024.04.09', time: '08:00', status: '복용완료' },
-    { id: '2', name: '루코페트정 250mg', date: '2024.04.09', time: '12:30', status: '복용완료' },
-    { id: '3', name: '비타민D 1000IU', date: '2024.04.09', time: '19:00', status: '복용완료' },
-    { id: '4', name: '타이레놀정 500mg', date: '2024.04.08', time: '08:00', status: '미복용' }
-  ];
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -222,71 +239,57 @@ const MyPage: React.FC = () => {
           </div>
         );
 
-      case 'report':
-        return (
-          <div className="mypage__tab-content">
-            <div className="mypage__report-stats">
-              <div className="mypage__report-card">
-                <span className="mypage__report-label">이번 주 복용률</span>
-                <span className="mypage__report-value">{reportData.completionRate}%</span>
-              </div>
-              <div className="mypage__report-card">
-                <span className="mypage__report-label">연속 복용</span>
-                <span className="mypage__report-value">{reportData.streakDays}일</span>
-              </div>
-              <div className="mypage__report-card">
-                <span className="mypage__report-label">복용 중인 약물</span>
-                <span className="mypage__report-value">{reportData.totalMedications}</span>
-              </div>
-            </div>
-            <div className="mypage__chart-section">
-              <h4>복약 준수율 (최근 7일)</h4>
-              <div className="mypage__chart">
-                {reportData.weeklyData.map((value, index) => (
-                  <div key={index} className="mypage__chart-bar">
-                    <div className="mypage__chart-fill" style={{ height: `${value}%` }}></div>
-                    <span className="mypage__chart-label">{index + 1}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="mypage__medication-list">
-              <h4>복용 중인 약물</h4>
-              <div className="mypage__med-item">
-                <span>타이레놀정 500mg</span>
-                <span className="mypage__med-status">복용중</span>
-              </div>
-              <div className="mypage__med-item">
-                <span>루코페트정 250mg</span>
-                <span className="mypage__med-status">복용중</span>
-              </div>
-            </div>
-            <div className="mypage__tips">
-              <h4>건강 관리 팁</h4>
-              <ul>
-                <li>• 약물 복용 시간을 일정하게 유지하면 치료 효과가 높아집니다</li>
-                <li>• 복용량과 복용법을 정확히 지켜주세요</li>
-                <li>• 약물 복용 중 이상 증상이 있으면 즉시 의사와 상담하세요</li>
-              </ul>
-            </div>
-          </div>
-        );
 
       case 'history':
         return (
           <div className="mypage__tab-content">
-            <div className="mypage__history-list">
-              {historyData.map(item => (
-                <div key={item.id} className="mypage__history-item">
-                  <div className="mypage__history-info">
-                    <h4>{item.name}</h4>
-                    <span className="mypage__history-date">{item.date} {item.time}</span>
-                  </div>
-                  <span className={`mypage__history-status ${item.status === '복용완료' ? 'mypage__history-status--completed' : 'mypage__history-status--missed'}`}>
-                    {item.status}
-                  </span>
+            <div className="mypage__calendar">
+              <div className="mypage__calendar-header">
+                <button className="mypage__calendar-nav" onClick={goToPrevMonth}>◀</button>
+                <span className="mypage__calendar-title">{calendarYear}년 {calendarMonth + 1}월</span>
+                <button className="mypage__calendar-nav" onClick={goToNextMonth}>▶</button>
+              </div>
+              <div className="mypage__calendar-weekdays">
+                {'일월화수목금토'.split('').map(d => (
+                  <span key={d} className="mypage__calendar-weekday">{d}</span>
+                ))}
+              </div>
+              <div className="mypage__calendar-grid">
+                {calendarDays.map((day, i) => {
+                  if (day === null) return <span key={`empty-${i}`} className="mypage__calendar-day mypage__calendar-day--empty" />;
+                  const dateKey = formatDateKey(day);
+                  const hasMeds = !!medicationsByDate[dateKey];
+                  const isSelected = selectedDate === dateKey;
+                  const isToday = dateKey === new Date().toISOString().split('T')[0];
+                  return (
+                    <button
+                      key={dateKey}
+                      className={`mypage__calendar-day${isSelected ? ' mypage__calendar-day--selected' : ''}${isToday ? ' mypage__calendar-day--today' : ''}`}
+                      onClick={() => setSelectedDate(dateKey)}
+                    >
+                      {day}
+                      {hasMeds && <span className="mypage__calendar-dot" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="mypage__history-detail">
+              <h4 className="mypage__history-detail-title">{selectedDate} 복약 내역</h4>
+              {medicationsByDate[selectedDate] && medicationsByDate[selectedDate].length > 0 ? (
+                <div className="mypage__history-list">
+                  {medicationsByDate[selectedDate].map((med, idx) => (
+                    <div key={idx} className="mypage__history-item">
+                      <div className="mypage__history-info">
+                        <h4>{med.name}</h4>
+                        <span className="mypage__history-date">{med.dosage} · {med.frequency} · {med.timing}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <p className="mypage__history-empty">해당 날짜에 복약 내역이 없습니다.</p>
+              )}
             </div>
           </div>
         );
@@ -345,7 +348,6 @@ const MyPage: React.FC = () => {
 
         <nav className="mypage__nav">
           <button className={`mypage__nav-item ${activeTab === 'profile' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('profile')}>프로필</button>
-          <button className={`mypage__nav-item ${activeTab === 'report' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('report')}>내 리포트</button>
           <button className={`mypage__nav-item ${activeTab === 'history' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('history')}>복약 히스토리</button>
           <button className={`mypage__nav-item ${activeTab === 'account' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('account')}>보안 / 계정</button>
         </nav>
@@ -359,7 +361,6 @@ const MyPage: React.FC = () => {
         <div className="mypage__header">
           <h2 className="mypage__page-title">
             {activeTab === 'profile' && '프로필'}
-            {activeTab === 'report' && '내 리포트'}
             {activeTab === 'history' && '복약 히스토리'}
             {activeTab === 'account' && '보안 / 계정'}
           </h2>

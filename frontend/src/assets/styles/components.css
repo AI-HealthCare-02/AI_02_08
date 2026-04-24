@@ -328,16 +328,16 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 4px solid var(--color-primary-100);
+  border: 4px solid #EDE5D8;
 }
 
-/* 앞 초록 돌아가는 원 */
+/* 앞 돌아가는 원 */
 .loading-circle {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   border: 4px solid transparent;
-  border-top-color: var(--color-primary-300);
+  border-top-color: #8B7355;
   animation: loading-spin 0.8s linear infinite;
 }
 
@@ -364,7 +364,7 @@
 .loading-progress-track {
   width: 300px;
   height: 6px;
-  background-color: var(--color-neutral-200);
+  background-color: #EDE5D8;
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -372,7 +372,7 @@
 /* 진행바 */
 .loading-progress-bar {
   height: 100%;
-  background-color: var(--color-primary-300);
+  background-color: #8B7355;
   border-radius: var(--radius-full);
   transition: width var(--transition-slow);
 }

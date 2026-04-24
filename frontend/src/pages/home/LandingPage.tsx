@@ -124,15 +124,7 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         )}
-        {/* 스킵 버튼 - 우측 하단 고정 */}
-        <button 
-          onClick={handleSkipClick}
-          className="landing-page__skip-button"
-          aria-label="슬라이드 건너뛰고 로그인"
-        >
-          <div className="landing-page__skip-icon">↓</div>
-          <span className="landing-page__skip-text">스킵</span>
-        </button>
+
       </div>
     </div>
   );
