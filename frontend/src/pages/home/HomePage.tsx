@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { analyzePrescription, OcrMedicationItem } from '../../api/ocrApi';
+import { analyzePrescription, confirmPrescription, OcrMedicationItem } from '../../api/ocrApi';
 import {
   createChatSession,
   getChatMessages,
   sendMessageAndGetAIResponse,
+  updateChatSession,
   ChatMessage
 } from '../../api/chatApi';
 import {
   saveOcrResults, loadOcrResults,
   saveOcrStatus, loadOcrStatus,
   saveOcrPreview, loadOcrPreview,
+  saveOcrId, loadOcrId,
   loadMedications, saveMedications,
   ocrToMedication
 } from '../../utils/ocrStorage';
@@ -23,6 +25,7 @@ const HomePage: React.FC = () => {
   const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'partial_failure' | 'error'>(loadOcrStatus() as any || 'idle');
   const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(loadOcrResults());
   const [ocrErrorMessage, setOcrErrorMessage] = useState<string>('');
+  const [ocrId, setOcrId] = useState<string | null>(loadOcrId());
   const [addedToMedication, setAddedToMedication] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
@@ -38,6 +41,7 @@ const HomePage: React.FC = () => {
   // 챗봇 관련 state
   const [chatMessage, setChatMessage] = useState('');
   const [chatSessionId, setChatSessionId] = useState<number | null>(null);
+  const chatSessionIdRef = useRef<number | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
   const chatMessagesRef = useRef<HTMLDivElement>(null);
@@ -70,8 +74,10 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const initChatSession = async () => {
       try {
-        const session = await createChatSession();
+        const savedOcrId = loadOcrId();
+        const session = await createChatSession(savedOcrId || undefined);
         setChatSessionId(session.session_id);
+        chatSessionIdRef.current = session.session_id;
 
         // 초기 메시지 로드
         const messages = await getChatMessages(session.session_id);
@@ -162,8 +168,18 @@ const HomePage: React.FC = () => {
         setOcrStatus('partial_failure');
       } else {
         setOcrResults(result.medications);
-        setOcrStatus('completed');
+        setOcrId(result.ocrId);
         saveOcrResults(result.medications);
+        saveOcrId(result.ocrId);
+        // 챗봇 연결 완료 후에 completed 표시
+        if (chatSessionIdRef.current) {
+          try {
+            await updateChatSession(chatSessionIdRef.current, result.ocrId);
+          } catch (e) {
+            console.error('OCR-챗봇 연결 실패:', e);
+          }
+        }
+        setOcrStatus('completed');
         saveOcrStatus('completed');
       }
     } catch (err) {
@@ -202,8 +218,17 @@ const HomePage: React.FC = () => {
         setOcrStatus('partial_failure');
       } else {
         setOcrResults(result.medications);
-        setOcrStatus('completed');
+        setOcrId(result.ocrId);
         saveOcrResults(result.medications);
+        saveOcrId(result.ocrId);
+        if (chatSessionIdRef.current) {
+          try {
+            await updateChatSession(chatSessionIdRef.current, result.ocrId);
+          } catch (e) {
+            console.error('OCR-챗봇 연결 실패:', e);
+          }
+        }
+        setOcrStatus('completed');
         saveOcrStatus('completed');
       }
     } catch (err) {
@@ -227,13 +252,13 @@ const HomePage: React.FC = () => {
 
   const getStatusColor = () => {
     switch (ocrStatus) {
-      case 'idle': return '#9A8058';
-      case 'uploading': return '#3498db';
-      case 'processing': return '#f39c12';
-      case 'completed': return '#27ae60';
-      case 'partial_failure': return '#f39c12';
-      case 'error': return '#e74c3c';
-      default: return '#9A8058';
+      case 'idle': return '#8B7355';
+      case 'uploading': return '#6B5E4E';
+      case 'processing': return '#B8860B';
+      case 'completed': return '#8B7355';
+      case 'partial_failure': return '#B8860B';
+      case 'error': return '#A0522D';
+      default: return '#8B7355';
     }
   };
 
@@ -267,12 +292,20 @@ const HomePage: React.FC = () => {
     openCameraModal();
   };
 
-  const handleAddToMedication = () => {
+  const handleAddToMedication = async () => {
     if (!ocrResults?.length) return;
-    const existing = loadMedications();
-    const newMeds = ocrResults.map(ocrToMedication);
-    saveMedications([...existing, ...newMeds]);
-    setAddedToMedication(true);
+    try {
+      if (ocrId) {
+        await confirmPrescription(ocrId, ocrResults);
+      }
+      const existing = loadMedications();
+      const newMeds = ocrResults.map(ocrToMedication);
+      saveMedications([...existing, ...newMeds]);
+      setAddedToMedication(true);
+    } catch (error) {
+      console.error('복약관리 추가 실패:', error);
+      alert('복약관리 추가 중 오류가 발생했습니다.');
+    }
   };
 
   const openCameraModal = () => {
@@ -486,7 +519,7 @@ const HomePage: React.FC = () => {
                   className={`home-page__add-medication-btn-sm ${addedToMedication ? 'home-page__add-medication-btn-sm--done' : ''}`}
                   disabled={addedToMedication}
                 >
-                  {addedToMedication ? '✓ 추가됨' : '💊 복약관리에 추가'}
+                  {addedToMedication ? '✓ 추가됨' : '복약관리에 추가'}
                 </button>
               )}
             </div>
@@ -532,7 +565,7 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* 챗봇 섹션 */}
-        <div className="home-page__right">
+        <div className="home-page__right" id="chatbot-section">
           <div className="home-page__chatbot-section">
             <div className="home-page__chatbot-header">
               <div className="home-page__chatbot-title-row">
@@ -628,21 +661,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 생활습관 가이드 섹션 */}
-      <div className="home-page__lifestyle-guide">
-        <h2 className="home-page__section-title">생활습관 가이드 💡</h2>
-        <div className="home-page__guide-cards">
-          <div className="home-page__guide-card home-page__guide-card--diet home-page__guide-card--coming-soon">
-            <h3>식단 🍎</h3>
-          </div>
-          <div className="home-page__guide-card home-page__guide-card--exercise home-page__guide-card--coming-soon">
-            <h3>운동🏃</h3>
-          </div>
-          <div className="home-page__guide-card home-page__guide-card--sleep home-page__guide-card--coming-soon">
-            <h3>수면😴</h3>
-          </div>
-        </div>
-      </div>
+
 
       {/* OCR 처리 모달 */}
       {(ocrStatus === 'uploading' || ocrStatus === 'processing') && (
@@ -802,6 +821,14 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 모바일 챗봇 플로팅 버튼 */}
+      <button
+        className="home-page__chatbot-fab"
+        onClick={() => document.getElementById('chatbot-section')?.scrollIntoView({ behavior: 'smooth' })}
+      >
+        <img src={yakssoriImg} alt="약속이" className="home-page__chatbot-fab-img" />
+      </button>
     </div>
   );
 };

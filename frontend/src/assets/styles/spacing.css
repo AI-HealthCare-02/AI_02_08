@@ -61,7 +61,7 @@
   --shadow-error:   0 4px 12px rgba(185, 92, 59, 0.20);
 
   /* 브랜드 강조 그림자 (버튼 hover 등) */
-  --shadow-brand:   0 4px 14px rgba(120, 160, 133, 0.35);
+  --shadow-brand:   0 4px 14px rgba(139, 115, 85, 0.35);
 
   /* ── Border Width ────────────────────────────*/
   --border-width-thin:   1px;

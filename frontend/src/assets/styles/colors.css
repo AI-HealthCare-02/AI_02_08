@@ -1,93 +1,86 @@
 /* ==============================================
    colors.css — Design Tokens: Color System
-   Branch: feature/common-components
-
-   Base Palette (from mycolor.space #F5F5DC)
-   #f5f5dc  #bdbda5  #f3f3cc  #cdd8bb  #a3bc9e
-   #78a085  #acac9a  #474838  #d8a23a  #9a8058
-
-   Warning Palette
-   #ffc7a0  #f6906c  #b95c3b
+   이루도담 | 한방 약방 감성 리디자인
    ============================================== */
 
 :root {
 
-  /* ── Primary · Sage Green ────────────────────
-     메인 버튼, 네비게이션, 강조 텍스트, 아이콘
+  /* ── Primary · Dark Brown ───────────────────
+     메인 버튼, 강조 텍스트, 아이콘
   ─────────────────────────────────────────── */
-  --color-primary-100: #cdd8bb;
-  --color-primary-200: #a3bc9e;
-  --color-primary-300: #78a085;   /* ★ Brand Main */
-  --color-primary-400: #5d8a6e;
-  --color-primary-500: #476e57;
+  --color-primary-100: #EDE5D8;
+  --color-primary-200: #C4B49A;
+  --color-primary-300: #8B7355;   /* ★ Brand Main (골드 브라운) */
+  --color-primary-400: #6B5E4E;
+  --color-primary-500: #3D3228;   /* 다크 브라운 (버튼, 강조) */
 
-  /* ── Neutral · Oatmeal ───────────────────────
-     배경, 카드, 로고 배경, 구분선, 비활성 요소
+  /* ── Neutral · Warm Cream ───────────────────
+     배경, 카드, 구분선, 비활성 요소
   ─────────────────────────────────────────── */
-  --color-neutral-50:  #fefefc;
-  --color-neutral-100: #f5f5dc;   /* ★ Oatmeal (로고 배경, 페이지 배경) */
-  --color-neutral-200: #f3f3cc;   /* 섹션 구분 배경 */
-  --color-neutral-300: #acac9a;   /* 비활성 보더, 구분선 */
-  --color-neutral-400: #bdbda5;   /* 플레이스홀더, 서브텍스트 */
-  --color-neutral-500: #9a8058;   /* 보조 텍스트, 서브 아이콘 */
-  --color-neutral-700: #474838;   /* 메인 텍스트, 헤더 */
+  --color-neutral-50:  #FAF7F2;
+  --color-neutral-100: #F5F0E8;   /* ★ 페이지 배경 */
+  --color-neutral-200: #EDE5D8;   /* 카드 배경 */
+  --color-neutral-300: #C4B49A;   /* 구분선, 테두리 */
+  --color-neutral-400: #A89880;   /* 플레이스홀더 */
+  --color-neutral-500: #6B5E4E;   /* 서브 텍스트 */
+  --color-neutral-700: #2C2416;   /* 메인 텍스트 */
 
-  /* ── Warning · Alert ─────────────────────────
-     경고 팝업, 놓친 복약 알림, 중요 안내
+  /* ── Warning · Alert ────────────────────────
+     경고 팝업, 놓친 복약 알림
   ─────────────────────────────────────────── */
-  --color-warning-light: #ffc7a0;  /* 팝업 배경, 배지 배경 */
-  --color-warning:       #f6906c;  /* 아이콘, 보더, 강조 */
-  --color-warning-dark:  #b95c3b;  /* 텍스트, 버튼 텍스트 */
+  --color-warning-light: #F0E8D8;
+  --color-warning:       #B8860B;
+  --color-warning-dark:  #8B6914;
 
-  /* ── Accent · Warm Gold ──────────────────────
+  /* ── Accent · Warm Gold ─────────────────────
      복약 완료 뱃지, 스트릭, 특별 포인트
   ─────────────────────────────────────────── */
-  --color-accent:       #d8a23a;
-  --color-accent-light: #f0d89a;
-  --color-accent-dark:  #9a6e20;
+  --color-accent:       #8B7355;
+  --color-accent-light: #C4B49A;
+  --color-accent-dark:  #6B5E4E;
 
-  /* ── Semantic · Success ──────────────────────
+  /* ── Semantic · Success ─────────────────────
      복약 완료 체크, 정상 상태 표시
   ─────────────────────────────────────────── */
-  --color-success-light: #cdd8bb;
-  --color-success:       #78a085;
-  --color-success-dark:  #476e57;
+  --color-success-light: #EDE5D8;
+  --color-success:       #6B5E4E;
+  --color-success-dark:  #3D3228;
 
-  /* ── Semantic · Error ────────────────────────
-     폼 유효성 오류 (경고 팝업과 역할 구분)
+  /* ── Semantic · Error ───────────────────────
+     폼 유효성 오류
   ─────────────────────────────────────────── */
-  --color-error-light: #ffeae0;
-  --color-error:       #b95c3b;
-  --color-error-dark:  #8f3d22;
+  --color-error-light: #F5E6E0;
+  --color-error:       #A0522D;
+  --color-error-dark:  #7A3B1E;
 
-  /* ── Semantic · Info ─────────────────────────
-     안내 메시지, 툴팁, 도움말
+  /* ── Semantic · Info ────────────────────────
+     안내 메시지, 툴팁
   ─────────────────────────────────────────── */
-  --color-info-light: #f3f3cc;
-  --color-info:       #9a8058;
-  --color-info-dark:  #474838;
+  --color-info-light: #F0E8D8;
+  --color-info:       #8B7355;
+  --color-info-dark:  #2C2416;
 
-  /* ── Background ──────────────────────────────*/
-  --color-bg-base:    var(--color-neutral-100);  /* 네비바, 카드 칩 배경용 */
-  --color-bg-surface: #ffffff;                   /* 카드, 모달, 시트 */
+  /* ── Background ─────────────────────────────*/
+  --color-bg-base:    var(--color-neutral-100);  /* 페이지 배경 */
+  --color-bg-surface: var(--color-neutral-200);  /* 카드, 모달 */
   --color-bg-subtle:  var(--color-neutral-200);  /* 섹션 구분 배경 */
-  --color-bg-inverse: var(--color-neutral-700);  /* 다크 네비, 헤더 */
+  --color-bg-inverse: var(--color-neutral-700);  /* 다크 헤더 */
 
-  /* ── Text ────────────────────────────────────*/
+  /* ── Text ───────────────────────────────────*/
   --color-text-primary:     var(--color-neutral-700);  /* 본문, 제목 */
   --color-text-secondary:   var(--color-neutral-500);  /* 서브 레이블 */
   --color-text-placeholder: var(--color-neutral-400);  /* 인풋 힌트 */
   --color-text-disabled:    var(--color-neutral-300);  /* 비활성 */
-  --color-text-inverse:     #ffffff;                   /* 다크 배경 위 */
+  --color-text-inverse:     #FAF7F2;                   /* 다크 배경 위 */
   --color-text-brand:       var(--color-primary-300);  /* 브랜드 링크 */
   --color-text-accent:      var(--color-accent);       /* 골드 강조 */
-  --color-text-warning:     var(--color-warning-dark); /* 경고 텍스트 */
+  --color-text-warning:     var(--color-warning-dark);
 
-  /* ── Border ──────────────────────────────────*/
-  --color-border-default: var(--color-neutral-400);  /* 일반 보더 */
-  --color-border-strong:  var(--color-neutral-300);  /* 강조 보더 */
-  --color-border-brand:   var(--color-primary-200);  /* 브랜드 보더 */
-  --color-border-focus:   var(--color-primary-300);  /* 포커스 링 */
-  --color-border-error:   var(--color-error);        /* 에러 보더 */
-  --color-border-warning: var(--color-warning);      /* 경고 보더 */
+  /* ── Border ─────────────────────────────────*/
+  --color-border-default: var(--color-neutral-300);
+  --color-border-strong:  var(--color-neutral-400);
+  --color-border-brand:   var(--color-primary-200);
+  --color-border-focus:   var(--color-primary-300);
+  --color-border-error:   var(--color-error);
+  --color-border-warning: var(--color-warning);
 }

@@ -75,13 +75,6 @@ const Navbar: React.FC<NavbarProps> = ({
                 홈
               </Link>
               <Link 
-                to="/medication" 
-                className={`navbar__nav-item ${isActive('/medication') ? 'navbar__nav-item--active' : ''}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                복약관리
-              </Link>
-              <Link 
                 to="/mypage" 
                 className={`navbar__nav-item ${isActive('/mypage') ? 'navbar__nav-item--active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -129,10 +122,9 @@ const Navbar: React.FC<NavbarProps> = ({
                       alt="프로필" 
                       className="navbar__user-avatar-image"
                       style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        objectFit: 'cover'
+                        width: '24px',
+                        height: '24px',
+                        objectFit: 'contain'
                       }}
                     />
                   ) : (
@@ -145,7 +137,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         fontSize: '16px',
                         fontWeight: 'bold',
                         color: 'white',
-                        backgroundColor: '#78a085',
+                        backgroundColor: '#8B7355',
                         width: '36px',
                         height: '36px',
                         borderRadius: '50%'

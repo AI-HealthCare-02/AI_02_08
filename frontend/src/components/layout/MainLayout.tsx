@@ -101,7 +101,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                   padding: '12px',
                   borderRadius: '8px',
                   border: 'none',
-                  backgroundColor: '#78a085',
+                  backgroundColor: '#8B7355',
                   color: 'white',
                   cursor: 'pointer',
                   fontSize: '14px',

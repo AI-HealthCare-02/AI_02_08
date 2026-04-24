@@ -56,6 +56,7 @@ export const useAuth = (): AuthState => {
         birthday: response.data.birthday,
         phoneNumber: response.data.phone_number,
         gender: response.data.gender,
+        profileImage: response.data.profile_image || '/user-icon.svg',
         agreeTerms: response.data.agree_terms,
       };
       setUser(userInfo);
@@ -78,6 +79,7 @@ export const useAuth = (): AuthState => {
         birthday: userResponse.data.birthday,
         phoneNumber: userResponse.data.phone_number,
         gender: userResponse.data.gender,
+        profileImage: userResponse.data.profile_image || '/user-icon.svg',
         agreeTerms: userResponse.data.agree_terms
       };
       setUser(userInfo);

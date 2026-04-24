@@ -4,7 +4,7 @@ import apiClient from './apiClient';
 export interface ChatSession {
   session_id: number;
   user_id: number;
-  ocr_id: number | null;
+  ocr_id: string | null;
   message_count: number;
   created_at: string;
 }
@@ -19,7 +19,7 @@ export interface ChatMessage {
 }
 
 export interface CreateSessionRequest {
-  ocr_id?: number | null;
+  ocr_id?: string | null;
 }
 
 export interface SendMessageRequest {
@@ -31,7 +31,7 @@ export interface SendMessageRequest {
 /**
  * 새 채팅 세션 생성
  */
-export const createChatSession = async (ocrId?: number): Promise<ChatSession> => {
+export const createChatSession = async (ocrId?: string): Promise<ChatSession> => {
   const response = await apiClient.post('/chat/sessions', {
     ocr_id: ocrId || null,
   });
@@ -66,6 +66,19 @@ export const deleteChatSession = async (sessionId: number): Promise<void> => {
  */
 export const getChatMessages = async (sessionId: number): Promise<ChatMessage[]> => {
   const response = await apiClient.get(`/chat/sessions/${sessionId}/messages`);
+  return response.data;
+};
+
+/**
+ * 기존 채팅 세션에 ocrId를 연결 (PATCH)
+ */
+export const updateChatSession = async (
+  sessionId: number,
+  ocrId: string
+): Promise<ChatSession> => {
+  const response = await apiClient.patch(`/chat/sessions/${sessionId}`, {
+    ocr_id: ocrId,
+  });
   return response.data;
 };
 
