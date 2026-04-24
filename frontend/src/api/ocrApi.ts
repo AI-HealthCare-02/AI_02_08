@@ -45,3 +45,16 @@ export const analyzePrescription = async (image: File): Promise<OcrResult> => {
     throw new Error('서버와 통신 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요.');
   }
 };
+
+/**
+ * OCR 결과 확정 → 백엔드 DB에 MedicationLog 저장
+ */
+export const confirmPrescription = async (
+  ocrId: string,
+  medications: OcrMedicationItem[]
+): Promise<{ registeredCount: number; medicationIds: number[] }> => {
+  const response = await apiClient.post(`/ai/ocr/prescription/${ocrId}/confirm`, {
+    medications,
+  });
+  return response.data;
+};

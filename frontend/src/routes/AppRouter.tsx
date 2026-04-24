@@ -11,7 +11,6 @@ import SignupPage from '../pages/auth/SignupPage';
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import KakaoCallbackPage from '../pages/auth/KakaoCallbackPage';
 import KakaoAdditionalInfoPage from '../pages/auth/KakaoAdditionalInfoPage';
-import MedicationPage from '../pages/medication/MedicationPage';
 import MyPage from '../pages/mypage/MyPage';
 import TermsAgreementPage from '../pages/auth/TermsAgreementPage';
 
@@ -39,17 +38,6 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <MainLayout>
               <HomePage />
-            </MainLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/medication"
-        element={
-          <ProtectedRoute>
-            <MainLayout>
-              <MedicationPage />
             </MainLayout>
           </ProtectedRoute>
         }

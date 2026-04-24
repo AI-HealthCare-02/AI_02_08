@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { analyzePrescription, OcrMedicationItem } from '../../api/ocrApi';
+import { analyzePrescription, confirmPrescription, OcrMedicationItem } from '../../api/ocrApi';
 import {
   createChatSession,
   getChatMessages,
   sendMessageAndGetAIResponse,
+  updateChatSession,
   ChatMessage
 } from '../../api/chatApi';
 import {
   saveOcrResults, loadOcrResults,
   saveOcrStatus, loadOcrStatus,
   saveOcrPreview, loadOcrPreview,
+  saveOcrId, loadOcrId,
   loadMedications, saveMedications,
   ocrToMedication
 } from '../../utils/ocrStorage';
@@ -23,6 +25,7 @@ const HomePage: React.FC = () => {
   const [ocrStatus, setOcrStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'partial_failure' | 'error'>(loadOcrStatus() as any || 'idle');
   const [ocrResults, setOcrResults] = useState<OcrMedicationItem[] | null>(loadOcrResults());
   const [ocrErrorMessage, setOcrErrorMessage] = useState<string>('');
+  const [ocrId, setOcrId] = useState<string | null>(loadOcrId());
   const [addedToMedication, setAddedToMedication] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
@@ -70,7 +73,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const initChatSession = async () => {
       try {
-        const session = await createChatSession();
+        const session = await createChatSession(undefined);
         setChatSessionId(session.session_id);
 
         // 초기 메시지 로드
@@ -162,9 +165,15 @@ const HomePage: React.FC = () => {
         setOcrStatus('partial_failure');
       } else {
         setOcrResults(result.medications);
+        setOcrId(result.ocrId);
         setOcrStatus('completed');
         saveOcrResults(result.medications);
         saveOcrStatus('completed');
+        saveOcrId(result.ocrId);
+        // OCR 성공 시 기존 채팅 세션에 ocrId 연결
+        if (chatSessionId) {
+          updateChatSession(chatSessionId, result.ocrId).catch(console.error);
+        }
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
@@ -202,9 +211,14 @@ const HomePage: React.FC = () => {
         setOcrStatus('partial_failure');
       } else {
         setOcrResults(result.medications);
+        setOcrId(result.ocrId);
         setOcrStatus('completed');
         saveOcrResults(result.medications);
         saveOcrStatus('completed');
+        saveOcrId(result.ocrId);
+        if (chatSessionId) {
+          updateChatSession(chatSessionId, result.ocrId).catch(console.error);
+        }
       }
     } catch (err) {
       console.error('OCR 분석 실패:', err);
@@ -267,12 +281,20 @@ const HomePage: React.FC = () => {
     openCameraModal();
   };
 
-  const handleAddToMedication = () => {
+  const handleAddToMedication = async () => {
     if (!ocrResults?.length) return;
-    const existing = loadMedications();
-    const newMeds = ocrResults.map(ocrToMedication);
-    saveMedications([...existing, ...newMeds]);
-    setAddedToMedication(true);
+    try {
+      if (ocrId) {
+        await confirmPrescription(ocrId, ocrResults);
+      }
+      const existing = loadMedications();
+      const newMeds = ocrResults.map(ocrToMedication);
+      saveMedications([...existing, ...newMeds]);
+      setAddedToMedication(true);
+    } catch (error) {
+      console.error('복약관리 추가 실패:', error);
+      alert('복약관리 추가 중 오류가 발생했습니다.');
+    }
   };
 
   const openCameraModal = () => {
@@ -628,21 +650,7 @@ const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 생활습관 가이드 섹션 */}
-      <div className="home-page__lifestyle-guide">
-        <h2 className="home-page__section-title">생활습관 가이드 💡</h2>
-        <div className="home-page__guide-cards">
-          <div className="home-page__guide-card home-page__guide-card--diet home-page__guide-card--coming-soon">
-            <h3>식단 🍎</h3>
-          </div>
-          <div className="home-page__guide-card home-page__guide-card--exercise home-page__guide-card--coming-soon">
-            <h3>운동🏃</h3>
-          </div>
-          <div className="home-page__guide-card home-page__guide-card--sleep home-page__guide-card--coming-soon">
-            <h3>수면😴</h3>
-          </div>
-        </div>
-      </div>
+
 
       {/* OCR 처리 모달 */}
       {(ocrStatus === 'uploading' || ocrStatus === 'processing') && (

@@ -75,13 +75,6 @@ const Navbar: React.FC<NavbarProps> = ({
                 홈
               </Link>
               <Link 
-                to="/medication" 
-                className={`navbar__nav-item ${isActive('/medication') ? 'navbar__nav-item--active' : ''}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                복약관리
-              </Link>
-              <Link 
                 to="/mypage" 
                 className={`navbar__nav-item ${isActive('/mypage') ? 'navbar__nav-item--active' : ''}`}
                 onClick={() => setIsMobileMenuOpen(false)}

@@ -3,6 +3,7 @@ import { OcrMedicationItem } from '../api/ocrApi';
 const OCR_RESULTS_KEY = 'ocr_results';
 const OCR_STATUS_KEY = 'ocr_status';
 const OCR_PREVIEW_KEY = 'ocr_preview';
+const OCR_ID_KEY = 'ocr_id';
 const MEDICATIONS_KEY = 'medications';
 
 export interface StoredMedication {
@@ -41,6 +42,15 @@ export const saveOcrPreview = (url: string) => {
 
 export const loadOcrPreview = (): string | null => {
   return sessionStorage.getItem(OCR_PREVIEW_KEY);
+};
+
+// OCR ID 저장/불러오기
+export const saveOcrId = (ocrId: string) => {
+  sessionStorage.setItem(OCR_ID_KEY, ocrId);
+};
+
+export const loadOcrId = (): string | null => {
+  return sessionStorage.getItem(OCR_ID_KEY);
 };
 
 // 복약관리 데이터 저장/불러오기
