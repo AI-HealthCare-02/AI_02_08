@@ -305,74 +305,103 @@
   }
 }
 
+/* 모바일 하단 탭바 - 기본 숨김 */
+.navbar__mobile-tabbar {
+  display: none;
+}
+
 /* 반응형 - 모바일 */
 @media (max-width: 768px) {
   .navbar__container {
-    height: 70px;
-    padding: 0 var(--spacing-4);
+    height: 56px;
+    padding: 0 1rem;
     position: relative;
   }
-  
+
+  .navbar__logo-image {
+    height: 48px;
+    width: 48px;
+  }
+
   .navbar__logo-text {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-md);
   }
-  
-  /* 모바일 메뉴 표시 */
+
+  /* 햄버거 메뉴 숨김 */
   .navbar__mobile-toggle {
-    display: block;
+    display: none !important;
   }
-  
-  /* 데스크톱 메뉴 숨김 */
+
+  /* 데스크톱 네비 숨김 */
   .navbar__nav {
-    position: fixed;
-    top: 70px;
-    left: 0;
-    right: 0;
-    background-color: var(--color-bg-base);
-    border-top: 1px solid var(--color-border-default);
-    flex-direction: column;
-    padding: var(--spacing-4) 0;
-    transform: translateY(-100%);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: none !important;
   }
-  
-  /* 모바일 메뉴 열린 상태 */
-  .navbar__nav--mobile-open {
-    transform: translateY(0);
-    opacity: 1;
-    visibility: visible;
-  }
-  
-  .navbar__nav-item {
-    font-size: var(--font-size-lg);
-    padding: var(--spacing-3) var(--spacing-4);
-    text-align: center;
-    width: 100%;
-    border-bottom: 1px solid rgba(139, 115, 85, 0.1);
-  }
-  
-  .navbar__nav-item:last-child {
-    border-bottom: none;
-  }
-  
+
   .navbar__button {
     font-size: var(--font-size-sm);
-    padding: var(--spacing-2) var(--spacing-4);
-    min-width: 70px;
-    height: 36px;
+    padding: var(--spacing-2) var(--spacing-3);
+    min-width: 60px;
+    height: 32px;
   }
-  
-  .navbar__user {
-    flex-direction: column;
-    gap: var(--spacing-2);
+
+  .navbar__user-avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .navbar__user-name {
+    font-size: 0.8rem;
+  }
+
+  .navbar__dropdown-arrow {
+    font-size: 8px;
+  }
+
+  .navbar__profile-trigger {
+    gap: 0.3rem;
+    padding: 2px 4px;
+  }
+
+  /* 하단 탭바 표시 */
+  .navbar__mobile-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background-color: #F5F0E8;
+    border-top: 1px solid #C4B49A;
+    z-index: 1000;
+    justify-content: space-around;
     align-items: center;
   }
-  
-  .navbar__user-name {
-    font-size: var(--font-size-sm);
+
+  .navbar__tabbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    text-decoration: none;
+    color: #6B5E4E;
+    font-size: 0.7rem;
+    padding: 0.4rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .navbar__tabbar-item--active {
+    color: #5B8C7A;
+    font-weight: 600;
+  }
+
+  .navbar__tabbar-icon {
+    font-size: 1.8rem;
+  }
+
+  .navbar__tabbar-icon-img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
   }
 }
