@@ -182,6 +182,26 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
       </div>
+
+      {/* 모바일 하단 탭바 */}
+      {isLoggedIn && (
+        <div className="navbar__mobile-tabbar">
+          <Link
+            to="/home"
+            className={`navbar__tabbar-item ${isActive('/home') ? 'navbar__tabbar-item--active' : ''}`}
+          >
+            <img src="/home-icon.png" alt="홈" className="navbar__tabbar-icon-img" />
+            <span>홈</span>
+          </Link>
+          <Link
+            to="/mypage"
+            className={`navbar__tabbar-item ${isActive('/mypage') ? 'navbar__tabbar-item--active' : ''}`}
+          >
+            <img src="/mypage-icon.png" alt="마이페이지" className="navbar__tabbar-icon-img" />
+            <span>마이페이지</span>
+          </Link>
+        </div>
+      )}
     </nav>
   );
 };
