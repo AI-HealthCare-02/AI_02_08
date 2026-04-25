@@ -928,35 +928,120 @@
   .mypage {
     flex-direction: column;
   }
-  
+
   .mypage__sidebar {
     width: 100%;
     height: auto;
     min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid #C4B49A;
   }
-  
-  .mypage__main {
-    padding: 1rem;
+
+  .mypage__profile {
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
   }
-  
+
+  .mypage__avatar {
+    margin-bottom: 0;
+  }
+
+  .mypage__avatar-circle {
+    width: 44px;
+    height: 44px;
+    font-size: 0.85rem;
+  }
+
+  .mypage__user-info {
+    text-align: left;
+  }
+
+  .mypage__username {
+    font-size: 0.95rem;
+  }
+
+  .mypage__user-email {
+    font-size: 0.8rem;
+  }
+
   .mypage__nav {
     display: flex;
     overflow-x: auto;
     padding: 0;
+    border-bottom: 1px solid #C4B49A;
   }
-  
+
   .mypage__nav-item {
     white-space: nowrap;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.9rem;
     border-left: none;
     border-bottom: 3px solid transparent;
   }
-  
+
+  .mypage__nav-item:hover {
+    transform: none;
+  }
+
   .mypage__nav-item--active {
     border-left: none;
-    border-bottom-color: #8B7355;
+    border-bottom-color: #5B8C7A;
   }
-  
+
+  .mypage__sidebar-footer {
+    display: none;
+  }
+
+  .mypage__main {
+    padding: 1rem;
+    padding-bottom: 70px;
+  }
+
+  .mypage__header {
+    margin-bottom: 1rem;
+  }
+
+  .mypage__page-title {
+    font-size: 1.2rem;
+  }
+
+  .mypage__profile-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .mypage__profile-info-card {
+    padding: 1.2rem;
+  }
+
+  .mypage__tab-content:hover {
+    transform: none;
+  }
+
+  .mypage__calendar {
+    padding: 1rem;
+  }
+
+  .mypage__calendar-day {
+    font-size: 0.8rem;
+  }
+
+  .mypage__history-detail {
+    padding: 1rem;
+  }
+
   .mypage__modal {
     width: 95%;
+  }
+
+  .mypage__account-item:hover {
+    transform: none;
+  }
+
+  .mypage__history-item:hover {
+    transform: none;
   }
 }

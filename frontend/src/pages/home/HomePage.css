@@ -4,6 +4,8 @@
   margin: 0 auto;
   background-color: #F5F0E8;
   min-height: 100vh;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 /* 인사말 섹션 */
@@ -1084,18 +1086,83 @@
 @media (max-width: 768px) {
   .home-page {
     padding: 1rem;
+    padding-bottom: 70px;
   }
-  
+
+  .home-page__title {
+    font-size: 1.3rem;
+  }
+
+  .home-page__subtitle {
+    font-size: 0.85rem;
+  }
+
+  .home-page__content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .home-page__chatbot-section {
+    height: 450px;
+  }
+
   .home-page__guide-cards {
     grid-template-columns: 1fr;
   }
-  
+
   .home-page__medicine-categories {
     grid-template-columns: 1fr;
   }
-  
-  .home-page__title {
-    font-size: 1.5rem;
+
+  .home-page__upload-area {
+    padding: 2rem 1rem;
+  }
+
+  .home-page__ocr-section,
+  .home-page__ocr-results,
+  .home-page__chatbot-section {
+    border-radius: 12px;
+  }
+
+  .home-page__chat-message {
+    max-width: 90%;
+  }
+
+  .home-page__chat-message--user,
+  .home-page__chat-message--bot {
+    max-width: 85%;
+  }
+
+  .home-page__send-btn {
+    padding: 0.8rem 1rem;
+  }
+
+  .home-page__chat-input-area {
+    padding: 0.8rem;
+  }
+
+  .home-page__faq-popup {
+    right: 10px;
+    max-width: 250px;
+  }
+
+  .home-page__modal {
+    width: 95%;
+    padding: 2rem 1.5rem;
+  }
+
+  .home-page__modal--large {
+    max-width: 95%;
+  }
+
+  .home-page__modal--camera {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .home-page__camera-container {
+    height: 350px;
   }
 }
 
@@ -1299,14 +1366,14 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 56px;
-  height: 56px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: #EDE5D8;
-  border: 2px solid #C4B49A;
+  background: #EAF2EF;
+  border: 2px solid #7BA99A;
   cursor: pointer;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(44, 36, 22, 0.15);
+  box-shadow: 0 4px 12px rgba(91, 140, 122, 0.25);
   padding: 0;
   transition: all 0.2s;
   overflow: visible;
@@ -1314,7 +1381,7 @@
 
 .home-page__chatbot-fab:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 16px rgba(44, 36, 22, 0.2);
+  box-shadow: 0 6px 16px rgba(91, 140, 122, 0.35);
 }
 
 .home-page__chatbot-fab-img {
@@ -1329,5 +1396,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page__chatbot-fab {
+    bottom: 80px;
+    z-index: 999;
   }
 }
