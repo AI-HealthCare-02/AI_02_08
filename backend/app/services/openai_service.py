@@ -50,7 +50,9 @@ async def process_ai_report_worker(report_id: str, user_id: int, period: str):
     try:
         days = 7 if period == "weekly" else 30
         start_date = datetime.now() - timedelta(days=days)
-        intakes = await MedicationIntakeLog.filter(user_id=user_id, scheduled_time__gte=start_date).prefetch_related("medication")
+        intakes = await MedicationIntakeLog.filter(user_id=user_id, scheduled_time__gte=start_date).prefetch_related(
+            "medication"
+        )
 
         total_intakes = len(intakes)
         taken_intakes = [i for i in intakes if i.status == "taken"]
@@ -78,8 +80,14 @@ async def process_ai_report_worker(report_id: str, user_id: int, period: str):
 
         if total_intakes == 0:
             adherence_rate = 85
-            medication_records = [{"약품명": "타이레놀(예시)", "복용률": "100%"}, {"약품명": "위장약(예시)", "복용률": "70%"}]
-            medication_summary_for_db = [{"name": "타이레놀(예시)", "takenRate": 100}, {"name": "위장약(예시)", "takenRate": 70}]
+            medication_records = [
+                {"약품명": "타이레놀(예시)", "복용률": "100%"},
+                {"약품명": "위장약(예시)", "복용률": "70%"},
+            ]
+            medication_summary_for_db = [
+                {"name": "타이레놀(예시)", "takenRate": 100},
+                {"name": "위장약(예시)", "takenRate": 70},
+            ]
 
         ai_comment = await generate_medication_report(adherence_rate, medication_records, user_conditions, period)
 
@@ -97,6 +105,7 @@ async def process_ai_report_worker(report_id: str, user_id: int, period: str):
 
 async def _get_unconfirmed_ocr_context(ocr_id: str) -> list[str]:
     from app.models.medications import OcrPrescription
+
     ocr_record = await OcrPrescription.get_or_none(ocr_id=ocr_id)
     if not ocr_record or not ocr_record.extracted_data:
         return []
@@ -107,7 +116,12 @@ async def _get_unconfirmed_ocr_context(ocr_id: str) -> list[str]:
 
     lines = ["[방금 분석된 새 처방전 약물 목록 - 아직 확정되지 않음]"]
     for med in parsed_list:
-        name, dosage, freq, timing = med.get("name", ""), med.get("dosage", ""), med.get("frequency", ""), med.get("timing", "")
+        name, dosage, freq, timing = (
+            med.get("name", ""),
+            med.get("dosage", ""),
+            med.get("frequency", ""),
+            med.get("timing", ""),
+        )
         desc = med.get("description", "")
         # 할루시네이션 방지를 위해 설명(사실 근거) 복구
         line = f"- {name}: {dosage} (복용법: {freq}, {timing})"
@@ -120,8 +134,12 @@ async def _get_unconfirmed_ocr_context(ocr_id: str) -> list[str]:
 
 async def _get_confirmed_medication_context(user_id: int) -> list[str]:
     from tortoise.expressions import Q
+
     from app.models.medications import MedicationLog
-    logs = await MedicationLog.filter(Q(user_id=user_id), Q(end_date__gte=datetime.today().date()) | Q(end_date__isnull=True)).order_by("-created_at")
+
+    logs = await MedicationLog.filter(
+        Q(user_id=user_id), Q(end_date__gte=datetime.today().date()) | Q(end_date__isnull=True)
+    ).order_by("-created_at")
     if not logs:
         return []
 
@@ -147,13 +165,20 @@ async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str,
     system_prompt = """당신은 처방전 분석을 돕는 의료 데이터 어시스턴트입니다... (생략)"""
     user_message = f"다음 약품들에 대한 설명을 JSON으로 반환해주세요: {json.dumps(unmatched_meds, ensure_ascii=False)}"
     try:
-        response = await client.chat.completions.create(model=settings.openai_chat_model, messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}], temperature=0, max_tokens=1000)
+        response = await client.chat.completions.create(
+            model=settings.openai_chat_model,
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}],
+            temperature=0,
+            max_tokens=1000,
+        )
         content = response.choices[0].message.content or "{}"
         clean_content = content.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(clean_content)
     except Exception as e:
         print(f"GPT Batch Fallback 에러: {e}")
-        return {med["name"]: "서비스 지연으로 약품 정보를 불러오지 못했습니다." for med in unmatched_meds if "name" in med}
+        return {
+            med["name"]: "서비스 지연으로 약품 정보를 불러오지 못했습니다." for med in unmatched_meds if "name" in med
+        }
 
 
 async def generate_chat_answer(user_message: str, ocr_context: str, summary: str, recent_messages: list[dict]) -> str:
@@ -186,9 +211,9 @@ async def generate_chat_answer(user_message: str, ocr_context: str, summary: str
             response = await client.chat.completions.create(
                 model=settings.openai_chat_model,
                 messages=messages,
-                temperature=0.3, # 답변의 정합성을 위해 온도를 낮춤
+                temperature=0.3,  # 답변의 정합성을 위해 온도를 낮춤
                 max_tokens=600,
-                timeout=15
+                timeout=15,
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
@@ -200,12 +225,17 @@ async def generate_chat_answer(user_message: str, ocr_context: str, summary: str
 
 async def summarize_and_deidentify_chat(messages: list[dict]) -> str:
     messages_str = "\\n".join([f"{m['role']}: {m['content']}" for m in messages])
-    system_prompt = """당신은 의료 채팅 기록 요약 어시스턴트입니다. 
-    1. 환자의 개인정보(이름, 나이 등)는 절대 포함하지 마세요. 
+    system_prompt = """당신은 의료 채팅 기록 요약 어시스턴트입니다.
+    1. 환자의 개인정보(이름, 나이 등)는 절대 포함하지 마세요.
     2. 어떤 약품에 대해 어떤 질문을 했는지 의학적인 관점에서 간략히 요약하세요.
     """
     try:
-        response = await client.chat.completions.create(model=settings.openai_chat_model, messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": messages_str}], temperature=0.3, max_tokens=300)
+        response = await client.chat.completions.create(
+            model=settings.openai_chat_model,
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": messages_str}],
+            temperature=0.3,
+            max_tokens=300,
+        )
         return response.choices[0].message.content.strip()
     except Exception as e:
         print(f"OpenAI 요약 에러: {e}")

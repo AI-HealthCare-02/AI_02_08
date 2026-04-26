@@ -1,7 +1,7 @@
+from tortoise.expressions import F
+
 from app.models.chat_session import ChatSession
 
-
-from tortoise.expressions import F
 
 class ChatSessionRepository:
     def __init__(self):

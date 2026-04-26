@@ -75,33 +75,33 @@ class ChatService:
         background_tasks: BackgroundTasks,
         is_faq: bool = False,
     ) -> ChatMessage:
+        import datetime
+
+        from app.models.chat_idempotency import ChatIdempotency
         from app.services.openai_service import (
             generate_chat_answer,
             get_medication_context_for_chatbot,
         )
-        from app.models.chat_idempotency import ChatIdempotency
-        import datetime
 
         # 1. Idempotency Check
         if idempotency_key:
             existing_key = await ChatIdempotency.get_or_none(idempotency_key=idempotency_key)
             if existing_key:
-                diff = (datetime.datetime.now(datetime.timezone.utc) - existing_key.created_at).total_seconds()
+                diff = (datetime.datetime.now(datetime.UTC) - existing_key.created_at).total_seconds()
                 if diff < 60:
                     raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail="현재 처리 중이거나 방금 완료된 중복 요청입니다."
+                        status_code=status.HTTP_409_CONFLICT, detail="현재 처리 중이거나 방금 완료된 중복 요청입니다."
                     )
             else:
                 await ChatIdempotency.create(idempotency_key=idempotency_key)
 
         # 2. Session & Processing Lock Check
         session = await self.get_session(session_id=session_id, user_id=user_id)
-        
+
         if session.is_processing:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="AI가 아직 이전 질문에 답변 중입니다. 잠시 후 다시 시도해주세요."
+                detail="AI가 아직 이전 질문에 답변 중입니다. 잠시 후 다시 시도해주세요.",
             )
 
         # 락 세팅
@@ -111,7 +111,7 @@ class ChatService:
         try:
             # 3. 사용자 메시지 저장
             async with in_transaction():
-                user_msg = await self.message_repo.create(
+                await self.message_repo.create(
                     session_id=session_id,
                     sender=SenderType.USER,
                     content=content,
@@ -122,7 +122,7 @@ class ChatService:
             # 4. AI 답변 준비 (Trimming & Windowing 반영된 서비스 호출)
             ocr_context = await get_medication_context_for_chatbot(user_id, session.ocr_id)
             recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)
-            recent_chat_messages = recent_chat_messages[-7:] # 최신 질문 포함 7건
+            recent_chat_messages = recent_chat_messages[-7:]  # 최신 질문 포함 7건
 
             recent_dicts = [
                 {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content}
@@ -135,13 +135,13 @@ class ChatService:
                     user_message=content,
                     ocr_context=ocr_context,
                     summary=session.summary or "",
-                    recent_messages=recent_dicts[:-1], 
+                    recent_messages=recent_dicts[:-1],
                 )
-            except Exception:
+            except Exception as e:
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail="현재 AI 상담소 응답이 지연되고 있습니다. 잠시 후 재시도해주세요."
-                )
+                    detail="현재 AI 상담소 응답이 지연되고 있습니다. 잠시 후 재시도해주세요.",
+                ) from e
 
             # 6. AI 응답 저장
             async with in_transaction():
@@ -169,13 +169,13 @@ class ChatService:
 
     async def trigger_summarization(self, sess_id: int):
         from app.services.openai_service import summarize_and_deidentify_chat
+
         sess = await self.session_repo.get_by_id(sess_id)
         if not sess:
             return
         msgs = await self.message_repo.get_by_session_id(sess_id)
         msgs_dicts = [
-            {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content}
-            for m in msgs[-10:]
+            {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content} for m in msgs[-10:]
         ]
         new_summary = await summarize_and_deidentify_chat(msgs_dicts)
 
@@ -186,9 +186,11 @@ class ChatService:
         await sess.save(update_fields=["summary"])
 
     async def cleanup_old_idempotency_keys(self):
-        from app.models.chat_idempotency import ChatIdempotency
         import datetime
-        threshold = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=10)
+
+        from app.models.chat_idempotency import ChatIdempotency
+
+        threshold = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=10)
         await ChatIdempotency.filter(created_at__lt=threshold).delete()
 
     async def get_faqs(self) -> list[FaqItem]:

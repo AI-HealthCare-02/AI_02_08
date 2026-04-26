@@ -201,7 +201,9 @@ async def process_chat_message(
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
     background_tasks: BackgroundTasks,
-    x_idempotency_key: Annotated[str | None, Header(description="동일 요청 중복 처리 방지를 위한 멱등성 키", alias="X-Idempotency-Key")] = None,
+    x_idempotency_key: Annotated[
+        str | None, Header(description="동일 요청 중복 처리 방지를 위한 멱등성 키", alias="X-Idempotency-Key")
+    ] = None,
 ) -> JSONResponse:
     message = await chat_service.process_chat_message(
         session_id=session_id,
