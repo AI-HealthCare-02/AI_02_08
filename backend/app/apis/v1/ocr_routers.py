@@ -38,13 +38,13 @@ ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
     summary="처방전 OCR 분석",
     description="처방전 또는 약봉지 사진 업로드 시 네이버 클로바 OCR로 약 이름·용량·복용법 자동 추출",
     responses={
-        400: {"description": "지원하지 않는 파일 형식 또는 10MB 초과"},
+        400: {"description": "지원하지 않는 파일 형식 또는 5MB 초과"},
         401: {"description": "인증 실패 (토큰 누락 또는 만료)"},
         500: {"description": "OCR 서비스 연동 오류"},
     },
 )
 async def analyze_prescription(
-    image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 10MB"),  # noqa: B008
+    image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 5MB"),  # noqa: B008
     user: Annotated[User, Depends(get_request_user)] = None,
 ):
     # --- 파일 유효성 검사 (MIME 타입) ---

@@ -24,7 +24,7 @@ class FileSecurityValidator:
         "application/pdf": [b"%PDF-"],  # PDF magic number
     }
 
-    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB (보안 + 실용성 균형)
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB (보안 + 실용성 균형)
     MAX_IMAGE_DIMENSION = 4096  # 4K 해상도 (메모리 폭탄 방지)
 
     @classmethod
