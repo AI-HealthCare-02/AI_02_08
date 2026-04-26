@@ -1,18 +1,16 @@
 import json
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, status
 from fastapi.responses import JSONResponse
 
 from app.dependencies.security import get_request_user
 from app.dtos.chat import (
-    AiResponseRequest,
     ChatMessageCreateRequest,
     ChatMessageResponse,
     ChatSessionCreateRequest,
     ChatSessionResponse,
     ChatSessionUpdateRequest,
-    # FaqItemResponse, # FAQ 우선 비활성화
 )
 from app.models.users import User
 from app.services.chat import ChatService
@@ -194,19 +192,25 @@ async def get_messages(
 @chat_router.post(
     "/sessions/{session_id}/messages",
     status_code=status.HTTP_201_CREATED,
-    summary="사용자 발화 메시지(질문) 저장",
-    description="사용자가 직접 타이핑했거나 추천 FAQ(자주 묻는 질문) 메뉴를 통해 발생시킨 질문 텍스트를 데이터베이스에 적재합니다.",
+    summary="사용자 발화 저장 및 AI 응답",
+    description="사용자 질문을 저장하고, 멱등성 검사를 통과한 경우 AI 상담 결과를 생성하여 반환합니다.",
 )
-async def save_message(
+async def process_chat_message(
     session_id: int,
     request: ChatMessageCreateRequest,
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
+    background_tasks: BackgroundTasks,
+    x_idempotency_key: Annotated[
+        str | None, Header(description="동일 요청 중복 처리 방지를 위한 멱등성 키", alias="X-Idempotency-Key")
+    ] = None,
 ) -> JSONResponse:
-    message = await chat_service.save_message(
+    message = await chat_service.process_chat_message(
         session_id=session_id,
         user_id=user.id,
         content=request.content,
+        idempotency_key=x_idempotency_key,
+        background_tasks=background_tasks,
         is_faq=request.is_faq,
     )
     return JSONResponse(
@@ -222,61 +226,3 @@ async def save_message(
         ),
         status_code=status.HTTP_201_CREATED,
     )
-
-
-@chat_router.post(
-    "/sessions/{session_id}/ai-response",
-    status_code=status.HTTP_201_CREATED,
-    summary="AI 챗봇 의료 상담 답변 생성",
-    description="""
-사용자의 질문을 기반으로 AI 어시스턴트(GPT)가 검토하여 맞춤형 의료 답변 텍스트를 즉시 반환합니다.
-
-- **개인화 답변**: 환자의 과거 투약 이력과 이전 대화 맥락을 모두 고려하여 응답합니다.
-- **성능 최적화**: 사용자의 전체 대화 턴(Turn)이 5회 이상 누적될 시, 서버 뒤쪽 단(BackgroundTasks)에서 최근 대화의 주민번호 등 민감정보(PII)를 제거하고 의학적 관점으로만 한 줄 요약하여 프롬프트 토큰 낭비를 획기적으로 줄여줍니다.
-    """,
-)
-async def get_ai_response(
-    session_id: int,
-    request: AiResponseRequest,
-    user: Annotated[User, Depends(get_request_user)],
-    chat_service: Annotated[ChatService, Depends(ChatService)],
-    background_tasks: BackgroundTasks,
-) -> JSONResponse:
-    message = await chat_service.get_ai_response(
-        session_id=session_id,
-        user_id=user.id,
-        user_message=request.user_message,
-        background_tasks=background_tasks,
-    )
-    return JSONResponse(
-        content=json.loads(
-            ChatMessageResponse(
-                message_id=message.id,
-                session_id=message.session_id,
-                sender=message.sender,
-                content=message.content,
-                is_faq=message.is_faq,
-                created_at=message.created_at,
-            ).model_dump_json()
-        ),
-        status_code=status.HTTP_201_CREATED,
-    )
-
-
-# @chat_router.get("/faq", status_code=status.HTTP_200_OK)
-# async def get_faqs(
-#     chat_service: Annotated[ChatService, Depends(ChatService)],
-# ) -> JSONResponse:
-#     faqs = await chat_service.get_faqs()
-#     return JSONResponse(
-#         content=[
-#             FaqItemResponse(
-#                 id=f.id,
-#                 question=f.question,
-#                 answer=f.answer,
-#                 display_order=f.display_order,
-#             ).model_dump()
-#             for f in faqs
-#         ],
-#         status_code=status.HTTP_200_OK,
-#     )

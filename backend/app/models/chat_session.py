@@ -17,6 +17,7 @@ class ChatSession(models.Model):
     )
     message_count = fields.IntField(default=0)
     summary = fields.TextField(null=True)
+    is_processing = fields.BooleanField(default=False)
     is_deleted = fields.BooleanField(default=False)
     created_at = fields.DatetimeField(auto_now_add=True)
 

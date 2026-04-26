@@ -4,6 +4,7 @@ from fastapi.responses import ORJSONResponse
 
 from app.apis.v1 import v1_routers
 from app.db.databases import initialize_tortoise
+from app.middlewares.rate_limit import rate_limit_middleware
 
 tags_metadata = [
     {
@@ -41,11 +42,14 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # 프론트 주소
-    allow_credentials=True,  # 쿠키 전송 허용
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate Limiting 미들웨어 (DoS 공격 방지)
+app.middleware("http")(rate_limit_middleware)
 
 initialize_tortoise(app)
 app.include_router(v1_routers)
