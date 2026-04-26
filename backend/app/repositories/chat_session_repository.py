@@ -1,6 +1,8 @@
 from app.models.chat_session import ChatSession
 
 
+from tortoise.expressions import F
+
 class ChatSessionRepository:
     def __init__(self):
         self._model = ChatSession
@@ -22,8 +24,8 @@ class ChatSessionRepository:
         return await self._model.filter(user_id=user_id, is_deleted=False).order_by("-created_at")
 
     async def increment_message_count(self, session: ChatSession) -> None:
+        await self._model.filter(id=session.id).update(message_count=F("message_count") + 1)
         session.message_count += 1
-        await session.save(update_fields=["message_count"])
 
     async def delete(self, session: ChatSession) -> None:
         session.is_deleted = True

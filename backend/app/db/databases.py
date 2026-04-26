@@ -16,6 +16,7 @@ TORTOISE_APP_MODELS = [
     "app.models.chat_session",
     "app.models.chat_message",
     "app.models.faq_item",
+    "app.models.chat_idempotency",
 ]
 
 TORTOISE_ORM = {

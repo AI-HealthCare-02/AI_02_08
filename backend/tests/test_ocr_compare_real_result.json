@@ -1,0 +1,92 @@
+{
+  "test_image": "image 복사본.png",
+  "image_type": "실제 촬영 (약봉지 사진)",
+  "ground_truth_count": 5,
+  "A_original": {
+    "extracted_count": 5,
+    "recall": 1.0,
+    "precision": 1.0,
+    "time_seconds": 9.339118957519531,
+    "medications": [
+      {
+        "name": "삼아탄툼액",
+        "dosage": "1ml",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "이 약은 치은염, 구내염, 아구창, 발치전ㆍ후, 인두염, 편도염, 방사선요법 및 삽관법 등의 물리적 원인에 의한 구강점막염에 의한 염증의 완화에 사용합니다."
+      },
+      {
+        "name": "펠루비정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "일치하는 약품 정보를 찾을 수 없습니다."
+      },
+      {
+        "name": "베타디온정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "일치하는 약품 정보를 찾을 수 없습니다."
+      },
+      {
+        "name": "레보드롭정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "일치하는 약품 정보를 찾을 수 없습니다."
+      },
+      {
+        "name": "모티리톤정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "소화불량 및 메스꺼움을 완화하는 약물입니다."
+      }
+    ]
+  },
+  "B_preprocessed": {
+    "extracted_count": 5,
+    "recall": 1.0,
+    "precision": 1.0,
+    "time_seconds": 9.486162900924683,
+    "preprocessing": "Grayscale + Contrast(30)",
+    "medications": [
+      {
+        "name": "삼아탄툼액",
+        "dosage": "5ml",
+        "frequency": "1일 2-3회",
+        "timing": "아침·점심·저녁",
+        "description": "이 약은 치은염, 구내염, 아구창, 발치전ㆍ후, 인두염, 편도염, 방사선요법 및 삽관법 등의 물리적 원인에 의한 구강점막염에 의한 염증의 완화에 사용합니다."
+      },
+      {
+        "name": "펠루비정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후 30분",
+        "description": "일치하는 약품 정보를 찾을 수 없습니다."
+      },
+      {
+        "name": "베타디온정",
+        "dosage": "1정",
+        "frequency": "1일 2회",
+        "timing": "식전",
+        "description": "일치하는 약품 정보를 찾을 수 없습니다."
+      },
+      {
+        "name": "레보드롭정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후",
+        "description": "일치하는 약품 정보를 찾을 수 없습니다."
+      },
+      {
+        "name": "모티리톤정",
+        "dosage": "1정",
+        "frequency": "1일 3회",
+        "timing": "식후",
+        "description": "소화불량 및 위장관 운동 장애에 사용되는 약물입니다."
+      }
+    ]
+  }
+}
