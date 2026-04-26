@@ -1087,6 +1087,8 @@
   .home-page {
     padding: 1rem;
     padding-bottom: 70px;
+    width: 100%;
+    max-width: 100vw;
   }
 
   .home-page__title {
@@ -1102,6 +1104,34 @@
     gap: 1rem;
   }
 
+  .home-page__left {
+    min-width: 0;
+  }
+
+  .home-page__ocr-section,
+  .home-page__ocr-results,
+  .home-page__chatbot-section {
+    border-radius: 12px;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .home-page__ocr-section:hover,
+  .home-page__ocr-results:hover,
+  .home-page__chatbot-section:hover {
+    transform: none;
+  }
+
+  .home-page__ocr-header {
+    gap: 0.5rem;
+  }
+
+  .home-page__upload-status {
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+
   .home-page__chatbot-section {
     height: 450px;
   }
@@ -1114,14 +1144,14 @@
     grid-template-columns: 1fr;
   }
 
-  .home-page__upload-area {
-    padding: 2rem 1rem;
+  .home-page__medicine-category {
+    box-sizing: border-box;
+    max-width: 100%;
   }
 
-  .home-page__ocr-section,
-  .home-page__ocr-results,
-  .home-page__chatbot-section {
-    border-radius: 12px;
+  .home-page__upload-area {
+    padding: 2rem 1rem;
+    box-sizing: border-box;
   }
 
   .home-page__chat-message {
