@@ -8,6 +8,7 @@ OCR 관련 API 라우터
 import traceback
 import uuid
 from datetime import datetime
+from io import BytesIO
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -22,6 +23,7 @@ from app.dtos.medications import (
 from app.models.medications import MedicationLog, OcrPrescription, OcrStatus
 from app.models.users import User
 from app.services.ocr_service import analyze_prescription_via_clova, upload_image_to_s3
+from app.validators.file_validator import FileSecurityValidator
 
 ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
 
@@ -36,16 +38,16 @@ ocr_router = APIRouter(prefix="/ai/ocr", tags=["OCR 처방전 분석"])
     summary="처방전 OCR 분석",
     description="처방전 또는 약봉지 사진 업로드 시 네이버 클로바 OCR로 약 이름·용량·복용법 자동 추출",
     responses={
-        400: {"description": "지원하지 않는 파일 형식 또는 15MB 초과"},
+        400: {"description": "지원하지 않는 파일 형식 또는 10MB 초과"},
         401: {"description": "인증 실패 (토큰 누락 또는 만료)"},
         500: {"description": "OCR 서비스 연동 오류"},
     },
 )
 async def analyze_prescription(
-    image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 15MB"),  # noqa: B008
+    image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 10MB"),  # noqa: B008
     user: Annotated[User, Depends(get_request_user)] = None,
 ):
-    # --- 파일 유효성 검사 (400 에러 분기) ---
+    # ---  파일 유효성 검사 (MIME 타입) ---
     allowed_types = ["image/jpeg", "image/png", "application/pdf", "image/jpg"]
     if image.content_type not in allowed_types:
         raise HTTPException(
@@ -53,15 +55,21 @@ async def analyze_prescription(
             detail="지원하지 않는 파일 형식입니다. JPG, PNG, PDF 파일만 업로드 가능합니다.",
         )
 
-    # 사이즈 체크 (15MB 제한)
-    # image.size 속성은 FastAPI 최신 버전에 존재하나 없는 경우를 대비해 위치를 0으로 되돌립니다.
-    file_bytes = await image.read()
-    if len(file_bytes) > 15 * 1024 * 1024:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="파일 용량이 15MB를 초과했습니다.")
-    # 이미 다 읽어버렸으므로 S3 업로드 시 이슈가 없게 포인터를 원복
+    # ---  보안 검증 (Magic Number, 파일 크기 10MB, EXIF 제거, 재인코딩) ---
+    try:
+        validated_bytes = await FileSecurityValidator.validate_file(image)
+    except HTTPException:
+        raise  # 검증 실패 시 그대로 전파
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=f"파일 검증 실패: {str(e)}") from e
+
+    # ---  검증된 파일로 UploadFile 재구성 ---
+    # 원본 UploadFile의 파일 포인터를 검증된 바이트로 교체
+    image.file = BytesIO(validated_bytes)
     await image.seek(0)
 
-    # 1) S3에 이미지 업로드 및 URL 확보
+    # ---  S3에 이미지 업로드 및 URL 확보 ---
     try:
         s3_url = await upload_image_to_s3(image)
     except Exception as e:
@@ -70,7 +78,7 @@ async def analyze_prescription(
 
     ocr_id = f"ocr_{datetime.now().strftime('%Y%m%d')}_{uuid.uuid4().hex[:6]}"
 
-    # 2) Clova OCR API 호출 및 파싱 진행
+    # ---  Clova OCR API 호출 및 파싱 진행 ---
     try:
         raw_json, parsed_medications = await analyze_prescription_via_clova(s3_url)
     except Exception as e:
@@ -85,7 +93,7 @@ async def analyze_prescription(
         else:
             raise HTTPException(status_code=500, detail=f"처방전 분석 실패: {error_msg}") from e
 
-    # 3) 추출 결과 DB 저장
+    # ---  추출 결과 DB 저장 ---
     try:
         await OcrPrescription.create(
             ocr_id=ocr_id,
