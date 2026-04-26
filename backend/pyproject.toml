@@ -33,6 +33,8 @@ dependencies = [
     "pandas>=3.0.2",
     "boto3>=1.40.61",
     "email-validator>=2.3.0",
+    "python-magic>=0.4.27",
+    "pillow>=12.2.0",
 ]
 
 [dependency-groups]

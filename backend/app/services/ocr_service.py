@@ -11,14 +11,33 @@ from app.core.config import Config
 from app.dtos.medications import OcrMedicationItem
 from app.models.drugs import DrugInfo
 from app.services.openai_service import batch_analyze_unmatched_drugs
+from app.validators.file_validator import FileSecurityValidator
 
 settings = Config()
 openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 
 async def upload_image_to_s3(file: UploadFile) -> str:
+    """
+    S3에 이미지 업로드 및 Presigned URL 반환
+
+    보안 강화:
+    1. 파일명 검증 (Path Traversal 방지)
+    2. UUID 기반 고유 파일명 생성 (예측 불가)
+
+    Args:
+        file: FastAPI UploadFile 객체
+
+    Returns:
+        str: S3 Presigned URL (1시간 유효)
+    """
     file_bytes = await file.read()
-    file_extension = file.filename.split(".")[-1] if file.filename else "jpg"
+
+    # 안전한 파일명 생성
+    safe_filename = FileSecurityValidator.sanitize_filename(file.filename)
+    file_extension = safe_filename.split(".")[-1] if "." in safe_filename else "jpg"
+
+    # UUID 기반 고유 파일명 (예측 불가)
     unique_filename = f"prescriptions/{uuid.uuid4().hex}.{file_extension}"
 
     session = aioboto3.Session(
