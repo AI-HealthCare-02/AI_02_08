@@ -5,7 +5,8 @@ Rate Limiting 미들웨어 (DoS 공격 방지)
 """
 
 import redis.asyncio as redis
-from fastapi import HTTPException, Request
+from fastapi import Request
+from fastapi.responses import JSONResponse
 
 from app.core.config import Config
 
@@ -51,16 +52,15 @@ async def rate_limit_middleware(request: Request, call_next):
             else:
                 # 기존 요청 있음: 횟수 체크
                 if int(current_count) >= 5:
-                    raise HTTPException(
+                    # 429 에러 반환 (미들웨어에서는 Response 직접 반환)
+                    return JSONResponse(
                         status_code=429,
-                        detail="OCR 요청이 너무 많습니다. 1분 후 다시 시도해주세요.",
+                        content={"detail": "OCR 요청이 너무 많습니다. 1분 후 다시 시도해주세요."},
                     )
 
                 # 카운터 증가
                 await redis_client.incr(redis_key)
 
-        except HTTPException:
-            raise  # 429 에러는 그대로 전파
         except Exception as e:
             # Redis 연결 실패 시 로깅만 하고 통과 (서비스 중단 방지)
             print(f"Rate Limiting Redis 오류 (통과 처리): {e}")

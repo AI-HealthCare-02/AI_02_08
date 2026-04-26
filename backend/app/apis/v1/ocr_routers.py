@@ -47,7 +47,7 @@ async def analyze_prescription(
     image: UploadFile = File(..., description="JPG·PNG·PDF, 최대 10MB"),  # noqa: B008
     user: Annotated[User, Depends(get_request_user)] = None,
 ):
-    # ---  파일 유효성 검사 (MIME 타입) ---
+    # --- 파일 유효성 검사 (MIME 타입) ---
     allowed_types = ["image/jpeg", "image/png", "application/pdf", "image/jpg"]
     if image.content_type not in allowed_types:
         raise HTTPException(
@@ -55,7 +55,7 @@ async def analyze_prescription(
             detail="지원하지 않는 파일 형식입니다. JPG, PNG, PDF 파일만 업로드 가능합니다.",
         )
 
-    # ---  보안 검증 (Magic Number, 파일 크기 10MB, EXIF 제거, 재인코딩) ---
+    # --- 보안 검증 (Magic Number, 파일 크기 10MB, EXIF 제거, 재인코딩) ---
     try:
         validated_bytes = await FileSecurityValidator.validate_file(image)
     except HTTPException:
@@ -93,7 +93,7 @@ async def analyze_prescription(
         else:
             raise HTTPException(status_code=500, detail=f"처방전 분석 실패: {error_msg}") from e
 
-    # ---  추출 결과 DB 저장 ---
+    # --- 추출 결과 DB 저장 ---
     try:
         await OcrPrescription.create(
             ocr_id=ocr_id,
