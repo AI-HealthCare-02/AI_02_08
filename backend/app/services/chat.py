@@ -119,29 +119,61 @@ class ChatService:
                 )
                 await self.session_repo.increment_message_count(session)
 
-            # 4. AI 답변 준비 (Trimming & Windowing 반영된 서비스 호출)
-            ocr_context = await get_medication_context_for_chatbot(user_id, session.ocr_id)
-            recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)
-            recent_chat_messages = recent_chat_messages[-7:]  # 최신 질문 포함 7건
+            # 4. FAQ 또는 AI 답변 준비
+            if is_faq:
+                # FAQ 템플릿 조회
+                faq_template = await self.faq_repo.find_answer_by_question(content)
 
-            recent_dicts = [
-                {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content}
-                for m in recent_chat_messages
-            ]
+                if faq_template:
+                    # OCR 약물 정보 가져오기
+                    medications = await self._get_ocr_medications(session.ocr_id)
 
-            # 5. AI 호출 (Retry 로직 내장됨)
-            try:
-                ai_content = await generate_chat_answer(
-                    user_message=content,
-                    ocr_context=ocr_context,
-                    summary=session.summary or "",
-                    recent_messages=recent_dicts[:-1],
-                )
-            except Exception as e:
-                raise HTTPException(
-                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                    detail="현재 AI 상담소 응답이 지연되고 있습니다. 잠시 후 재시도해주세요.",
-                ) from e
+                    # 약물별 상세 답변 생성
+                    ai_content = await self._build_faq_answer(faq_template, medications, content, user_id)
+                else:
+                    # FAQ에 없으면 GPT로 폴백
+                    ocr_context = await get_medication_context_for_chatbot(user_id, session.ocr_id)
+                    recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)
+                    recent_chat_messages = recent_chat_messages[-7:]
+                    recent_dicts = [
+                        {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content}
+                        for m in recent_chat_messages
+                    ]
+
+                    try:
+                        ai_content = await generate_chat_answer(
+                            user_message=content,
+                            ocr_context=ocr_context,
+                            summary=session.summary or "",
+                            recent_messages=recent_dicts[:-1],
+                        )
+                    except Exception as e:
+                        raise HTTPException(
+                            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="현재 AI 상담소 응답이 지연되고 있습니다. 잠시 후 재시도해주세요.",
+                        ) from e
+            else:
+                # 일반 질문은 바로 GPT
+                ocr_context = await get_medication_context_for_chatbot(user_id, session.ocr_id)
+                recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)
+                recent_chat_messages = recent_chat_messages[-7:]
+                recent_dicts = [
+                    {"role": "user" if m.sender == SenderType.USER else "assistant", "content": m.content}
+                    for m in recent_chat_messages
+                ]
+
+                try:
+                    ai_content = await generate_chat_answer(
+                        user_message=content,
+                        ocr_context=ocr_context,
+                        summary=session.summary or "",
+                        recent_messages=recent_dicts[:-1],
+                    )
+                except Exception as e:
+                    raise HTTPException(
+                        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                        detail="현재 AI 상담소 응답이 지연되고 있습니다. 잠시 후 재시도해주세요.",
+                    ) from e
 
             # 6. AI 응답 저장
             async with in_transaction():
@@ -195,3 +227,60 @@ class ChatService:
 
     async def get_faqs(self) -> list[FaqItem]:
         return await self.faq_repo.get_active_faqs()
+
+
+    async def _get_ocr_medications(self, ocr_id: str | None) -> list[dict]:
+        """OCR로 인식된 약물 목록 가져오기"""
+        if not ocr_id:
+            return []
+
+        from app.models.medications import OcrPrescription
+        ocr = await OcrPrescription.get_or_none(ocr_id=ocr_id)
+        if not ocr or not ocr.extracted_data:
+            return []
+
+        return ocr.extracted_data.get("parsed", [])
+
+
+    async def _build_faq_answer(
+            self,
+            template: str,
+            medications: list[dict],
+            question: str,
+            user_id: int
+    ) -> str:
+        """FAQ 템플릿 + 약물 데이터로 답변 생성"""
+        if not medications:
+            return f"{template}\n\n현재 인식된 약물 정보가 없습니다. 처방전을 먼저 업로드해주세요."
+
+        from app.models.drugs import DrugInfo
+
+        answer_parts = [template, ""]
+
+        for idx, med in enumerate(medications, 1):
+            med_name = med.get("name", "")
+            if not med_name:
+                continue
+
+            # e약은요 DB에서 약물 정보 조회
+            drug = await DrugInfo.get_or_none(name=med_name)
+
+            if "부작용" in question:
+                # 부작용 답변
+                if drug and drug.side_effects:
+                    answer_parts.append(f"{idx}. {med_name}: {drug.side_effects}")
+                else:
+                    answer_parts.append(f"{idx}. {med_name}: 등록된 부작용 정보가 없습니다.")
+
+            elif "주의사항" in question:
+                # 주의사항 답변
+                if drug and drug.precautions:
+                    answer_parts.append(f"{idx}. {med_name}: {drug.precautions}")
+                else:
+                    answer_parts.append(f"{idx}. {med_name}: 등록된 주의사항 정보가 없습니다. 복용 전 의사 또는 약사와 상담하세요.")
+
+        # 마지막 안내 문구
+        answer_parts.append("")
+        answer_parts.append("정확한 복용 상담은 전문 의료진과 상담해주세요.")
+
+        return "\n".join(answer_parts)

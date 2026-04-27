@@ -428,25 +428,20 @@ const HomePage: React.FC = () => {
       session_id: chatSessionId,
       sender: 'user',
       content: suggestion,
-      is_faq: false,
+      is_faq: true,
       created_at: new Date().toISOString(),
     };
     setChatMessages(prev => [...prev, tempUserMessage]);
 
     try {
-      const aiMessage = await sendMessageAndGetAIResponse(chatSessionId, suggestion);
+      const aiMessage = await sendMessageAndGetAIResponse(
+        chatSessionId,
+        suggestion,
+        true
+      );
       setChatMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('챗봇 응답 실패:', error);
-      const errorMsg: ChatMessage = {
-        message_id: Date.now(),
-        session_id: chatSessionId,
-        sender: 'assistant',
-        content: '죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.',
-        is_faq: false,
-        created_at: new Date().toISOString(),
-      };
-      setChatMessages(prev => [...prev, errorMsg]);
+      // ... 에러 처리
     } finally {
       setIsChatLoading(false);
     }
