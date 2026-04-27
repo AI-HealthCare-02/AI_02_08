@@ -77,6 +77,14 @@ class ChatService:
     ) -> ChatMessage:
         import datetime
 
+        # 디버깅 로그 추가
+        print(f"\n{'=' * 50}")
+        print("📨 챗봇 메시지 처리 시작")
+        print(f"   - session_id: {session_id}")
+        print(f"   - is_faq: {is_faq} (타입: {type(is_faq)})")
+        print(f"   - content: {content[:50]}...")
+        print(f"{'=' * 50}\n")
+
         from app.models.chat_idempotency import ChatIdempotency
         from app.services.openai_service import (
             generate_chat_answer,
@@ -121,16 +129,22 @@ class ChatService:
 
             # 4. FAQ 또는 AI 답변 준비
             if is_faq:
+                print("✅ FAQ 모드 진입!")
                 # FAQ 템플릿 조회
                 faq_template = await self.faq_repo.find_answer_by_question(content)
+                print(f"   - FAQ 템플릿 찾음: {faq_template[:50] if faq_template else 'None'}...")
 
                 if faq_template:
+                    print("   - OCR 약물 정보 가져오기 시작")
                     # OCR 약물 정보 가져오기
                     medications = await self._get_ocr_medications(session.ocr_id)
+                    print(f"   - 약물 개수: {len(medications)}")
 
                     # 약물별 상세 답변 생성
                     ai_content = await self._build_faq_answer(faq_template, medications, content, user_id)
+                    print(f"   - FAQ 답변 생성 완료 (길이: {len(ai_content)})")
                 else:
+                    print("❌ 일반 GPT 모드 진입")
                     # FAQ에 없으면 GPT로 폴백
                     ocr_context = await get_medication_context_for_chatbot(user_id, session.ocr_id)
                     recent_chat_messages = await self.message_repo.get_by_session_id(session_id=session_id)
