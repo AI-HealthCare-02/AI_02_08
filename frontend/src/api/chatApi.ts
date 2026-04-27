@@ -83,15 +83,17 @@ export const updateChatSession = async (
 };
 
 /**
- * AI 응답 받기 (사용자 메시지 전송 + AI 응답 자동 저장)
+ * 사용자 메시지 전송 + AI 응답 받기 (통합 API)
  */
 export const sendMessageAndGetAIResponse = async (
   sessionId: number,
-  userMessage: string
+  userMessage: string,
+  isFaq: boolean = false
 ): Promise<ChatMessage> => {
   const response = await apiClient.post(
-    `/chat/sessions/${sessionId}/ai-response`,
-    { user_message: userMessage }
+    `/chat/sessions/${sessionId}/messages`,
+    { content: userMessage, is_faq: isFaq },
+    { timeout: 60000 }
   );
   return response.data;
 };
