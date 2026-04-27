@@ -240,3 +240,38 @@ async def summarize_and_deidentify_chat(messages: list[dict]) -> str:
     except Exception as e:
         print(f"OpenAI 요약 에러: {e}")
         return ""
+
+
+async def get_drug_info_from_gpt(drug_name: str, info_type: str) -> str:
+    """
+    GPT로 약물 정보 조회 (e약은요 DB에 없을 때 폴백)
+
+    Args:
+        drug_name: 약물명
+        info_type: "부작용" 또는 "주의사항"
+
+    Returns:
+        str: GPT가 제공한 정보
+    """
+    from openai import AsyncOpenAI
+
+    from app.core.config import Config
+
+    settings = Config()
+    client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+
+    prompt = f"""
+약물명: {drug_name}
+
+이 약물의 {info_type}에 대해 간단하고 명확하게 2-3문장으로 설명해주세요.
+의학적으로 정확한 정보만 제공하고, 불확실한 경우 "정보가 부족합니다"라고 답변하세요.
+"""
+
+    response = await client.chat.completions.create(
+        model=settings.openai_chat_model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
+        max_tokens=200,
+    )
+
+    return response.choices[0].message.content.strip()

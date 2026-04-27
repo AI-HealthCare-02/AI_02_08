@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from tortoise import Tortoise
+
 from app.db.databases import TORTOISE_ORM
 from app.models.faq_item import FaqItem
 
@@ -21,14 +22,14 @@ async def insert_faq_data():
             "question": "부작용이 있나요?",
             "answer": "일반적인 부작용은 다음과 같습니다.",
             "display_order": 1,
-            "is_active": True
+            "is_active": True,
         },
         {
             "question": "주의사항 알려주세요",
             "answer": "주의사항은 다음과 같습니다.",
             "display_order": 2,
-            "is_active": True
-        }
+            "is_active": True,
+        },
     ]
 
     # 기존 FAQ 삭제 (재실행 대비)

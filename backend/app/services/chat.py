@@ -228,32 +228,27 @@ class ChatService:
     async def get_faqs(self) -> list[FaqItem]:
         return await self.faq_repo.get_active_faqs()
 
-
     async def _get_ocr_medications(self, ocr_id: str | None) -> list[dict]:
         """OCR로 인식된 약물 목록 가져오기"""
         if not ocr_id:
             return []
 
         from app.models.medications import OcrPrescription
+
         ocr = await OcrPrescription.get_or_none(ocr_id=ocr_id)
         if not ocr or not ocr.extracted_data:
             return []
 
         return ocr.extracted_data.get("parsed", [])
 
-
-    async def _build_faq_answer(
-            self,
-            template: str,
-            medications: list[dict],
-            question: str,
-            user_id: int
-    ) -> str:
+    # ruff: noqa: C901
+    async def _build_faq_answer(self, template: str, medications: list[dict], question: str, user_id: int) -> str:
         """FAQ 템플릿 + 약물 데이터로 답변 생성"""
         if not medications:
             return f"{template}\n\n현재 인식된 약물 정보가 없습니다. 처방전을 먼저 업로드해주세요."
 
         from app.models.drugs import DrugInfo
+        from app.services.openai_service import get_drug_info_from_gpt
 
         answer_parts = [template, ""]
 
@@ -262,22 +257,47 @@ class ChatService:
             if not med_name:
                 continue
 
-            # e약은요 DB에서 약물 정보 조회
+            # e약은요 DB에서 약물 정보 조회 (3단계 매칭)
             drug = await DrugInfo.get_or_none(name=med_name)
+            print(f"[DEBUG] 1단계 정확 매칭: {med_name} → {drug is not None}")
+
+            if not drug:
+                # 2단계: 부분 매칭 (LIKE '%삼아탄툼액%')
+                drug = await DrugInfo.filter(name__icontains=med_name).first()
+                print(f"[DEBUG] 2단계 부분 매칭: {med_name} → {drug is not None}")
+
+            if not drug:
+                # 3단계: 시작 문자열 매칭 (LIKE '삼아탄툼액%')
+                drug = await DrugInfo.filter(name__istartswith=med_name).first()
+                print(f"[DEBUG] 3단계 시작 매칭: {med_name} → {drug is not None}")
 
             if "부작용" in question:
                 # 부작용 답변
-                if drug and drug.side_effects:
+                if drug and drug.side_effects and drug.side_effects.strip():
                     answer_parts.append(f"{idx}. {med_name}: {drug.side_effects}")
                 else:
-                    answer_parts.append(f"{idx}. {med_name}: 등록된 부작용 정보가 없습니다.")
+                    # GPT로 부작용 정보 조회
+                    try:
+                        gpt_info = await get_drug_info_from_gpt(med_name, "부작용")
+                        answer_parts.append(f"{idx}. {med_name}: {gpt_info}")
+                    except Exception:
+                        answer_parts.append(
+                            f"{idx}. {med_name}: 부작용 정보를 찾을 수 없습니다. 의사 또는 약사와 상담하세요."
+                        )
 
             elif "주의사항" in question:
                 # 주의사항 답변
-                if drug and drug.precautions:
+                if drug and drug.precautions and drug.precautions.strip():
                     answer_parts.append(f"{idx}. {med_name}: {drug.precautions}")
                 else:
-                    answer_parts.append(f"{idx}. {med_name}: 등록된 주의사항 정보가 없습니다. 복용 전 의사 또는 약사와 상담하세요.")
+                    # GPT로 주의사항 정보 조회
+                    try:
+                        gpt_info = await get_drug_info_from_gpt(med_name, "주의사항")
+                        answer_parts.append(f"{idx}. {med_name}: {gpt_info}")
+                    except Exception:
+                        answer_parts.append(
+                            f"{idx}. {med_name}: 주의사항 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
+                        )
 
         # 마지막 안내 문구
         answer_parts.append("")

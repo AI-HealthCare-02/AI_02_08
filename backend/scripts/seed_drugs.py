@@ -27,7 +27,7 @@ from app.db.databases import TORTOISE_ORM
 from app.models.drugs import DrugInfo
 
 # ── 설정 ──────────────────────────────────────
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 CHUNK_SIZE = 1000  # Bulk Insert 1회당 처리 건수
 
 # 모델 필드 → 처리 가능한 CSV 헤더 목록 매핑
