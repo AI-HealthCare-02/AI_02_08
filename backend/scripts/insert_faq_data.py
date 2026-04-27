@@ -30,6 +30,12 @@ async def insert_faq_data():
             "display_order": 2,
             "is_active": True,
         },
+        {
+            "question": "다른 약과 같이 먹어도 되나요?",
+            "answer": "약물 상호작용은 다음과 같습니다.",
+            "display_order": 3,
+            "is_active": True,
+        },
     ]
 
     # 기존 FAQ 삭제 (재실행 대비)

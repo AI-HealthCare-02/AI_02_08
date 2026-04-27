@@ -259,17 +259,14 @@ class ChatService:
 
             # e약은요 DB에서 약물 정보 조회 (3단계 매칭)
             drug = await DrugInfo.get_or_none(name=med_name)
-            print(f"[DEBUG] 1단계 정확 매칭: {med_name} → {drug is not None}")
 
             if not drug:
                 # 2단계: 부분 매칭 (LIKE '%삼아탄툼액%')
                 drug = await DrugInfo.filter(name__icontains=med_name).first()
-                print(f"[DEBUG] 2단계 부분 매칭: {med_name} → {drug is not None}")
 
             if not drug:
                 # 3단계: 시작 문자열 매칭 (LIKE '삼아탄툼액%')
                 drug = await DrugInfo.filter(name__istartswith=med_name).first()
-                print(f"[DEBUG] 3단계 시작 매칭: {med_name} → {drug is not None}")
 
             if "부작용" in question:
                 # 부작용 답변
@@ -297,6 +294,20 @@ class ChatService:
                     except Exception:
                         answer_parts.append(
                             f"{idx}. {med_name}: 주의사항 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
+                        )
+
+            elif "상호작용" in question or "같이 먹" in question:
+                # 상호작용 답변
+                if drug and drug.interactions and drug.interactions.strip():
+                    answer_parts.append(f"{idx}. {med_name}: {drug.interactions}")
+                else:
+                    # GPT로 상호작용 정보 조회
+                    try:
+                        gpt_info = await get_drug_info_from_gpt(med_name, "다른 약과의 상호작용")
+                        answer_parts.append(f"{idx}. {med_name}: {gpt_info}")
+                    except Exception:
+                        answer_parts.append(
+                            f"{idx}. {med_name}: 상호작용 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
                         )
 
         # 마지막 안내 문구
