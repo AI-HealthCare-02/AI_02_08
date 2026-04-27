@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from app.models.medications import MedicationLog
 
@@ -26,11 +26,13 @@ class MedicationRepository:
             if key not in seen:
                 seen.add(key)
                 # None 값을 빈 문자열로 변환
-                unique_meds.append({
-                    "name": med["name"] or "",
-                    "dosage": med["dosage"] or "",
-                    "frequency": med["frequency"] or "",
-                    "timing": med["timing"] or ""
-                })
+                unique_meds.append(
+                    {
+                        "name": med["name"] or "",
+                        "dosage": med["dosage"] or "",
+                        "frequency": med["frequency"] or "",
+                        "timing": med["timing"] or "",
+                    }
+                )
 
         return unique_meds

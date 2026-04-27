@@ -1,8 +1,8 @@
 from datetime import date
 
-from app.dependencies.security import get_request_user
 from fastapi import APIRouter, Depends
 
+from app.dependencies.security import get_request_user
 from app.models.users import User
 from app.services.medication_service import MedicationService
 
