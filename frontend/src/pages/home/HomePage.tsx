@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { analyzePrescription, confirmPrescription, OcrMedicationItem } from '../../api/ocrApi';
 import {
@@ -18,6 +18,15 @@ import {
 } from '../../utils/ocrStorage';
 import yakssoriImg from '../../assets/images/yakssori.png';
 import './HomePage.css';
+
+const ChatMessageItem = memo(({ msg }: { msg: ChatMessage }) => (
+  <div
+    className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}
+    style={{ userSelect: 'text', WebkitUserSelect: 'text' }}
+  >
+    {msg.content}
+  </div>
+));
 
 const HomePage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -57,7 +66,8 @@ const HomePage: React.FC = () => {
 
   const handleChatScroll = () => {
     if (chatMessagesRef.current) {
-      setShowScrollTop(chatMessagesRef.current.scrollTop > 200);
+      const shouldShow = chatMessagesRef.current.scrollTop > 200;
+      setShowScrollTop(prev => prev === shouldShow ? prev : shouldShow);
     }
   };
 
@@ -591,12 +601,7 @@ const HomePage: React.FC = () => {
                 </div>
               ) : (
                 chatMessages.map((msg) => (
-                  <div
-                    key={msg.message_id}
-                    className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}
-                  >
-                    {msg.content}
-                  </div>
+                  <ChatMessageItem key={msg.message_id} msg={msg} />
                 ))
               )}
 
@@ -612,13 +617,17 @@ const HomePage: React.FC = () => {
               )}
 
               {showScrollTop && (
-                <button onClick={scrollToTop} className="home-page__scroll-top-btn">
-                  ↑ 맨위로
-                </button>
+                <span />
               )}
             </div>
 
             <div className="home-page__faq-wrapper">
+              {showScrollTop && (
+                <button onClick={scrollToTop} className="home-page__scroll-top-btn">
+                  <img src="/arrow.png" alt="맨 위로" className="home-page__scroll-top-icon" />
+                  <span className="home-page__scroll-top-tooltip">맨 위로</span>
+                </button>
+              )}
               <button
                 className={`home-page__faq-bubble ${showFaq ? 'home-page__faq-bubble--active' : ''}`}
                 onClick={() => setShowFaq(!showFaq)}
@@ -627,6 +636,7 @@ const HomePage: React.FC = () => {
                   <ellipse cx="12" cy="11" rx="9" ry="8"/>
                   <path d="M17 17.5C17 17.5 19.5 19.5 21 20c-1-0.5-2.5-1-3.5-3"/>
                 </svg>
+                <span className="home-page__faq-tooltip">자주 묻는 질문</span>
               </button>
               {showFaq && (
                 <div className="home-page__faq-popup">
@@ -643,15 +653,15 @@ const HomePage: React.FC = () => {
                   type="text"
                   value={chatMessage}
                   onChange={(e) => setChatMessage(e.target.value)}
-                  placeholder="궁금한 내용을 물어보세요"
+                  placeholder={ocrResults ? '궁금한 내용을 물어보세요' : '처방전을 먼저 인식해주세요'}
                   className="home-page__chat-input"
-                  onKeyPress={(e) => e.key === 'Enter' && !isChatLoading && handleChatSubmit()}
-                  disabled={isChatLoading}
+                  onKeyPress={(e) => e.key === 'Enter' && !isChatLoading && ocrResults && handleChatSubmit()}
+                  disabled={isChatLoading || !ocrResults}
                 />
                 <button
                   onClick={handleChatSubmit}
                   className="home-page__send-btn"
-                  disabled={!chatMessage.trim() || isChatLoading}
+                  disabled={!chatMessage.trim() || isChatLoading || !ocrResults}
                 >
                   {isChatLoading ? '...' : '전송'}
                 </button>
