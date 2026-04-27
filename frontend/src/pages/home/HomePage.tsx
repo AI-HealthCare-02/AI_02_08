@@ -637,7 +637,6 @@ const HomePage: React.FC = () => {
                 <div className="home-page__faq-popup">
                   <button className="home-page__faq-item" onClick={() => handleSuggestionClick('부작용이 있나요?')}>부작용이 있나요?</button>
                   <button className="home-page__faq-item" onClick={() => handleSuggestionClick('주의사항 알려주세요')}>주의사항 알려주세요</button>
-                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('몇 번 먹어야 하나요?')}>몇 번 먹어야 하나요?</button>
                 </div>
               )}
             </div>
