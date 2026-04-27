@@ -183,7 +183,7 @@ const HomePage: React.FC = () => {
   }, []);
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
-  const MAX_IMAGE_DIMENSION = 2000;
+  const MAX_IMAGE_DIMENSION = 4096;
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
   const validateFile = (file: File): string | null => {
@@ -580,7 +580,7 @@ const HomePage: React.FC = () => {
                       처방전 이미지를 업로드 하거나<br />
                       드래그 & 드롭하세요
                     </p>
-                    <p className="home-page__upload-formats">JPG, PNG, PDF 최대 5MB (2000x2000px 자동 리사이즈)</p>
+                    <p className="home-page__upload-formats">JPG, PNG, PDF 최대 5MB (4096x4096px 자동 리사이즈)</p>
                     <p className="home-page__upload-notice">💡 텍스트 인식은 밝기가 중요해요. 밝은 곳에서 촬영해주세요!</p>
                   </label>
                   <div className="home-page__camera-section">
