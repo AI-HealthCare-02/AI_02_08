@@ -110,35 +110,65 @@ async def extract_medication_structure(extracted_texts: list[str]) -> list[dict]
     return [med for med in medications_data if med.get("name")]
 
 
+async def _match_single_medication(med: dict) -> tuple[dict, bool]:
+    """
+    단일 약물을 DB에서 매칭
+
+    Returns:
+        tuple[dict, bool]: (약물 정보, 매칭 성공 여부)
+    """
+    name = med.get("name", "").strip()
+    if not name:
+        return med, False
+
+    drug = await DrugInfo.get_or_none(name=name)
+    if not drug:
+        drug = await DrugInfo.filter(name__icontains=name).first()
+
+    if drug:
+        med["description"] = drug.efficacy or "약품 설명이 존재하지 않습니다."
+        return med, True
+
+    return med, False
+
+
+async def _apply_fallback_descriptions(unmatched_meds: list[dict]) -> None:
+    """GPT로 매칭되지 않은 약물 정보 보완"""
+    try:
+        fallback_desc_map = await batch_analyze_unmatched_drugs(unmatched_meds)
+
+        # 타입 체크
+        if isinstance(fallback_desc_map, dict):
+            for med in unmatched_meds:
+                med_name = med.get("name")
+                med["description"] = fallback_desc_map.get(med_name, "일치하는 약품 정보를 찾을 수 없습니다.")
+        else:
+            # list나 다른 타입이 반환된 경우
+            print(f"⚠️ Unexpected type from batch_analyze_unmatched_drugs: {type(fallback_desc_map)}")
+            for med in unmatched_meds:
+                med["description"] = "약품 정보를 불러오는 중 오류가 발생했습니다."
+
+    except Exception as e:
+        print(f"Fallback 처리 중 오류: {e}")
+        for med in unmatched_meds:
+            med["description"] = "약품 정보 매칭 중 서비스 지연이 발생했습니다."
+
+
 async def _match_or_fallback_medications(raw_meds: list[dict]) -> list[dict]:
+    """DB 매칭 후 GPT fallback으로 약물 정보 보완"""
     matched_meds = []
     unmatched_meds = []
 
     for med in raw_meds:
-        name = med.get("name", "").strip()
-        if not name:
-            continue
+        matched_med, is_matched = await _match_single_medication(med)
 
-        drug = await DrugInfo.get_or_none(name=name)
-        if not drug:
-            drug = await DrugInfo.filter(name__icontains=name).first()
-
-        if drug:
-            med["description"] = drug.efficacy or "약품 설명이 존재하지 않습니다."
-            matched_meds.append(med)
+        if is_matched:
+            matched_meds.append(matched_med)
         else:
-            unmatched_meds.append(med)
+            unmatched_meds.append(matched_med)
 
     if unmatched_meds:
-        try:
-            fallback_desc_map = await batch_analyze_unmatched_drugs(unmatched_meds)
-            for med in unmatched_meds:
-                med_name = med.get("name")
-                med["description"] = fallback_desc_map.get(med_name, "일치하는 약품 정보를 찾을 수 없습니다.")
-        except Exception as e:
-            print(f"Fallback 처리 중 오류: {e}")
-            for med in unmatched_meds:
-                med["description"] = "약품 정보 매칭 중 서비스 지연이 발생했습니다."
+        await _apply_fallback_descriptions(unmatched_meds)
 
     return matched_meds + unmatched_meds
 
