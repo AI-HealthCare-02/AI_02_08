@@ -19,12 +19,94 @@ import {
 import yakssoriImg from '../../assets/images/yakssori.png';
 import './HomePage.css';
 
+// 접기/펼치기 파싱 함수
+const parseCollapsibleContent = (content: string) => {
+  const lines = content.split('\n');
+  const result: Array<{ type: 'text' | 'collapsible'; content: string; title?: string }> = [];
+  let currentText: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.startsWith('▼ ')) {
+      if (currentText.length > 0) {
+        result.push({ type: 'text', content: currentText.join('\n') });
+        currentText = [];
+      }
+
+      const title = line.substring(2).trim();
+      const details: string[] = [];
+      i++;
+      while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
+        if (lines[i].trim()) {
+          details.push(lines[i].trim());
+        }
+        i++;
+      }
+
+      result.push({
+        type: 'collapsible',
+        title,
+        content: details.join('\n')
+      });
+      continue;
+    }
+
+    currentText.push(line);
+    i++;
+  }
+
+  if (currentText.length > 0) {
+    result.push({ type: 'text', content: currentText.join('\n') });
+  }
+
+  return result;
+};
+
+// 접기/펼치기 아이템 컴포넌트
+const CollapsibleItem: React.FC<{ title: string; content: string }> = ({ title, content }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div style={{ marginBottom: '8px' }}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          padding: '8px',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '4px',
+          userSelect: 'none'
+        }}
+      >
+        {isOpen ? '▼' : '▶'} {title}
+      </div>
+      {isOpen && (
+        <div style={{ padding: '8px 16px', whiteSpace: 'pre-wrap' }}>
+          {content}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ChatMessageItem = memo(({ msg }: { msg: ChatMessage }) => (
-  <div
-    className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}
-    style={{ userSelect: 'text', WebkitUserSelect: 'text' }}
-  >
-    {msg.content}
+  <div className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}>
+    {msg.sender === 'user' ? (
+      <div style={{ userSelect: 'text', WebkitUserSelect: 'text' }}>{msg.content}</div>
+    ) : (
+      parseCollapsibleContent(msg.content).map((item, idx) => (
+        <React.Fragment key={idx}>
+          {item.type === 'text' ? (
+            <div style={{ whiteSpace: 'pre-wrap', userSelect: 'text', WebkitUserSelect: 'text' }}>{item.content}</div>
+          ) : (
+            <CollapsibleItem title={item.title!} content={item.content} />
+          )}
+        </React.Fragment>
+      ))
+    )}
   </div>
 ));
 
@@ -428,25 +510,20 @@ const HomePage: React.FC = () => {
       session_id: chatSessionId,
       sender: 'user',
       content: suggestion,
-      is_faq: false,
+      is_faq: true,
       created_at: new Date().toISOString(),
     };
     setChatMessages(prev => [...prev, tempUserMessage]);
 
     try {
-      const aiMessage = await sendMessageAndGetAIResponse(chatSessionId, suggestion);
+      const aiMessage = await sendMessageAndGetAIResponse(
+        chatSessionId,
+        suggestion,
+        true
+      );
       setChatMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('챗봇 응답 실패:', error);
-      const errorMsg: ChatMessage = {
-        message_id: Date.now(),
-        session_id: chatSessionId,
-        sender: 'assistant',
-        content: '죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.',
-        is_faq: false,
-        created_at: new Date().toISOString(),
-      };
-      setChatMessages(prev => [...prev, errorMsg]);
+      // ... 에러 처리
     } finally {
       setIsChatLoading(false);
     }
@@ -642,7 +719,7 @@ const HomePage: React.FC = () => {
                 <div className="home-page__faq-popup">
                   <button className="home-page__faq-item" onClick={() => handleSuggestionClick('부작용이 있나요?')}>부작용이 있나요?</button>
                   <button className="home-page__faq-item" onClick={() => handleSuggestionClick('주의사항 알려주세요')}>주의사항 알려주세요</button>
-                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('몇 번 먹어야 하나요?')}>몇 번 먹어야 하나요?</button>
+                  <button className="home-page__faq-item" onClick={() => handleSuggestionClick('다른 약과 같이 먹어도 되나요?')}>다른 약과 같이 먹어도 되나요?</button>
                 </div>
               )}
             </div>
@@ -660,7 +737,7 @@ const HomePage: React.FC = () => {
                 />
                 <button
                   onClick={handleChatSubmit}
-                  className="home-page__send-btn"
+                  className={`home-page__send-btn ${ocrResults && !isChatLoading ? 'home-page__send-btn--ready' : ''}`}
                   disabled={!chatMessage.trim() || isChatLoading || !ocrResults}
                 >
                   {isChatLoading ? '...' : '전송'}

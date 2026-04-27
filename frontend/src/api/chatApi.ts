@@ -87,11 +87,12 @@ export const updateChatSession = async (
  */
 export const sendMessageAndGetAIResponse = async (
   sessionId: number,
-  userMessage: string
+  userMessage: string,
+  isFaq: boolean = false
 ): Promise<ChatMessage> => {
   const response = await apiClient.post(
     `/chat/sessions/${sessionId}/messages`,
-    { content: userMessage, is_faq: false },
+    { content: userMessage, is_faq: isFaq },
     { timeout: 60000 }
   );
   return response.data;

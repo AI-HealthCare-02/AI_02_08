@@ -46,3 +46,12 @@ TORTOISE_ORM = {
 def initialize_tortoise(app: FastAPI) -> None:
     Tortoise.init_models(TORTOISE_APP_MODELS, "models")
     register_tortoise(app, config=TORTOISE_ORM)
+
+
+async def initialize_tortoise_standalone() -> None:
+    """
+    스크립트 실행용 Tortoise ORM 초기화
+    (FastAPI 없이 독립 실행)
+    """
+    await Tortoise.init(config=TORTOISE_ORM)
+    await Tortoise.generate_schemas()
