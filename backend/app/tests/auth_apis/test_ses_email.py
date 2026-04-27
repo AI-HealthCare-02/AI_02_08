@@ -37,6 +37,7 @@ async def test_send_signup_welcome_email():
     )
     assert result is True, "환영 이메일 발송 실패"
 
+
 @pytest.mark.skip(reason="SES Production 모드로 전환되어 테스트 불필요")
 @pytest.mark.asyncio
 async def test_send_email_to_unverified_address():
