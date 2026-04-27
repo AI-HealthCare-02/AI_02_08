@@ -162,8 +162,30 @@ async def get_medication_context_for_chatbot(user_id: int, ocr_id: str | None = 
 
 
 async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str, str]:
-    system_prompt = """당신은 처방전 분석을 돕는 의료 데이터 어시스턴트입니다... (생략)"""
-    user_message = f"다음 약품들에 대한 설명을 JSON으로 반환해주세요: {json.dumps(unmatched_meds, ensure_ascii=False)}"
+    system_prompt = """당신은 처방전 분석을 돕는 의료 데이터 어시스턴트입니다.
+주어진 약물 목록에 대해 각 약물의 효능과 설명을 제공합니다.
+
+반드시 다음 JSON 형식으로만 응답하세요 (마크다운 코드블록 없이):
+{
+  "약물명1": "효능 설명1",
+  "약물명2": "효능 설명2"
+}
+"""
+
+    # 약물명만 추출
+    drug_names = [med.get("name", "") for med in unmatched_meds if med.get("name")]
+
+    user_message = f"""다음 약물들에 대한 설명을 JSON 객체로 반환해주세요.
+
+약물 목록: {json.dumps(drug_names, ensure_ascii=False)}
+
+응답 형식 (정확히 이 형식으로):
+{{
+  "약물명": "2-3문장의 효능 설명"
+}}
+
+마크다운 코드블록(```json) 없이 순수 JSON만 반환하세요."""
+
     try:
         response = await client.chat.completions.create(
             model=settings.openai_chat_model,
@@ -177,7 +199,7 @@ async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str,
         # 타입 검증 추가
         parsed = json.loads(clean_content)
         if not isinstance(parsed, dict):
-            print(f"⚠️ GPT returned non-dict type: {type(parsed)}")
+            print(f"⚠️ GPT returned non-dict type: {type(parsed)}, content: {clean_content[:200]}")
             return {med["name"]: "형식 오류로 정보를 불러올 수 없습니다." for med in unmatched_meds if "name" in med}
 
         return parsed
