@@ -173,7 +173,14 @@ async def batch_analyze_unmatched_drugs(unmatched_meds: list[dict]) -> dict[str,
         )
         content = response.choices[0].message.content or "{}"
         clean_content = content.strip().replace("```json", "").replace("```", "").strip()
-        return json.loads(clean_content)
+
+        # 타입 검증 추가
+        parsed = json.loads(clean_content)
+        if not isinstance(parsed, dict):
+            print(f"⚠️ GPT returned non-dict type: {type(parsed)}")
+            return {med["name"]: "형식 오류로 정보를 불러올 수 없습니다." for med in unmatched_meds if "name" in med}
+
+        return parsed
     except Exception as e:
         print(f"GPT Batch Fallback 에러: {e}")
         return {
