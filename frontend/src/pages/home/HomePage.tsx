@@ -19,12 +19,94 @@ import {
 import yakssoriImg from '../../assets/images/yakssori.png';
 import './HomePage.css';
 
+// 접기/펼치기 파싱 함수
+const parseCollapsibleContent = (content: string) => {
+  const lines = content.split('\n');
+  const result: Array<{ type: 'text' | 'collapsible'; content: string; title?: string }> = [];
+  let currentText: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (line.startsWith('▼ ')) {
+      if (currentText.length > 0) {
+        result.push({ type: 'text', content: currentText.join('\n') });
+        currentText = [];
+      }
+
+      const title = line.substring(2).trim();
+      const details: string[] = [];
+      i++;
+      while (i < lines.length && (lines[i].startsWith('  ') || lines[i] === '')) {
+        if (lines[i].trim()) {
+          details.push(lines[i].trim());
+        }
+        i++;
+      }
+
+      result.push({
+        type: 'collapsible',
+        title,
+        content: details.join('\n')
+      });
+      continue;
+    }
+
+    currentText.push(line);
+    i++;
+  }
+
+  if (currentText.length > 0) {
+    result.push({ type: 'text', content: currentText.join('\n') });
+  }
+
+  return result;
+};
+
+// 접기/펼치기 아이템 컴포넌트
+const CollapsibleItem: React.FC<{ title: string; content: string }> = ({ title, content }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div style={{ marginBottom: '8px' }}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          padding: '8px',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '4px',
+          userSelect: 'none'
+        }}
+      >
+        {isOpen ? '▼' : '▶'} {title}
+      </div>
+      {isOpen && (
+        <div style={{ padding: '8px 16px', whiteSpace: 'pre-wrap' }}>
+          {content}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ChatMessageItem = memo(({ msg }: { msg: ChatMessage }) => (
-  <div
-    className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}
-    style={{ userSelect: 'text', WebkitUserSelect: 'text' }}
-  >
-    {msg.content}
+  <div className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}>
+    {msg.sender === 'user' ? (
+      <div style={{ userSelect: 'text', WebkitUserSelect: 'text' }}>{msg.content}</div>
+    ) : (
+      parseCollapsibleContent(msg.content).map((item, idx) => (
+        <React.Fragment key={idx}>
+          {item.type === 'text' ? (
+            <div style={{ whiteSpace: 'pre-wrap', userSelect: 'text', WebkitUserSelect: 'text' }}>{item.content}</div>
+          ) : (
+            <CollapsibleItem title={item.title!} content={item.content} />
+          )}
+        </React.Fragment>
+      ))
+    )}
   </div>
 ));
 
