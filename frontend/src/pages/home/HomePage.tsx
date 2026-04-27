@@ -737,7 +737,7 @@ const HomePage: React.FC = () => {
                 />
                 <button
                   onClick={handleChatSubmit}
-                  className="home-page__send-btn"
+                  className={`home-page__send-btn ${ocrResults && !isChatLoading ? 'home-page__send-btn--ready' : ''}`}
                   disabled={!chatMessage.trim() || isChatLoading || !ocrResults}
                 >
                   {isChatLoading ? '...' : '전송'}
