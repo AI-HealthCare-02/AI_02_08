@@ -28,7 +28,7 @@ class FaqRepository:
             return faq.answer
 
         # 2차: 핵심 키워드로 매칭
-        keywords = ['부작용', '주의사항', '상호작용', '같이']
+        keywords = ["부작용", "주의사항", "상호작용", "같이"]
         for keyword in keywords:
             if keyword in question:
                 faq = await self._model.filter(
