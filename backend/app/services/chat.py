@@ -255,14 +255,62 @@ class ChatService:
 
         return ocr.extracted_data.get("parsed", [])
 
-    # ruff: noqa: C901
+    async def _get_drug_from_db(self, med_name: str):
+        """e약은요 DB에서 약물 정보 조회 (3단계 매칭)"""
+        from app.models.drugs import DrugInfo
+
+        # 1단계: 정확 일치
+        drug = await DrugInfo.get_or_none(name=med_name)
+        if drug:
+            return drug
+
+        # 2단계: 부분 일치
+        drug = await DrugInfo.filter(name__icontains=med_name).first()
+        if drug:
+            return drug
+
+        # 3단계: 시작 일치
+        return await DrugInfo.filter(name__istartswith=med_name).first()
+
+
+    async def _get_drug_info_for_question(self, drug, med_name: str, question: str) -> str:
+        """질문 유형에 따라 약물 정보 반환"""
+        from app.services.openai_service import get_drug_info_from_gpt
+
+        if "부작용" in question:
+            if drug and drug.side_effects and drug.side_effects.strip():
+                return f"  {drug.side_effects}"
+            try:
+                gpt_info = await get_drug_info_from_gpt(med_name, "부작용")
+                return f"  {gpt_info}"
+            except Exception:
+                return "  부작용 정보를 찾을 수 없습니다. 의사 또는 약사와 상담하세요."
+
+        elif "주의사항" in question:
+            if drug and drug.precautions and drug.precautions.strip():
+                return f"  {drug.precautions}"
+            try:
+                gpt_info = await get_drug_info_from_gpt(med_name, "주의사항")
+                return f"  {gpt_info}"
+            except Exception:
+                return "  주의사항 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
+
+        elif "상호작용" in question or "같이 먹" in question:
+            if drug and drug.interactions and drug.interactions.strip():
+                return f"  {drug.interactions}"
+            try:
+                gpt_info = await get_drug_info_from_gpt(med_name, "다른 약과의 상호작용")
+                return f"  {gpt_info}"
+            except Exception:
+                return "  상호작용 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
+
+        return "  정보를 찾을 수 없습니다."
+
+
     async def _build_faq_answer(self, template: str, medications: list[dict], question: str, user_id: int) -> str:
         """FAQ 템플릿 + 약물 데이터로 답변 생성"""
         if not medications:
             return f"{template}\n\n현재 인식된 약물 정보가 없습니다. 처방전을 먼저 업로드해주세요."
-
-        from app.models.drugs import DrugInfo
-        from app.services.openai_service import get_drug_info_from_gpt
 
         answer_parts = [template, ""]
 
@@ -271,48 +319,15 @@ class ChatService:
             if not med_name:
                 continue
 
-            # e약은요 DB에서 약물 정보 조회 (3단계 매칭)
-            drug = await DrugInfo.get_or_none(name=med_name)
-
-            if not drug:
-                drug = await DrugInfo.filter(name__icontains=med_name).first()
-
-            if not drug:
-                drug = await DrugInfo.filter(name__istartswith=med_name).first()
+            # DB에서 약물 정보 조회
+            drug = await self._get_drug_from_db(med_name)
 
             # 접기/펼치기 형식
             answer_parts.append(f"▼ {med_name}")
 
-            if "부작용" in question:
-                if drug and drug.side_effects and drug.side_effects.strip():
-                    answer_parts.append(f"  {drug.side_effects}")
-                else:
-                    try:
-                        gpt_info = await get_drug_info_from_gpt(med_name, "부작용")
-                        answer_parts.append(f"  {gpt_info}")
-                    except Exception:
-                        answer_parts.append("  부작용 정보를 찾을 수 없습니다. 의사 또는 약사와 상담하세요.")
-
-            elif "주의사항" in question:
-                if drug and drug.precautions and drug.precautions.strip():
-                    answer_parts.append(f"  {drug.precautions}")
-                else:
-                    try:
-                        gpt_info = await get_drug_info_from_gpt(med_name, "주의사항")
-                        answer_parts.append(f"  {gpt_info}")
-                    except Exception:
-                        answer_parts.append("  주의사항 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요.")
-
-            elif "상호작용" in question or "같이 먹" in question:
-                if drug and drug.interactions and drug.interactions.strip():
-                    answer_parts.append(f"  {drug.interactions}")
-                else:
-                    try:
-                        gpt_info = await get_drug_info_from_gpt(med_name, "다른 약과의 상호작용")
-                        answer_parts.append(f"  {gpt_info}")
-                    except Exception:
-                        answer_parts.append("  상호작용 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요.")
-
+            # 질문에 따른 정보 추가
+            info = await self._get_drug_info_for_question(drug, med_name, question)
+            answer_parts.append(info)
             answer_parts.append("")  # 약물 사이 빈 줄
 
         # 마지막 안내 문구
