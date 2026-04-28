@@ -3,7 +3,6 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Query, status
-from fastapi.responses import JSONResponse
 from starlette.responses import Response
 
 from app.core.config import Config, Env
@@ -27,7 +26,7 @@ from app.services.kakao_auth import get_kakao_token, get_kakao_user_info
 from app.services.users import UserManageService
 
 config = Config()
-auth_router = APIRouter(prefix="/auth", tags=["auth"])
+auth_router = APIRouter(prefix="/auth", tags=["회원 인증 및 계정 관리"])
 
 
 def set_refresh_cookie(response: Response, refresh_token) -> None:
@@ -43,6 +42,9 @@ def set_refresh_cookie(response: Response, refresh_token) -> None:
     )
 
 
+# ──────────────────────────────────────────────
+# 1. 일반 회원가입 및 이메일 인증
+# ──────────────────────────────────────────────
 @auth_router.post(
     "/signup",
     status_code=status.HTTP_201_CREATED,
@@ -63,12 +65,9 @@ def set_refresh_cookie(response: Response, refresh_token) -> None:
 async def signup(
     request: SignUpRequest,
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     await auth_service.signup(request)
-    return JSONResponse(
-        content={"detail": "회원가입이 성공적으로 완료되었습니다. 이메일을 확인해주세요."},
-        status_code=status.HTTP_201_CREATED,
-    )
+    return {"detail": "회원가입이 성공적으로 완료되었습니다. 이메일을 확인해주세요."}
 
 
 @auth_router.get(
@@ -91,12 +90,9 @@ async def verify_email(
     email: Annotated[str, Query(description="인증할 이메일")],
     code: Annotated[str, Query(description="6자리 인증 코드")],
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     await auth_service.verify_email(email=email, code=code)
-    return JSONResponse(
-        content={"detail": "이메일 인증이 완료되었습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "이메일 인증이 완료되었습니다."}
 
 
 @auth_router.post(
@@ -118,12 +114,9 @@ async def verify_email(
 async def resend_verification(
     request: ResendVerificationRequest,
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     await auth_service.resend_verification_email(email=request.email)
-    return JSONResponse(
-        content={"detail": "인증 이메일을 재발송했습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "인증 이메일을 재발송했습니다."}
 
 
 @auth_router.get(
@@ -143,17 +136,17 @@ async def resend_verification(
 async def check_email(
     email: Annotated[str, Query(description="중복 확인할 이메일")],
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     is_duplicate = await auth_service.is_email_duplicate(email=email)
-    return JSONResponse(
-        content={
-            "is_duplicate": is_duplicate,
-            "message": "이미 사용중인 이메일입니다." if is_duplicate else "사용 가능한 이메일입니다.",
-        },
-        status_code=status.HTTP_200_OK,
-    )
+    return {
+        "is_duplicate": is_duplicate,
+        "message": "이미 사용중인 이메일입니다." if is_duplicate else "사용 가능한 이메일입니다.",
+    }
 
 
+# ──────────────────────────────────────────────
+# 2. 로그인 및 토큰 관리
+# ──────────────────────────────────────────────
 @auth_router.post(
     "/login",
     response_model=LoginResponse,
@@ -207,14 +200,11 @@ Refresh Token으로 새로운 Access Token을 발급합니다.
 async def token_refresh(
     jwt_service: Annotated[JwtService, Depends(JwtService)],
     refresh_token: Annotated[str | None, Cookie()] = None,
-) -> JSONResponse:
+):
     if not refresh_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token is missing.")
     access_token = jwt_service.refresh_jwt(refresh_token)
-    return JSONResponse(
-        content=TokenRefreshResponse(access_token=str(access_token)).model_dump(),
-        status_code=status.HTTP_200_OK,
-    )
+    return TokenRefreshResponse(access_token=str(access_token))
 
 
 @auth_router.post(
@@ -246,6 +236,9 @@ async def logout(
     return resp
 
 
+# ──────────────────────────────────────────────
+# 3. 비밀번호 재설정 및 변경
+# ──────────────────────────────────────────────
 @auth_router.post(
     "/password/reset-request",
     status_code=status.HTTP_200_OK,
@@ -264,12 +257,9 @@ async def logout(
 async def password_reset_request(
     request: PasswordResetEmailRequest,
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     await auth_service.send_password_reset_email(email=request.email)
-    return JSONResponse(
-        content={"detail": "비밀번호 재설정 링크를 이메일로 발송했습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "비밀번호 재설정 링크를 이메일로 발송했습니다."}
 
 
 @auth_router.post(
@@ -294,16 +284,13 @@ async def password_reset_request(
 async def password_reset(
     request: PasswordResetRequest,
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     await auth_service.reset_password(
         email=request.email,
         code=request.code,
         new_password=request.new_password,
     )
-    return JSONResponse(
-        content={"detail": "비밀번호가 재설정되었습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "비밀번호가 재설정되었습니다."}
 
 
 @auth_router.patch(
@@ -328,18 +315,18 @@ async def change_password(
     request: ChangePasswordRequest,
     user: Annotated[User, Depends(get_request_user)],
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     await auth_service.change_password(
         user=user,
         current_password=request.current_password,
         new_password=request.new_password,
     )
-    return JSONResponse(
-        content={"detail": "비밀번호가 변경되었습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "비밀번호가 변경되었습니다."}
 
 
+# ──────────────────────────────────────────────
+# 4. 카카오 소셜 로그인 연동
+# ──────────────────────────────────────────────
 @auth_router.get(
     "/kakao/callback",
     status_code=status.HTTP_200_OK,
@@ -395,6 +382,9 @@ async def kakao_callback(
     return resp
 
 
+# ──────────────────────────────────────────────
+# 5. 약관 동의 및 추가 정보 입력 (소셜 전용)
+# ──────────────────────────────────────────────
 @auth_router.post(
     "/terms/agree",
     status_code=status.HTTP_200_OK,
@@ -415,12 +405,9 @@ async def agree_terms(
     request: TermsAgreementRequest,
     user: Annotated[User, Depends(get_request_user)],
     user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
-) -> JSONResponse:
+):
     await user_manage_service.agree_terms(user=user, agreement=request)
-    return JSONResponse(
-        content={"detail": "약관 동의가 완료되었습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "약관 동의가 완료되었습니다."}
 
 
 @auth_router.patch(
@@ -443,7 +430,7 @@ async def kakao_additional_info(
     request: KakaoAdditionalInfoRequest,
     user: Annotated[User, Depends(get_request_user)],
     user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
-) -> JSONResponse:
+):
     # 추가 정보 업데이트
     await user_manage_service.update_user(
         user=user,
@@ -454,7 +441,4 @@ async def kakao_additional_info(
         ),
     )
 
-    return JSONResponse(
-        content={"detail": "추가 정보가 저장되었습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "추가 정보가 저장되었습니다."}

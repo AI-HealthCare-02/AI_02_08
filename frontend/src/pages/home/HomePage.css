@@ -213,7 +213,7 @@
 .home-page__modal {
   background: #EDE5D8;
   border-radius: 8px;
-  padding: 3rem 2rem;
+  padding: 2rem 2rem 1.5rem;
   text-align: center;
   max-width: 400px;
   width: 90%;
@@ -235,6 +235,117 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* OCR 진행 애니메이션 */
+.ocr-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: 100%;
+  margin: 1rem 0 0.5rem;
+}
+
+.ocr-progress__track {
+  flex: 1;
+  height: 14px;
+  background: #E8DFD0;
+  border-radius: 7px;
+  position: relative;
+  overflow: visible;
+}
+
+.ocr-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #A8D5C2, #7BA99A);
+  border-radius: 7px;
+  transition: width 0.3s ease;
+}
+
+.ocr-progress__pill {
+  position: absolute;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  transition: left 0.3s ease;
+  animation: pillSpin 1.2s linear infinite;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+}
+
+.ocr-progress__pill--done {
+  animation: pillDrop 0.4s ease forwards;
+}
+
+@keyframes pillSpin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes pillDrop {
+  0% { transform: translate(-50%, -50%) rotate(0deg); opacity: 1; }
+  60% { transform: translate(-50%, -80%) rotate(180deg); opacity: 1; }
+  100% { transform: translate(20px, 0) rotate(360deg) scale(0.3); opacity: 0; }
+}
+
+.ocr-progress__bottle {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.ocr-progress__bottle--done {
+  animation: bottlePop 0.5s ease 0.2s;
+}
+
+@keyframes bottlePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.ocr-progress__sparkles {
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60px;
+  height: 60px;
+  pointer-events: none;
+}
+
+.ocr-progress__sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.ocr-progress__sparkle--1 { background: #FFD700; animation: sparkle 0.8s ease 0.2s forwards; top: 10%; left: 50%; }
+.ocr-progress__sparkle--2 { background: #5B8C7A; animation: sparkle 0.8s ease 0.3s forwards; top: 20%; left: 80%; }
+.ocr-progress__sparkle--3 { background: #FF6B6B; animation: sparkle 0.8s ease 0.25s forwards; top: 50%; left: 90%; }
+.ocr-progress__sparkle--4 { background: #FFD700; animation: sparkle 0.8s ease 0.35s forwards; top: 80%; left: 75%; }
+.ocr-progress__sparkle--5 { background: #5B8C7A; animation: sparkle 0.8s ease 0.15s forwards; top: 90%; left: 45%; }
+.ocr-progress__sparkle--6 { background: #FF6B6B; animation: sparkle 0.8s ease 0.4s forwards; top: 70%; left: 20%; }
+.ocr-progress__sparkle--7 { background: #FFD700; animation: sparkle 0.8s ease 0.3s forwards; top: 30%; left: 15%; }
+.ocr-progress__sparkle--8 { background: #5B8C7A; animation: sparkle 0.8s ease 0.2s forwards; top: 5%; left: 35%; }
+
+@keyframes sparkle {
+  0% { transform: scale(0) translate(0, 0); opacity: 1; }
+  50% { transform: scale(1.5) translate(var(--tx, 10px), var(--ty, -10px)); opacity: 1; }
+  100% { transform: scale(0) translate(var(--tx2, 20px), var(--ty2, -20px)); opacity: 0; }
+}
+
+.ocr-progress__sparkle--1 { --tx: -15px; --ty: -25px; --tx2: -20px; --ty2: -35px; }
+.ocr-progress__sparkle--2 { --tx: 15px; --ty: -20px; --tx2: 25px; --ty2: -30px; }
+.ocr-progress__sparkle--3 { --tx: 20px; --ty: 5px; --tx2: 30px; --ty2: 10px; }
+.ocr-progress__sparkle--4 { --tx: 10px; --ty: 20px; --tx2: 15px; --ty2: 30px; }
+.ocr-progress__sparkle--5 { --tx: -5px; --ty: 25px; --tx2: -10px; --ty2: 35px; }
+.ocr-progress__sparkle--6 { --tx: -20px; --ty: 10px; --tx2: -30px; --ty2: 15px; }
+.ocr-progress__sparkle--7 { --tx: -18px; --ty: -10px; --tx2: -25px; --ty2: -20px; }
+.ocr-progress__sparkle--8 { --tx: 5px; --ty: -25px; --tx2: 8px; --ty2: -35px; }
 
 .home-page__modal-title {
   font-size: 1.2rem;
@@ -482,6 +593,13 @@
   white-space: nowrap;
 }
 
+.home-page__camera-buttons {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
 .home-page__camera-btn {
   background-color: #8B7355;
   color: white;
@@ -492,12 +610,19 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  margin-top: 0.5rem;
+}
+
+.home-page__camera-btn--select {
+  background-color: #8B7355;
 }
 
 .home-page__camera-btn:hover {
   background-color: #6B5E4E;
   transform: translateY(-1px);
+}
+
+.home-page__camera-btn--select:hover {
+  background-color: #6B5E4E;
 }
 
 /* 카메라 모달 */

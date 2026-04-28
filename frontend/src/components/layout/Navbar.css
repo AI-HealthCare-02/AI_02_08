@@ -3,9 +3,10 @@
 .navbar {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
   background-color: #F5F0E8;
   border-bottom: 1px solid #C4B49A;
+  position: relative;
+  z-index: 1000;
 }
 
 .navbar__container {

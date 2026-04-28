@@ -92,6 +92,90 @@ const CollapsibleItem: React.FC<{ title: string; content: string }> = ({ title, 
   );
 };
 
+const playDingSound = () => {
+  const ctx = new AudioContext();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.frequency.setValueAtTime(880, ctx.currentTime);
+  osc.frequency.setValueAtTime(1320, ctx.currentTime + 0.08);
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.4);
+};
+
+const OcrProgressModal = ({ ocrStatus, onClose }: { ocrStatus: string; onClose: () => void }) => {
+  const [progress, setProgress] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setProgress(0);
+    setDone(false);
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) { clearInterval(interval); return 90; }
+        return prev + (prev < 30 ? 3 : prev < 60 ? 2 : 1);
+      });
+    }, 200);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (ocrStatus !== 'uploading' && ocrStatus !== 'processing') {
+      setProgress(100);
+      setTimeout(() => {
+        setDone(true);
+        playDingSound();
+      }, 300);
+      setTimeout(() => onClose(), 1500);
+    }
+  }, [ocrStatus]);
+
+  return (
+    <div className="home-page__modal-overlay">
+      <div className="home-page__modal">
+        <h3 className="home-page__modal-title">
+          {done ? '분석 완료!' : ocrStatus === 'uploading' ? '이미지 업로드 중...' : '처방전 분석 중...'}
+        </h3>
+        <div className="ocr-progress">
+          <div className="ocr-progress__track">
+            <div className="ocr-progress__fill" style={{ width: `${progress}%` }} />
+            <img
+              src="/pill.png"
+              alt="알약"
+              className={`ocr-progress__pill ${done ? 'ocr-progress__pill--done' : ''}`}
+              style={{ left: `${Math.min(progress, 92)}%` }}
+            />
+          </div>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <img
+              src="/pill-bottle.png"
+              alt="알약통"
+              className={`ocr-progress__bottle ${done ? 'ocr-progress__bottle--done' : ''}`}
+            />
+            {done && (
+              <div className="ocr-progress__sparkles">
+                {[1,2,3,4,5,6,7,8].map(i => (
+                  <div key={i} className={`ocr-progress__sparkle ocr-progress__sparkle--${i}`} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <p className="home-page__modal-subtitle">
+          {done
+            ? '약물 정보 추출이 완료되었습니다 ✨'
+            : ocrStatus === 'uploading'
+              ? '잠시만 기다려주세요.'
+              : `약물 정보를 추출하고 있습니다... ${progress}%`}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const ChatMessageItem = memo(({ msg }: { msg: ChatMessage }) => (
   <div className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}>
     {msg.sender === 'user' ? (
@@ -138,6 +222,7 @@ const HomePage: React.FC = () => {
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showFaq, setShowFaq] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
 
   // 채팅 메시지 변경 시 자동 스크롤
   useEffect(() => {
@@ -239,6 +324,7 @@ const HomePage: React.FC = () => {
     }
 
     setOcrStatus('uploading');
+    setShowProgressModal(true);
     const resized = await resizeImage(file);
     setSelectedImage(resized);
 
@@ -289,10 +375,9 @@ const HomePage: React.FC = () => {
     }
 
     setOcrStatus('uploading');
+    setShowProgressModal(true);
     const resized = await resizeImage(file);
-    setSelectedImage(resized);
-
-    const reader = new FileReader();
+    setSelectedImage(resized);    const reader = new FileReader();
     reader.onload = (e) => {
       const url = e.target?.result as string;
       setPreviewUrl(url);
@@ -371,7 +456,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleRetakePhoto = () => {
+  const handleClearPrescription = () => {
     setPreviewUrl(null);
     setSelectedImage(null);
     setOcrStatus('idle');
@@ -381,6 +466,10 @@ const HomePage: React.FC = () => {
     saveOcrStatus('idle');
     sessionStorage.removeItem('ocr_results');
     sessionStorage.removeItem('ocr_preview');
+  };
+
+  const handleRetakePhoto = () => {
+    handleClearPrescription();
     openCameraModal();
   };
 
@@ -499,6 +588,7 @@ const HomePage: React.FC = () => {
   };
 
   // 추천 질문 클릭 핸들러
+  // handleSuggestionClick 함수 수정
   const handleSuggestionClick = async (suggestion: string) => {
     setChatMessage('');
     setShowFaq(false);
@@ -521,6 +611,15 @@ const HomePage: React.FC = () => {
         suggestion,
         true
       );
+
+      // 🔍 디버깅: 실제 응답 출력
+      console.log('=== AI 응답 원본 ===');
+      console.log('content:', aiMessage.content);
+      console.log('content type:', typeof aiMessage.content);
+      console.log('includes ▼:', aiMessage.content.includes('▼'));
+      console.log('split by \\n:', aiMessage.content.split('\n').length);
+      console.log('첫 100자:', aiMessage.content.substring(0, 100));
+
       setChatMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       // ... 에러 처리
@@ -533,7 +632,7 @@ const HomePage: React.FC = () => {
     <div className="home-page">
       <div className="home-page__greeting">
         <h1 className="home-page__title">안녕하세요, {displayName}님 !</h1>
-        <p className="home-page__subtitle">오늘도 건강한 하루 되세요 😊</p>
+        <p className="home-page__subtitle">이루도담과 함께 건강을 관리하세요🌿</p>
       </div>
 
       <div className="home-page__content">
@@ -561,7 +660,7 @@ const HomePage: React.FC = () => {
                   <img src={previewUrl} alt="업로드된 처방전" className="home-page__preview-image" />
                   <div className="home-page__preview-overlay">
                     <button
-                      onClick={handleRetakePhoto}
+                      onClick={handleClearPrescription}
                       className="home-page__remove-btn"
                       disabled={ocrStatus === 'uploading' || ocrStatus === 'processing'}
                     >
@@ -585,9 +684,14 @@ const HomePage: React.FC = () => {
                   </label>
                   <div className="home-page__camera-section">
                     <div className="home-page__divider"><span>또는</span></div>
-                    <button onClick={openCameraModal} className="home-page__camera-btn" type="button">
-                      📸 카메라로 촬영하기
-                    </button>
+                    <div className="home-page__camera-buttons">
+                      <button onClick={openCameraModal} className="home-page__camera-btn" type="button">
+                        📸 카메라로 촬영하기
+                      </button>
+                      <label htmlFor="prescription-upload" className="home-page__camera-btn home-page__camera-btn--select">
+                        사진 선택하기
+                      </label>
+                    </div>
                   </div>
                 </div>
               )}
@@ -671,7 +775,7 @@ const HomePage: React.FC = () => {
 
             <div className="home-page__chat-messages" ref={chatMessagesRef} onScroll={handleChatScroll}>
 
-              {/* 🆕 실제 채팅 메시지 렌더링 */}
+              {/* 실제 채팅 메시지 렌더링 */}
               {chatMessages.length === 0 ? (
                 <div className="home-page__chat-message home-page__chat-message--bot">
                   안녕하세요! 복약 관련 궁금한 점을 물어보세요
@@ -751,18 +855,8 @@ const HomePage: React.FC = () => {
 
 
       {/* OCR 처리 모달 */}
-      {(ocrStatus === 'uploading' || ocrStatus === 'processing') && (
-        <div className="home-page__modal-overlay">
-          <div className="home-page__modal">
-            <div className="home-page__loading-spinner"></div>
-            <h3 className="home-page__modal-title">
-              {ocrStatus === 'uploading' ? '이미지 업로드 중...' : 'OCR 처리 중...'}
-            </h3>
-            <p className="home-page__modal-subtitle">
-              {ocrStatus === 'uploading' ? '잠시만 기다려주세요.' : '약물 정보를 추출하고 있습니다.'}
-            </p>
-          </div>
-        </div>
+      {showProgressModal && (
+        <OcrProgressModal ocrStatus={ocrStatus} onClose={() => setShowProgressModal(false)} />
       )}
 
       {/* OCR 부분 실패 모달 (partial_failure) */}
@@ -779,7 +873,7 @@ const HomePage: React.FC = () => {
               더 선명한 이미지로 다시 시도하거나, 직접 입력해주세요.
             </p>
             <div className="home-page__modal-buttons">
-              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">재촬영하기</button>
+              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">다시 찍기</button>
               <button onClick={() => { setOcrStatus('idle'); setShowManualInput(true); }} className="home-page__modal-btn home-page__modal-btn--secondary">직접 입력하기</button>
             </div>
           </div>
@@ -799,7 +893,7 @@ const HomePage: React.FC = () => {
               {ocrErrorMessage || '알 수 없는 오류가 발생했습니다.'}
             </p>
             <div className="home-page__modal-buttons">
-              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">재촬영하기</button>
+              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">다시 찍기</button>
               <button onClick={() => { setOcrStatus('idle'); setOcrErrorMessage(''); setShowManualInput(true); }} className="home-page__modal-btn home-page__modal-btn--secondary">직접 입력하기</button>
             </div>
           </div>
