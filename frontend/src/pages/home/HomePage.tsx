@@ -371,7 +371,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleRetakePhoto = () => {
+  const handleClearPrescription = () => {
     setPreviewUrl(null);
     setSelectedImage(null);
     setOcrStatus('idle');
@@ -381,6 +381,10 @@ const HomePage: React.FC = () => {
     saveOcrStatus('idle');
     sessionStorage.removeItem('ocr_results');
     sessionStorage.removeItem('ocr_preview');
+  };
+
+  const handleRetakePhoto = () => {
+    handleClearPrescription();
     openCameraModal();
   };
 
@@ -533,7 +537,7 @@ const HomePage: React.FC = () => {
     <div className="home-page">
       <div className="home-page__greeting">
         <h1 className="home-page__title">안녕하세요, {displayName}님 !</h1>
-        <p className="home-page__subtitle">오늘도 건강한 하루 되세요 😊</p>
+        <p className="home-page__subtitle">이루도담과 함께 건강을 관리하세요🌿</p>
       </div>
 
       <div className="home-page__content">
@@ -561,7 +565,7 @@ const HomePage: React.FC = () => {
                   <img src={previewUrl} alt="업로드된 처방전" className="home-page__preview-image" />
                   <div className="home-page__preview-overlay">
                     <button
-                      onClick={handleRetakePhoto}
+                      onClick={handleClearPrescription}
                       className="home-page__remove-btn"
                       disabled={ocrStatus === 'uploading' || ocrStatus === 'processing'}
                     >
@@ -585,9 +589,14 @@ const HomePage: React.FC = () => {
                   </label>
                   <div className="home-page__camera-section">
                     <div className="home-page__divider"><span>또는</span></div>
-                    <button onClick={openCameraModal} className="home-page__camera-btn" type="button">
-                      📸 카메라로 촬영하기
-                    </button>
+                    <div className="home-page__camera-buttons">
+                      <button onClick={openCameraModal} className="home-page__camera-btn" type="button">
+                        📸 카메라로 촬영하기
+                      </button>
+                      <label htmlFor="prescription-upload" className="home-page__camera-btn home-page__camera-btn--select">
+                        사진 선택하기
+                      </label>
+                    </div>
                   </div>
                 </div>
               )}
@@ -756,10 +765,12 @@ const HomePage: React.FC = () => {
           <div className="home-page__modal">
             <div className="home-page__loading-spinner"></div>
             <h3 className="home-page__modal-title">
-              {ocrStatus === 'uploading' ? '이미지 업로드 중...' : 'OCR 처리 중...'}
+              {ocrStatus === 'uploading' ? '이미지 업로드 중...' : '처방전 분석 중...'}
             </h3>
             <p className="home-page__modal-subtitle">
-              {ocrStatus === 'uploading' ? '잠시만 기다려주세요.' : '약물 정보를 추출하고 있습니다.'}
+              {ocrStatus === 'uploading'
+                ? '잠시만 기다려주세요.'
+                : '약물 정보를 추출하고 있습니다. 잠시만 기다려주세요 😊'}
             </p>
           </div>
         </div>
@@ -779,7 +790,7 @@ const HomePage: React.FC = () => {
               더 선명한 이미지로 다시 시도하거나, 직접 입력해주세요.
             </p>
             <div className="home-page__modal-buttons">
-              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">재촬영하기</button>
+              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">다시 찍기</button>
               <button onClick={() => { setOcrStatus('idle'); setShowManualInput(true); }} className="home-page__modal-btn home-page__modal-btn--secondary">직접 입력하기</button>
             </div>
           </div>
@@ -799,7 +810,7 @@ const HomePage: React.FC = () => {
               {ocrErrorMessage || '알 수 없는 오류가 발생했습니다.'}
             </p>
             <div className="home-page__modal-buttons">
-              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">재촬영하기</button>
+              <button onClick={handleRetakePhoto} className="home-page__modal-btn home-page__modal-btn--primary">다시 찍기</button>
               <button onClick={() => { setOcrStatus('idle'); setOcrErrorMessage(''); setShowManualInput(true); }} className="home-page__modal-btn home-page__modal-btn--secondary">직접 입력하기</button>
             </div>
           </div>

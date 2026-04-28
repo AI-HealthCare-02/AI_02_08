@@ -48,6 +48,15 @@ const MyPage: React.FC = () => {
   const [medicationsByDate, setMedicationsByDate] = useState<Record<string, MedicationHistory[]>>({});
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
+  // URL 쿼리 파라미터로 탭 전환
+  useEffect(() => {
+    const tab = searchParams.get('tab') as TabType;
+    if (tab && ['profile', 'history', 'account'].includes(tab)) {
+      setActiveTab(tab);
+    }
+    window.scrollTo(0, 0);
+  }, [searchParams]);
+
   // 날짜 선택 시 복약 히스토리 조회
   useEffect(() => {
   const fetchHistory = async () => {
