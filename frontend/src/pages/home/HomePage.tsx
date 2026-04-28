@@ -503,6 +503,7 @@ const HomePage: React.FC = () => {
   };
 
   // 추천 질문 클릭 핸들러
+  // handleSuggestionClick 함수 수정
   const handleSuggestionClick = async (suggestion: string) => {
     setChatMessage('');
     setShowFaq(false);
@@ -525,6 +526,15 @@ const HomePage: React.FC = () => {
         suggestion,
         true
       );
+
+      // 🔍 디버깅: 실제 응답 출력
+      console.log('=== AI 응답 원본 ===');
+      console.log('content:', aiMessage.content);
+      console.log('content type:', typeof aiMessage.content);
+      console.log('includes ▼:', aiMessage.content.includes('▼'));
+      console.log('split by \\n:', aiMessage.content.split('\n').length);
+      console.log('첫 100자:', aiMessage.content.substring(0, 100));
+
       setChatMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       // ... 에러 처리
@@ -680,7 +690,7 @@ const HomePage: React.FC = () => {
 
             <div className="home-page__chat-messages" ref={chatMessagesRef} onScroll={handleChatScroll}>
 
-              {/* 🆕 실제 채팅 메시지 렌더링 */}
+              {/* 실제 채팅 메시지 렌더링 */}
               {chatMessages.length === 0 ? (
                 <div className="home-page__chat-message home-page__chat-message--bot">
                   안녕하세요! 복약 관련 궁금한 점을 물어보세요
