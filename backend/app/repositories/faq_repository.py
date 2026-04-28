@@ -10,7 +10,7 @@ class FaqRepository:
 
     async def find_answer_by_question(self, question: str) -> str | None:
         """
-        질문과 유사한 FAQ 답변 찾기 (부분 일치 허용)
+        질문과 유사한 FAQ 답변 찾기 (정확 일치 우선, 키워드 매칭 보조)
 
         Args:
             question: 사용자 질문 (예: "부작용이 있나요?")
@@ -18,16 +18,12 @@ class FaqRepository:
         Returns:
             str | None: FAQ 답변 또는 None
         """
-        # 1차: 정확히 일치
-        faq = await self._model.filter(
-            question=question,
-            is_active=True,
-        ).first()
-
+        # 1차: 정확 일치
+        faq = await self._model.filter(question=question, is_active=True).first()
         if faq:
             return faq.answer
 
-        # 2차: 핵심 키워드로 매칭
+        # 2차: 키워드 매칭
         keywords = ["부작용", "주의사항", "상호작용", "같이"]
         for keyword in keywords:
             if keyword in question:
@@ -37,5 +33,4 @@ class FaqRepository:
                 ).first()
                 if faq:
                     return faq.answer
-
         return None
