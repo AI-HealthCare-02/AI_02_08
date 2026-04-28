@@ -272,7 +272,6 @@ class ChatService:
         # 3단계: 시작 일치
         return await DrugInfo.filter(name__istartswith=med_name).first()
 
-
     async def _get_drug_info_for_question(self, drug, med_name: str, question: str) -> str:
         """질문 유형에 따라 약물 정보 반환"""
         from app.services.openai_service import get_drug_info_from_gpt
@@ -305,7 +304,6 @@ class ChatService:
                 return "  상호작용 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
 
         return "  정보를 찾을 수 없습니다."
-
 
     async def _build_faq_answer(self, template: str, medications: list[dict], question: str, user_id: int) -> str:
         """FAQ 템플릿 + 약물 데이터로 답변 생성"""
