@@ -1,8 +1,6 @@
-import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
 
 from app.dependencies.security import get_request_user
 from app.dtos.users import UserInfoResponse, UserUpdateRequest
@@ -10,9 +8,12 @@ from app.models.users import User
 from app.services.auth import AuthService
 from app.services.users import UserManageService
 
-user_router = APIRouter(prefix="/users", tags=["users"])
+user_router = APIRouter(prefix="/users", tags=["사용자 정보 관리"])
 
 
+# ──────────────────────────────────────────────
+# 1. 내 정보 조회 및 수정
+# ──────────────────────────────────────────────
 @user_router.get(
     "/me",
     response_model=UserInfoResponse,
@@ -31,13 +32,13 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 )
 async def user_me_info(
     user: Annotated[User, Depends(get_request_user)],
-) -> JSONResponse:
-    return JSONResponse(
-        content=json.loads(UserInfoResponse.model_validate(user).model_dump_json()),
-        status_code=status.HTTP_200_OK,
-    )
+):
+    return UserInfoResponse.model_validate(user)
 
 
+# ──────────────────────────────────────────────
+# 2. 내 정보 수정 (PATCH)
+# ──────────────────────────────────────────────
 @user_router.patch(
     "/me",
     response_model=UserInfoResponse,
@@ -60,14 +61,14 @@ async def update_user_me_info(
     update_data: UserUpdateRequest,
     user: Annotated[User, Depends(get_request_user)],
     user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
-) -> JSONResponse:
+):
     updated_user = await user_manage_service.update_user(user=user, data=update_data)
-    return JSONResponse(
-        content=json.loads(UserInfoResponse.model_validate(updated_user).model_dump_json()),
-        status_code=status.HTTP_200_OK,
-    )
+    return UserInfoResponse.model_validate(updated_user)
 
 
+# ──────────────────────────────────────────────
+# 3. 회원 탈퇴 (Soft Delete)
+# ──────────────────────────────────────────────
 @user_router.delete(
     "/me",
     status_code=status.HTTP_200_OK,
@@ -88,9 +89,6 @@ async def update_user_me_info(
 async def delete_user_me(
     user: Annotated[User, Depends(get_request_user)],
     auth_service: Annotated[AuthService, Depends(AuthService)],
-) -> JSONResponse:
+):
     await auth_service.withdraw(user=user)
-    return JSONResponse(
-        content={"detail": "탈퇴 처리되었습니다."},
-        status_code=status.HTTP_200_OK,
-    )
+    return {"detail": "탈퇴 처리되었습니다."}
