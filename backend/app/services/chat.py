@@ -312,14 +312,19 @@ class ChatService:
 
         answer_parts = [template, ""]
 
+        print("🔍 FAQ 답변 생성 중:")  # 추가
+        print(f"   - 질문: {question}")  # 추가
+
         for med in medications:
             med_name = med.get("name", "")
             if not med_name:
                 continue
 
+            print(f"   - 약물명: {med_name}")  # 추가
+
             # DB에서 약물 정보 조회
             drug = await self._get_drug_from_db(med_name)
-
+            print(f"     → DB 매칭: {'성공' if drug else '실패'}")  # 추가
             # 접기/펼치기 형식
             answer_parts.append(f"▼ {med_name}")
 
