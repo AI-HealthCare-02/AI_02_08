@@ -482,6 +482,13 @@
   white-space: nowrap;
 }
 
+.home-page__camera-buttons {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
 .home-page__camera-btn {
   background-color: #8B7355;
   color: white;
@@ -492,12 +499,19 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  margin-top: 0.5rem;
+}
+
+.home-page__camera-btn--select {
+  background-color: #8B7355;
 }
 
 .home-page__camera-btn:hover {
   background-color: #6B5E4E;
   transform: translateY(-1px);
+}
+
+.home-page__camera-btn--select:hover {
+  background-color: #6B5E4E;
 }
 
 /* 카메라 모달 */
