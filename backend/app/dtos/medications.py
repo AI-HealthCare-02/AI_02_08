@@ -114,15 +114,16 @@ class ReportListResponse(BaseSerializerModel):
 # 복약 히스토리 관련 DTO
 # ──────────────────────────────────────────────
 class MedicationHistoryItem(BaseSerializerModel):
-    """특정 날짜의 개별 복약 기록 항목"""
+    """특정 날짜의 복약 기록 정보"""
 
+    id: int = Field(..., description="복약 기록 고유 ID (삭제 API 호출 시 사용)")
     name: str = Field(..., description="약품명")
-    dosage: str = Field("", description="용량")
-    frequency: str = Field("", description="복용 횟수")
-    timing: str = Field("", description="복용 시점")
+    dosage: str = Field(..., description="용량")
+    frequency: str = Field(..., description="복용 횟수")
+    timing: str = Field(..., description="복용 시점")
 
 
 class MedicationHistoryResponse(BaseSerializerModel):
     """GET /api/v1/medications/history 응답"""
 
-    history: list[MedicationHistoryItem] = Field(..., description="복약 히스토리 목록")
+    history: list[MedicationHistoryItem] = Field(default_factory=list)
