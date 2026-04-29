@@ -40,6 +40,10 @@ class ChatMessageResponse(BaseModel):
     created_at: datetime
 
 
+class AiResponseRequest(BaseModel):
+    user_message: Annotated[str, Field(..., description="사용자 메시지")]
+
+
 class FaqItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

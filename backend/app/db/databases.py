@@ -16,7 +16,6 @@ TORTOISE_APP_MODELS = [
     "app.models.chat_session",
     "app.models.chat_message",
     "app.models.faq_item",
-    "app.models.chat_idempotency",
 ]
 
 TORTOISE_ORM = {
@@ -46,12 +45,3 @@ TORTOISE_ORM = {
 def initialize_tortoise(app: FastAPI) -> None:
     Tortoise.init_models(TORTOISE_APP_MODELS, "models")
     register_tortoise(app, config=TORTOISE_ORM)
-
-
-async def initialize_tortoise_standalone() -> None:
-    """
-    스크립트 실행용 Tortoise ORM 초기화
-    (FastAPI 없이 독립 실행)
-    """
-    await Tortoise.init(config=TORTOISE_ORM)
-    await Tortoise.generate_schemas()

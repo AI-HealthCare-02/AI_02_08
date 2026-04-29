@@ -7,7 +7,7 @@ from app.dtos.medications import MedicationHistoryItem
 from app.models.users import User
 from app.services.medication_service import MedicationService
 
-router = APIRouter(prefix="/medications", tags=["Medications"])
+router = APIRouter(prefix="/medications", tags=["복약 정보 관리"])
 
 
 # ──────────────────────────────────────────────
@@ -30,6 +30,7 @@ async def get_medication_history(
     current_user: User = Depends(get_request_user),  # noqa: B008
 ):
     """
+    특정 날짜의 복약 히스토리 조회 API
     - date: YYYY-MM-DD 형식 (예: 2026-04-27)
     """
     service = MedicationService()
