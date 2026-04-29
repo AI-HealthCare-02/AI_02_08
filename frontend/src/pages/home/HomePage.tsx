@@ -474,20 +474,19 @@ const HomePage: React.FC = () => {
   };
 
   const handleAddToMedication = async () => {
-    if (!ocrResults?.length) return;
-    try {
-      if (ocrId) {
-        await confirmPrescription(ocrId, ocrResults);
-      }
-      const existing = loadMedications();
-      const newMeds = ocrResults.map(ocrToMedication);
-      saveMedications([...existing, ...newMeds]);
-      setAddedToMedication(true);
-    } catch (error) {
-      console.error('복약관리 추가 실패:', error);
-      alert('복약관리 추가 중 오류가 발생했습니다.');
-    }
-  };
+  if (!ocrResults?.length || !ocrId) return;
+
+  try {
+    const result = await confirmPrescription(ocrId, ocrResults);
+
+    console.log(`${result.registeredCount}개 약물 등록 완료`);
+    setAddedToMedication(true);
+    alert('복약관리에 추가되었습니다!');
+  } catch (error) {
+    console.error('복약관리 추가 실패:', error);
+    alert('복약관리 추가 중 오류가 발생했습니다.');
+  }
+};
 
   const openCameraModal = () => {
     setShowCameraModal(true);
