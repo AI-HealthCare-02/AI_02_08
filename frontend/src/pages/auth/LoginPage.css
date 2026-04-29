@@ -143,14 +143,21 @@
 
 .login-page__password-toggle {
   position: absolute;
-  right: calc(50% - 200px + var(--spacing-3)); /* 중앙 정렬된 input 기준 */
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
-  padding: var(--spacing-1);
+  padding: var(--spacing-3);
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: var(--transition-base);
 }
 

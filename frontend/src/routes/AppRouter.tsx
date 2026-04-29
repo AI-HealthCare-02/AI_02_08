@@ -12,6 +12,7 @@ import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage';
 import KakaoCallbackPage from '../pages/auth/KakaoCallbackPage';
 import KakaoAdditionalInfoPage from '../pages/auth/KakaoAdditionalInfoPage';
 import MyPage from '../pages/mypage/MyPage';
+import AboutPage from '../pages/about/AboutPage';
 import TermsAgreementPage from '../pages/auth/TermsAgreementPage';
 
 const AppRoutes: React.FC = () => {
@@ -25,7 +26,7 @@ const AppRoutes: React.FC = () => {
           isLoggedIn ? (
             <Navigate to="/home" replace />
           ) : (
-            <MainLayout>
+            <MainLayout showNavbar={false}>
               <LandingPage />
             </MainLayout>
           )
@@ -38,6 +39,17 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <MainLayout>
               <HomePage />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/about"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <AboutPage />
             </MainLayout>
           </ProtectedRoute>
         }
