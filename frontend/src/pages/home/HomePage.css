@@ -7,6 +7,54 @@
   overflow-x: hidden;
   box-sizing: border-box;
   width: 100%;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  .home-page,
+  .home-page * {
+    color-scheme: light;
+  }
+
+  .home-page {
+    background-color: #F5F0E8;
+    color: #2C2416;
+  }
+
+  .home-page__chat-input {
+    background-color: #F5F0E8;
+    color: #2C2416;
+  }
+
+  .home-page__ocr-section,
+  .home-page__ocr-results,
+  .home-page__chatbot-section,
+  .home-page__modal {
+    background-color: #EDE5D8;
+    color: #2C2416;
+  }
+
+  .home-page__upload-area,
+  .home-page__medicine-category {
+    background-color: #F5F0E8;
+    color: #2C2416;
+  }
+
+  .home-page__chat-message--bot {
+    background-color: #EDE5D8;
+    color: #2C2416;
+  }
+
+  .home-page__chat-message--user {
+    background-color: #EAF2EF;
+    color: #2C2416;
+  }
+
+  .home-page__form-input,
+  .home-page__form-select {
+    background-color: #F5F0E8;
+    color: #2C2416;
+  }
 }
 
 /* 인사말 섹션 */
@@ -604,12 +652,13 @@
   background-color: #8B7355;
   color: white;
   border: none;
-  padding: 0.8rem 1.5rem;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .home-page__camera-btn--select {
@@ -1046,7 +1095,7 @@
 
 .home-page__chat-input-wrapper {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
 .home-page__chat-input {
@@ -1071,6 +1120,7 @@
   border-radius: 8px;
   font-size: 0.9rem;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .home-page__send-btn:disabled {
@@ -1219,7 +1269,7 @@
   }
   
   .home-page__chatbot-section {
-    height: 600px;
+    height: 700px;
   }
 }
 
@@ -1310,7 +1360,7 @@
   }
 
   .home-page__chatbot-section {
-    height: 500px;
+    height: 650px;
     border-radius: 12px;
     width: 100%;
     max-width: 100%;
@@ -1337,6 +1387,7 @@
 
   .home-page__send-btn {
     padding: 0.8rem 1rem;
+    flex-shrink: 0;
   }
 
   .home-page__faq-popup {

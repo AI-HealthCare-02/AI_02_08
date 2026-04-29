@@ -8,16 +8,20 @@ class MedicationRepository:
         self._model = MedicationLog
 
     async def get_by_date(self, user_id: int, target_date: date) -> list[dict]:
+        print("\n📅 복약 히스토리 조회")
+        print(f"   - user_id: {user_id}")
+        print(f"   - target_date: {target_date}")
         """
         특정 날짜에 추가된 약물 목록 조회 (약물명 기준 중복 제거)
         """
+
         start_datetime = datetime.combine(target_date, datetime.min.time())
         end_datetime = datetime.combine(target_date, datetime.max.time())
 
         medications = await MedicationLog.filter(
             user_id=user_id, created_at__gte=start_datetime, created_at__lte=end_datetime
         ).values("name", "dosage", "frequency", "timing")
-
+        print(f"   - 조회 결과: {len(medications)}건")
         # 약물명 기준 중복 제거
         seen = set()
         unique_meds = []
@@ -34,5 +38,5 @@ class MedicationRepository:
                         "timing": med["timing"] or "",
                     }
                 )
-
+        print(f"   - 중복 제거 후: {len(unique_meds)}건\n")
         return unique_meds

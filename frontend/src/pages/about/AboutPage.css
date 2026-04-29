@@ -1,0 +1,264 @@
+.about {
+  color: #2C2416;
+  margin-top: -2rem;
+}
+
+@media (min-width: 768px) {
+  .about {
+    margin-top: -2rem;
+  }
+}
+
+/* 이미지 섹션 - 풀 블리드 */
+.about__img-section {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+  height: 200px;
+  overflow: hidden;
+}
+
+.about__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.about__img--top {
+  object-position: center top;
+}
+
+.about__img--bottom {
+  object-position: center 85%;
+}
+
+/* 본문 - 타이틀 + 의미 */
+.about__body {
+  padding: 3rem 2rem 3.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.about__title-row {
+  position: relative;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.about__title {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #2C2416;
+  margin: 0;
+}
+
+.about__title-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: -80px;
+  font-size: 0.85rem;
+  color: #8B7355;
+  border: 1px solid #C4B49A;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+}
+
+.about__meaning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+}
+
+.about__word {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.about__word-kr {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #5B8C7A;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-color: #5B8C7A;
+}
+
+.about__word-desc {
+  font-size: 0.9rem;
+  color: #6B5E4E;
+}
+
+.about__plus {
+  font-size: 1.4rem;
+  color: #A89880;
+}
+
+.about__summary {
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #4A4035;
+  margin: 0;
+}
+
+/* 공통 섹션 타이틀 */
+.about__section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #5B8C7A;
+  margin: 0 0 1.5rem;
+}
+
+/* 주요 기능 */
+.about__features {
+  padding: 3rem 2rem;
+  text-align: center;
+  background: #EDE5D8;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+}
+
+.about__feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.about__feature {
+  background: #F5F0E8;
+  border: 1px solid #C4B49A;
+  border-radius: 12px;
+  padding: 1.8rem 1.2rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.about__feature:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(139, 115, 85, 0.12);
+}
+
+.about__feature-num {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #C4B49A;
+  margin-bottom: 0.6rem;
+}
+
+.about__feature-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2C2416;
+  margin: 0 0 0.6rem;
+}
+
+.about__feature-desc {
+  font-size: 0.85rem;
+  color: #6B5E4E;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* 약속이 소개 */
+.about__mascot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 3rem 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.about__mascot-img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.about__mascot-text {
+  text-align: left;
+}
+
+.about__mascot-desc {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #4A4035;
+  margin: 0;
+}
+
+/* 스크롤 애니메이션 */
+.about--scroll-animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  will-change: opacity, transform;
+}
+
+.about--scroll-animate.about--animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 기능 카드 순차 등장 */
+.about__feature.about--scroll-animate:nth-child(1) { transition-delay: 0s; }
+.about__feature.about--scroll-animate:nth-child(2) { transition-delay: 0.15s; }
+.about__feature.about--scroll-animate:nth-child(3) { transition-delay: 0.3s; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .about__img-section {
+    height: 150px;
+  }
+
+  .about__body {
+    padding: 2rem 1.5rem 2.5rem;
+  }
+
+  .about__title {
+    font-size: 1.8rem;
+  }
+
+  .about__mascot-img {
+    width: 140px;
+    height: 140px;
+  }
+
+  .about__meaning {
+    gap: 1.5rem;
+  }
+
+  .about__word-kr {
+    font-size: 1.5rem;
+  }
+
+  .about__feature-grid {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+  }
+
+  .about__mascot {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .about__mascot-text {
+    text-align: center;
+  }
+}

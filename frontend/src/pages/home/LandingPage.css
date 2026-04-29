@@ -1,337 +1,498 @@
-/* LandingPage.css - 원래 디자인 + 스킵 버튼 추가 */
+/* ================================================
+   LandingPage.css
+   ================================================ */
 
-.landing-page {
-  min-height: 100vh;
+/* Override MainLayout */
+.main-layout:has(.lp) .main-layout__content {
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.lp {
+  width: 100%;
+  overflow-x: hidden;
+  background: #F5F0E8;
+}
+
+
+
+/* ── Section 1: Hero ── */
+.lp-hero {
   position: relative;
+  width: 100%;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
-/* 배경 이미지 */
-.landing-page__background {
+.lp-hero__bg {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.62;
+  animation: heroZoom 3s ease-out forwards;
 }
 
-.landing-page__background-overlay {
+@keyframes heroZoom {
+  from { transform: scale(1.15); }
+  to { transform: scale(1.0); }
+}
+
+.lp-hero__overlay {
   position: absolute;
   inset: 0;
-  background-color: #fdf5ee;
-  opacity: 0.28;
+  background: rgba(0, 0, 0, 0.35);
 }
 
-/* 컨텐츠 영역 */
-.landing-page__content {
+.lp-hero__content {
   position: relative;
   z-index: 1;
-  width: 100%;
-  height: 100vh;
+  text-align: center;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
-/* 슬라이드 영역 - 원형 배경 */
-.landing-page__slide {
+.lp-hero__circle-wrap {
   position: relative;
-  width: 600px;
-  height: 600px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  color: #ffffff;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: clamp(220px, 40vw, 340px);
+  height: clamp(220px, 40vw, 340px);
 }
 
-.landing-page__slide-content {
-  padding: var(--spacing-8);
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.landing-page__subtitle {
-  font-family: 'Pretendard', var(--font-sans);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: rgba(255, 255, 255, 0.8);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: var(--spacing-6);
-}
-
-.landing-page__title {
-  font-family: 'IsYun', var(--font-sans);
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-regular);
-  color: #ffffff;
-  line-height: var(--line-height-tight);
-  margin-bottom: var(--spacing-6);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.landing-page__description {
-  font-family: 'Pretendard', var(--font-sans);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-regular);
-  color: rgba(255, 255, 255, 0.9);
-  line-height: var(--line-height-relaxed);
-  margin: 0;
-  white-space: nowrap; /* 한 줄로 표시 */
-}
-
-/* 슬라이드 도트 - 하단 고정 */
-.landing-page__dots {
+.lp-hero__circular {
   position: absolute;
-  bottom: 80px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  animation: fadeIn 1s ease 0.8s forwards;
+}
+
+.lp-hero__circular text {
+  fill: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.lp-hero__title {
+  position: relative;
+  font-family: 'EB Garamond', 'LeeSeoyun', serif !important;
+  font-size: clamp(2.8rem, 7vw, 4.5rem);
+  color: #fff;
+  font-weight: 400;
+  opacity: 0;
+  animation: fadeIn 1s ease 0.5s forwards;
+  margin: 0;
+  line-height: 1.2;
+  word-break: keep-all;
+}
+
+.lp-hero__sub {
+  font-size: clamp(0.9rem, 2vw, 1.15rem);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
+  opacity: 0;
+  animation: fadeIn 1s ease 1s forwards;
+  margin-top: 20px;
+}
+
+.lp-hero__scroll {
+  position: absolute;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-2);
-  z-index: 2;
+  z-index: 1;
 }
 
-.landing-page__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background-color: rgba(255, 255, 255, 0.4);
-  border: none;
-  cursor: pointer;
-  transition: var(--transition-base);
+.lp-hero__scroll-arrow {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.5rem;
+  animation: bounce 2s infinite;
 }
 
-.landing-page__dot--active {
-  width: 20px;
-  background-color: rgba(255, 255, 255, 0.9);
-}
-
-.landing-page__dot:hover {
-  background-color: rgba(255, 255, 255, 0.7);
-}
-
-/* CTA 슬라이드 - 원형 배경 */
-.landing-page__cta {
+/* ── Section 2: Split Background (민트 반 + 흰 반) ── */
+.lp-split {
   position: relative;
-  width: 600px;
-  height: 600px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.lp-split__bg-mint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 15%;
+  background: linear-gradient(135deg, #A8D5BA 0%, #78A085 100%);
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+
+.lp-split__bg-mint.animate-in {
+  opacity: 1;
+}
+
+.lp-split__bg-white {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70%;
+  background: #F5F0E8;
+}
+
+.lp-split__content {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 80px 2rem 100px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 80px;
+}
+
+/* 이미지 */
+.lp-split__image-wrap {
+  width: 100%;
+  max-width: 480px;
   text-align: center;
-  color: #ffffff;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.landing-page__cta-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-6);
-  padding: var(--spacing-8);
+.lp-split__image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
 }
 
-.landing-page__cta-logo {
-  height: 180px; /* 랜딩 페이지 로고 대폭 증가 */
-  width: auto;
-  filter: brightness(0) invert(1);
+/* 소개글 */
+.lp-split__about {
+  text-align: center;
 }
 
-.landing-page__cta-title {
-  font-family: 'IsYun', var(--font-sans);
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-regular);
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+.lp-split__about-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #2C2416;
+  margin: 0 0 2rem;
 }
 
-.landing-page__cta-subtitle {
-  font-family: 'Pretendard', var(--font-sans);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-regular);
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-}
-
-.landing-page__cta-button {
-  width: 200px;
-  height: 52px;
-  background-color: var(--color-primary-300);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-lg);
-  font-family: 'Pretendard', var(--font-sans);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  transition: var(--transition-base);
-  margin-top: var(--spacing-4);
-}
-
-.landing-page__cta-button:hover {
-  background-color: var(--color-primary-400);
-  box-shadow: var(--shadow-brand);
-  transform: translateY(-2px);
-}
-
-/* 스킵 버튼 - 원 안에 위치 */
-.landing-page__skip-button {
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-2);
-  margin-top: calc(var(--spacing-8) + 20px); /* 5px에서 20px로 더 아래로 */
-  transition: var(--transition-base);
-}
-
-.landing-page__skip-button:hover {
-  transform: translateY(-2px);
-  opacity: 0.8;
-}
-
-.landing-page__skip-circle {
-  width: 60px;
-  height: 60px;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
+.lp-split__meaning {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition-base);
+  gap: 2.5rem;
+  margin-bottom: 2rem;
 }
 
-.landing-page__skip-button:hover .landing-page__skip-circle {
-  border-color: rgba(255, 255, 255, 0.9);
+.lp-split__word {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
 }
 
-.landing-page__skip-icon {
-  font-size: 24px;
-  color: rgba(255, 255, 255, 0.8);
+.lp-split__word-kr {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #5B8C7A;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-color: #5B8C7A;
 }
 
-.landing-page__skip-button:hover .landing-page__skip-icon {
-  color: #ffffff;
+.lp-split__word-desc {
+  font-size: 0.9rem;
+  color: #6B5E4E;
 }
 
-.landing-page__skip-text {
-  font-family: 'IsYun', var(--font-sans); /* 이서윤체 */
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-regular);
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  margin-top: var(--spacing-1);
+.lp-split__plus {
+  font-size: 1.4rem;
+  color: #A89880;
+  flex-shrink: 0;
 }
 
-/* 반응형 - 태블릿 */
+.lp-split__summary {
+  font-size: 1rem;
+  line-height: 1.9;
+  color: #4A4035;
+  margin: 0;
+}
+
+/* 주요 기능 */
+.lp-split__features {
+  width: 100%;
+  text-align: center;
+}
+
+.lp-split__features-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #5B8C7A;
+  margin: 0 0 2rem;
+}
+
+.lp-split__features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.lp-split__feature {
+  background: #f7f9f8;
+  border: 1px solid #d4e5dc;
+  border-radius: 12px;
+  padding: 2rem 1.2rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.lp-split__feature:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(120, 160, 133, 0.15);
+}
+
+.lp-split__feature-num {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #A8D5BA;
+  margin-bottom: 0.6rem;
+}
+
+.lp-split__feature h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2C2416;
+  margin: 0 0 0.6rem;
+}
+
+.lp-split__feature p {
+  font-size: 0.85rem;
+  color: #6B5E4E;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* 약속이 */
+.lp-split__mascot {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  max-width: 600px;
+}
+
+.lp-split__mascot-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.lp-split__mascot-text {
+  text-align: left;
+}
+
+.lp-split__mascot-text h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #5B8C7A;
+  margin: 0 0 0.8rem;
+}
+
+.lp-split__mascot-text p {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #4A4035;
+  margin: 0;
+}
+
+/* ── Scroll Animate ── */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.scroll-animate.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Floating Toggle + Menu ── */
+.lp-float {
+  position: fixed;
+  right: 24px;
+  bottom: 32px;
+  z-index: 800;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.lp-float__toggle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.3s;
+}
+
+.lp-float__toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #2C2416;
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.lp-float__toggle--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.lp-float__toggle--open span:nth-child(2) {
+  opacity: 0;
+}
+
+.lp-float__toggle--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.lp-float__menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: menuFadeIn 0.25s ease;
+}
+
+@keyframes menuFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.lp-float__item {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  color: #2C2416;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+}
+
+.lp-float__item:hover {
+  background: #EAF2EF;
+  transform: translateX(-4px);
+}
+
+.lp-float__item--active {
+  color: #78A085;
+  font-weight: 600;
+}
+
+.lp-float__item--login {
+  background: #2C2416;
+  color: #fff;
+}
+
+.lp-float__item--login:hover {
+  background: #3D3228;
+}
+
+/* ── Keyframes ── */
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ── Responsive: Tablet ── */
 @media (max-width: 1024px) {
-  .landing-page__slide,
-  .landing-page__cta {
-    width: 500px;
-    height: 500px;
-  }
-  
-  .landing-page__title {
-    font-size: var(--font-size-3xl);
-  }
-  
-  .landing-page__cta-title {
-    font-size: var(--font-size-3xl);
-  }
-  
-  .landing-page__skip-button {
-    margin-top: var(--spacing-6);
-  }
-  
-  .landing-page__skip-circle {
-    width: 55px;
-    height: 55px;
+  .lp-split__features-grid {
+    gap: 1rem;
   }
 }
 
-/* 반응형 - 모바일 */
+/* ── Responsive: Mobile ── */
 @media (max-width: 768px) {
-  .landing-page__slide,
-  .landing-page__cta {
-    width: 400px;
-    height: 400px;
+  .lp-split__content {
+    padding: 60px 1.5rem 80px;
+    gap: 60px;
   }
-  
-  .landing-page__slide-content,
-  .landing-page__cta-content {
-    padding: var(--spacing-6);
+
+  .lp-split__image {
+    max-height: 280px;
   }
-  
-  .landing-page__title {
-    font-size: var(--font-size-2xl);
-    margin-bottom: var(--spacing-4);
+
+  .lp-split__meaning {
+    gap: 1.5rem;
   }
-  
-  .landing-page__description {
-    font-size: var(--font-size-sm);
+
+  .lp-split__features-grid {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+    margin: 0 auto;
   }
-  
-  .landing-page__subtitle {
-    font-size: var(--font-size-xs);
+
+  .lp-split__mascot {
+    flex-direction: column;
+    text-align: center;
   }
-  
-  .landing-page__cta-logo {
-    height: 140px; /* 모바일에서도 대폭 증가 */
+
+  .lp-split__mascot-text {
+    text-align: center;
   }
-  
-  .landing-page__cta-title {
-    font-size: var(--font-size-2xl);
+
+  .lp-split__mascot-img {
+    width: 100px;
+    height: 100px;
   }
-  
-  .landing-page__cta-subtitle {
-    font-size: var(--font-size-md);
+
+  .lp-float {
+    right: 16px;
+    bottom: 24px;
   }
-  
-  .landing-page__cta-button {
-    width: 180px;
-    height: 48px;
-    font-size: var(--font-size-md);
+
+  .lp-float__toggle {
+    width: 46px;
+    height: 46px;
   }
-  
-  .landing-page__dots {
-    bottom: 60px;
-  }
-  
-  .landing-page__skip-button {
-    margin-top: var(--spacing-6);
-  }
-  
-  .landing-page__skip-circle {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .landing-page__skip-icon {
-    font-size: 20px;
-  }
-  
-  .landing-page__skip-text {
-    font-size: var(--font-size-xs);
+
+  .lp-float__item {
+    padding: 8px 16px;
+    font-size: 0.8rem;
   }
 }

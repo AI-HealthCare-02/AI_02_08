@@ -5,8 +5,9 @@ import { useToast } from '../../contexts/ToastContext';
 import { changePassword, deleteAccount, updateUserInfo } from '../../api/authApi';
 import './MyPage.css';
 import { getMedicationHistory, MedicationHistory } from '../../api/medicationApi';
+import { createChatSession, sendMessageAndGetAIResponse } from '../../api/chatApi';
 
-type TabType = 'profile' | 'history' | 'account';
+type TabType = 'profile' | 'history' | 'lifestyle' | 'account';
 
 const MyPage: React.FC = () => {
   const { user, logout, setUser, setIsLoggedIn } = useAuth();
@@ -47,6 +48,11 @@ const MyPage: React.FC = () => {
 
   const [medicationsByDate, setMedicationsByDate] = useState<Record<string, MedicationHistory[]>>({});
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // 생활습관 가이드 state 추가
+  const [activeGuide, setActiveGuide] = useState<string | null>(null);  // 현재 열린 가이드
+  const [lifestyleGuideContent, setLifestyleGuideContent] = useState<string>('');
+  const [isLoadingGuide, setIsLoadingGuide] = useState(false);
 
   // URL 쿼리 파라미터로 탭 전환
   useEffect(() => {
@@ -232,6 +238,34 @@ const MyPage: React.FC = () => {
     }
     setShowDeleteModal(false);
   };
+  const handleLifestyleGuideClick = async (category: string) => {
+  // 같은 가이드 클릭 시 토글 (접기)
+    if (activeGuide === category) {
+      setActiveGuide(null);
+      setLifestyleGuideContent('');
+      return;
+    }
+
+    // 다른 가이드 클릭 시
+    setActiveGuide(category);
+    setIsLoadingGuide(true);
+    setLifestyleGuideContent('');
+
+    try {
+      const session = await createChatSession();
+      const response = await sendMessageAndGetAIResponse(
+        session.session_id,
+        category,
+        true
+      );
+      setLifestyleGuideContent(response.content || '가이드를 불러올 수 없습니다.');
+    } catch (error) {
+      console.error('생활습관 가이드 조회 실패:', error);
+      setLifestyleGuideContent('가이드를 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoadingGuide(false);
+    }
+  };
 
   const handleLogout = () => {
     if (confirm('정말 로그아웃하시겠습니까?')) {
@@ -335,6 +369,59 @@ const MyPage: React.FC = () => {
           </div>
         );
 
+        case 'lifestyle':
+          return (
+            <div className="mypage__tab-content">
+              <div className="mypage__lifestyle-guide">
+                <p className="mypage__lifestyle-intro">
+                  건강한 생활습관으로 복약 효과를 높여보세요! 💪
+                </p>
+                <div className="mypage__lifestyle-chips">
+                  <button
+                    className={`mypage__lifestyle-chip ${activeGuide === '운동 가이드' ? 'mypage__lifestyle-chip--active' : ''}`}
+                    onClick={() => handleLifestyleGuideClick('운동 가이드')}
+                  >
+                    🏃‍♂️ 운동 가이드
+                  </button>
+                  <button
+                    className={`mypage__lifestyle-chip ${activeGuide === '식단 가이드' ? 'mypage__lifestyle-chip--active' : ''}`}
+                    onClick={() => handleLifestyleGuideClick('식단 가이드')}
+                  >
+                    🥗 식단 가이드
+                  </button>
+                  <button
+                    className={`mypage__lifestyle-chip ${activeGuide === '수면 가이드' ? 'mypage__lifestyle-chip--active' : ''}`}
+                    onClick={() => handleLifestyleGuideClick('수면 가이드')}
+                  >
+                    😴 수면 가이드
+                  </button>
+                  <button
+                    className={`mypage__lifestyle-chip ${activeGuide === '스트레스 관리' ? 'mypage__lifestyle-chip--active' : ''}`}
+                    onClick={() => handleLifestyleGuideClick('스트레스 관리')}
+                  >
+                    🧘‍♀️ 스트레스 관리
+                  </button>
+                </div>
+
+                {lifestyleGuideContent && (
+                  <div className="mypage__lifestyle-content">
+                    <h3>{activeGuide}</h3>  {/* ✅ lifestyleGuideTitle → activeGuide */}
+                    <div className="mypage__lifestyle-text">
+                      {lifestyleGuideContent}
+                    </div>
+                  </div>
+                )}
+
+                {isLoadingGuide && (
+                  <div className="mypage__lifestyle-loading">
+                    가이드를 불러오는 중...
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+
+
       case 'account':
         return (
           <div className="mypage__tab-content">
@@ -390,6 +477,7 @@ const MyPage: React.FC = () => {
         <nav className="mypage__nav">
           <button className={`mypage__nav-item ${activeTab === 'profile' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('profile')}>프로필</button>
           <button className={`mypage__nav-item ${activeTab === 'history' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('history')}>복약 히스토리</button>
+          <button className={`mypage__nav-item ${activeTab === 'lifestyle' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('lifestyle')}>생활습관 가이드</button>
           <button className={`mypage__nav-item ${activeTab === 'account' ? 'mypage__nav-item--active' : ''}`} onClick={() => setActiveTab('account')}>보안 / 계정</button>
         </nav>
 
@@ -403,6 +491,7 @@ const MyPage: React.FC = () => {
           <h2 className="mypage__page-title">
             {activeTab === 'profile' && '프로필'}
             {activeTab === 'history' && '복약 히스토리'}
+            {activeTab === 'lifestyle' && '생활습관 가이드'}
             {activeTab === 'account' && '보안 / 계정'}
           </h2>
           {activeTab === 'profile' && (

@@ -223,6 +223,7 @@ const HomePage: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showFaq, setShowFaq] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // 채팅 메시지 변경 시 자동 스크롤
   useEffect(() => {
@@ -474,15 +475,16 @@ const HomePage: React.FC = () => {
   };
 
   const handleAddToMedication = async () => {
-    if (!ocrResults?.length) return;
+    if (!ocrResults?.length || !ocrId) return;
+
     try {
-      if (ocrId) {
-        await confirmPrescription(ocrId, ocrResults);
-      }
+      const result = await confirmPrescription(ocrId, ocrResults);
+      console.log(`${result.registeredCount}개 약물 등록 완료`);
       const existing = loadMedications();
       const newMeds = ocrResults.map(ocrToMedication);
       saveMedications([...existing, ...newMeds]);
       setAddedToMedication(true);
+      setShowConfirmModal(true);
     } catch (error) {
       console.error('복약관리 추가 실패:', error);
       alert('복약관리 추가 중 오류가 발생했습니다.');
@@ -999,6 +1001,28 @@ const HomePage: React.FC = () => {
                 </label>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 복약 등록 완료 모달 */}
+      {showConfirmModal && (
+        <div className="home-page__modal-overlay">
+          <div className="home-page__modal" style={{ padding: '3.5rem 2rem 1.5rem' }}>
+            <h3 className="home-page__modal-title" style={{ textAlign: 'center' }}>✅ 복약 등록 완료</h3>
+            <p className="home-page__modal-subtitle" style={{ textAlign: 'center' }}>
+              복약 일정이 등록되었습니다.<br />
+              마이페이지에서 복약 히스토리를 확인하세요.
+            </p>
+            <div className="home-page__modal-buttons" style={{ justifyContent: 'center' }}>
+              <button
+                onClick={() => { setShowConfirmModal(false); navigate('/mypage?tab=history'); }}
+                className="home-page__modal-btn"
+                style={{ backgroundColor: '#8B7355', color: 'white', flex: 'none', width: '80%' }}
+              >
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}

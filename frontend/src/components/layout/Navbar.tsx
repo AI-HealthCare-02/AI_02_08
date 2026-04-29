@@ -54,7 +54,7 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav className="navbar">
       <div className="navbar__container">
         {/* 로고 - 항상 표시 */}
-        <Link to="/" className="navbar__logo">
+        <Link to={isLoggedIn ? '/about' : '/'} className="navbar__logo">
           <img 
             src="/logo.png" 
             alt="이루도담" 
