@@ -1364,7 +1364,7 @@
     border-radius: 12px;
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .home-page__chatbot-section:hover {
@@ -1382,12 +1382,29 @@
   }
 
   .home-page__chat-input-area {
-    padding: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .home-page__chat-input-wrapper {
+    gap: 0.4rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .home-page__chat-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.85rem;
+    max-width: calc(100% - 60px);
   }
 
   .home-page__send-btn {
-    padding: 0.8rem 1rem;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.8rem;
     flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .home-page__faq-popup {
