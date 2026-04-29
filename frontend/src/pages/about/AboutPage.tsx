@@ -10,6 +10,8 @@ const AboutPage: React.FC = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('about--animate-in');
+          } else {
+            entry.target.classList.remove('about--animate-in');
           }
         });
       },
@@ -26,7 +28,7 @@ const AboutPage: React.FC = () => {
   return (
     <div className="about">
       {/* 상단 이미지 */}
-      <div className="about__img-section about--scroll-animate">
+      <div className="about__img-section">
         <img src={bgLandingImage} alt="" className="about__img about__img--top" />
       </div>
 
@@ -56,7 +58,7 @@ const AboutPage: React.FC = () => {
       </div>
 
       {/* 주요 기능 */}
-      <div className="about__features about--scroll-animate">
+      <div className="about__features">
         <h2 className="about__section-title">주요 기능</h2>
         <div className="about__feature-grid">
           <div className="about__feature about--scroll-animate">

@@ -205,9 +205,9 @@
 /* 스크롤 애니메이션 */
 .about--scroll-animate {
   opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  will-change: opacity, transform;
 }
 
 .about--scroll-animate.about--animate-in {
