@@ -307,24 +307,32 @@ class ChatService:
 
     async def _build_faq_answer(self, template: str, medications: list[dict], question: str, user_id: int) -> str:
         """FAQ 템플릿 + 약물 데이터로 답변 생성"""
+
+        # 생활습관 가이드는 템플릿 그대로 반환
+        lifestyle_questions = ["운동 가이드", "식단 가이드", "수면 가이드", "스트레스 관리"]
+        if question in lifestyle_questions:
+            return template
+
+        # 기존 약물 FAQ 로직
         if not medications:
             return f"{template}\n\n현재 인식된 약물 정보가 없습니다. 처방전을 먼저 업로드해주세요."
 
         answer_parts = [template, ""]
 
-        print("🔍 FAQ 답변 생성 중:")  # 추가
-        print(f"   - 질문: {question}")  # 추가
+        print("🔍 FAQ 답변 생성 중:")
+        print(f"   - 질문: {question}")
 
         for med in medications:
             med_name = med.get("name", "")
             if not med_name:
                 continue
 
-            print(f"   - 약물명: {med_name}")  # 추가
+            print(f"   - 약물명: {med_name}")
 
             # DB에서 약물 정보 조회
             drug = await self._get_drug_from_db(med_name)
-            print(f"     → DB 매칭: {'성공' if drug else '실패'}")  # 추가
+            print(f"     → DB 매칭: {'성공' if drug else '실패'}")
+
             # 접기/펼치기 형식
             answer_parts.append(f"▼ {med_name}")
 
