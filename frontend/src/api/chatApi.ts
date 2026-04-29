@@ -90,10 +90,14 @@ export const sendMessageAndGetAIResponse = async (
   userMessage: string,
   isFaq: boolean = false
 ): Promise<ChatMessage> => {
+  const idempotencyKey = crypto.randomUUID();
   const response = await apiClient.post(
     `/chat/sessions/${sessionId}/messages`,
     { content: userMessage, is_faq: isFaq },
-    { timeout: 60000 }
+    {
+      timeout: 60000,
+      headers: { 'X-Idempotency-Key': idempotencyKey },
+    }
   );
   return response.data;
 };
