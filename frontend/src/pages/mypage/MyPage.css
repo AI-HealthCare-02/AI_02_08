@@ -1064,7 +1064,7 @@
 
 .mypage__lifestyle-intro {
   font-size: 1rem;
-  color: #666;
+  color: #6B5E4E;
   margin-bottom: 1.5rem;
   text-align: center;
 }
@@ -1078,8 +1078,8 @@
 
 .mypage__lifestyle-chip {
   padding: 1rem 1.5rem;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
+  background: #F5F0E8;
+  border: 2px solid #C4B49A;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 500;
@@ -1092,15 +1092,15 @@
 }
 
 .mypage__lifestyle-chip:hover {
-  background: #fff;
-  border-color: #007bff;
+  background: #EDE5D8;
+  border-color: #5B8C7A;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(91, 140, 122, 0.15);
 }
 
 .mypage__lifestyle-content {
-  background: #fff;
-  border: 1px solid #e9ecef;
+  background: #F5F0E8;
+  border: 1px solid #C4B49A;
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 1.5rem;
@@ -1109,28 +1109,28 @@
 .mypage__lifestyle-content h3 {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #333;
+  color: #5B8C7A;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #5B8C7A;
 }
 
 .mypage__lifestyle-text {
   font-size: 0.95rem;
   line-height: 1.7;
-  color: #555;
+  color: #4A4035;
   white-space: pre-wrap;
 }
 
 .mypage__lifestyle-loading {
   text-align: center;
   padding: 2rem;
-  color: #999;
+  color: #A89880;
   font-size: 0.95rem;
 }
 
 .mypage__lifestyle-chip--active {
-  background: #007bff;
+  background: #5B8C7A;
   color: #fff;
-  border-color: #007bff;
+  border-color: #5B8C7A;
 }
