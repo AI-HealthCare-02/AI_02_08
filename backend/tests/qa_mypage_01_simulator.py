@@ -1,28 +1,29 @@
 import asyncio
-import os
-import sys
+
 import httpx
 from tortoise import Tortoise
+
+from app.db.databases import TORTOISE_ORM
 from app.models.users import User
 from app.services.jwt import JwtService
-from app.db.databases import TORTOISE_ORM
 
 BASE_URL = "http://localhost:8001"
+
 
 async def test_mypage_01_backend():
     print("🚀 [MYPAGE-01] 마이페이지 기능 (Backend) QA 테스트 시작")
     await Tortoise.init(config=TORTOISE_ORM)
-    
+
     # 1. 테스트용 사용자 준비
     user = await User.filter(email="new_qa_test@example.com").first()
     if not user:
         print("❌ 테스트용 사용자가 없습니다.")
         await Tortoise.close_connections()
         return
-        
+
     token_obj = JwtService().create_access_token(user)
     headers = {"Authorization": f"Bearer {token_obj}"}
-    
+
     async with httpx.AsyncClient(headers=headers, timeout=10.0) as client:
         # 1. 내 정보 조회 (MYPAGE-01-1)
         print("\n[MYPAGE-01-1] 내 정보 조회 테스트")
@@ -48,7 +49,7 @@ async def test_mypage_01_backend():
         pwd_payload = {
             "current_password": "Password123!",
             "new_password": "NewPassword123!",
-            "new_password_confirm": "NewPassword123!"
+            "new_password_confirm": "NewPassword123!",
         }
         resp = await client.patch(f"{BASE_URL}/api/v1/auth/password/change", json=pwd_payload)
         if resp.status_code == 200:
@@ -62,7 +63,7 @@ async def test_mypage_01_backend():
             print(f"❌ 결과: 비밀번호 변경 실패 ({resp.status_code}, {resp.text})")
 
         # 3. 로그아웃 (MYPAGE-01-3)
-        # 로그아웃은 리프레시 토큰이 필요함. 
+        # 로그아웃은 리프레시 토큰이 필요함.
         # 하지만 MyPage.tsx 에서는 단순히 클라이언트 토큰 삭제 + /login 이동만 하거나 백엔드 로그아웃 API 호출함.
         # 여기서는 API 호출 성공 여부 확인
         print("\n[MYPAGE-01-3] 로그아웃 API 테스트")
@@ -86,6 +87,7 @@ async def test_mypage_01_backend():
 
     await Tortoise.close_connections()
     print("\n✨ 모든 [MYPAGE-01] Backend QA 테스트 완료")
+
 
 if __name__ == "__main__":
     asyncio.run(test_mypage_01_backend())

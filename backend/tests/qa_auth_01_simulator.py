@@ -1,22 +1,25 @@
 import asyncio
-import httpx
 import os
 import sys
+
+import httpx
 
 # sys.path 설정
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from tortoise import Tortoise
-from app.models.users import User
-from app.models.email_verification import EmailVerification
+
 from app.db.databases import TORTOISE_ORM
+from app.models.email_verification import EmailVerification
+from app.models.users import User
 
 BASE_URL = "http://localhost:8001"
+
 
 async def test_auth_01():
     print("🚀 [AUTH-01] 회원가입 흐름 QA 테스트 시작")
     await Tortoise.init(config=TORTOISE_ORM)
-    
+
     async with httpx.AsyncClient(timeout=10.0) as client:
         # 1. 중복 이메일 체크 (AUTH-01-2)
         print("\n[AUTH-01-2] 이미 가입된 이메일 중복 확인")
@@ -29,7 +32,7 @@ async def test_auth_01():
         # 2. 회원가입 시도 (AUTH-01-3, 6, 7, 9 포함)
         test_email = "new_qa_test@example.com"
         print(f"\n--- 신규 사용자 가입 테스트 ({test_email}) ---")
-        
+
         # 기존 데이터 삭제 (재테스트용)
         await User.filter(email=test_email).delete()
         await EmailVerification.filter(email=test_email).delete()
@@ -44,7 +47,7 @@ async def test_auth_01():
             "birth_date": "1990-01-01",
             "phone_number": "01012345678",
             "agree_terms": True,
-            "agree_privacy": True
+            "agree_privacy": True,
         }
         resp = await client.post(f"{BASE_URL}/api/v1/auth/signup", json=signup_data)
         if resp.status_code == 422:
@@ -66,9 +69,9 @@ async def test_auth_01():
         print("\n[AUTH-01-4] 잘못된 인증 코드 입력 (999999)")
         resp = await client.get(f"{BASE_URL}/api/v1/auth/verify-email?email={test_email}&code=999999")
         if resp.status_code == 400:
-             print("✅ 결과: 잘못된 인증코드 에러(400) 정상 발생")
+            print("✅ 결과: 잘못된 인증코드 에러(400) 정상 발생")
         else:
-             print(f"❌ 결과: 실패 (응답: {resp.status_code})")
+            print(f"❌ 결과: 실패 (응답: {resp.status_code})")
 
         # [AUTH-01-5] 올바른 인증 코드
         verification = await EmailVerification.get(email=test_email)
@@ -85,6 +88,7 @@ async def test_auth_01():
 
     await Tortoise.close_connections()
     print("\n✨ 모든 [AUTH-01] QA 테스트 완료")
+
 
 if __name__ == "__main__":
     asyncio.run(test_auth_01())

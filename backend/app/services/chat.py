@@ -1,11 +1,11 @@
 from fastapi import BackgroundTasks, HTTPException
 from starlette import status
-from tortoise.transactions import in_transaction
 from tortoise.exceptions import IntegrityError
+from tortoise.transactions import in_transaction
 
+from app.models.chat_idempotency import ChatIdempotency
 from app.models.chat_message import ChatMessage, SenderType
 from app.models.chat_session import ChatSession
-from app.models.chat_idempotency import ChatIdempotency
 from app.models.faq_item import FaqItem
 from app.repositories.chat_message_repository import ChatMessageRepository
 from app.repositories.chat_session_repository import ChatSessionRepository
@@ -116,7 +116,7 @@ class ChatService:
             for m in reversed(recent_msgs):
                 if m.sender == SenderType.ASSISTANT:
                     return m
-            raise HTTPException(status_code=409, detail="이미 처리 중인 요청이거나 중복된 요청입니다.")
+            raise HTTPException(status_code=409, detail="이미 처리 중인 요청이거나 중복된 요청입니다.") from None
 
         # 2. 사용자 메시지 저장
         await self.save_message(

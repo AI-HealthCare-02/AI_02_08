@@ -1,5 +1,7 @@
 from datetime import date, datetime
 
+from fastapi import HTTPException, status
+
 from app.models.medications import MedicationLog
 
 
@@ -20,7 +22,7 @@ class MedicationRepository:
 
         medications = await MedicationLog.filter(
             user_id=user_id, created_at__gte=start_datetime, created_at__lte=end_datetime
-        ).values("name", "dosage", "frequency", "timing")
+        ).values("id", "name", "dosage", "frequency", "timing")
         print(f"   - 조회 결과: {len(medications)}건")
         # 약물명 기준 중복 제거
         seen = set()
@@ -29,9 +31,9 @@ class MedicationRepository:
             key = med["name"]
             if key not in seen:
                 seen.add(key)
-                # None 값을 빈 문자열로 변환
                 unique_meds.append(
                     {
+                        "id": med["id"],
                         "name": med["name"] or "",
                         "dosage": med["dosage"] or "",
                         "frequency": med["frequency"] or "",
@@ -40,3 +42,25 @@ class MedicationRepository:
                 )
         print(f"   - 중복 제거 후: {len(unique_meds)}건\n")
         return unique_meds
+
+    async def get_by_id(self, medication_id: int) -> MedicationLog | None:
+        """개별 복약 기록 조회"""
+        return await MedicationLog.get_or_none(id=medication_id)
+
+    async def delete(self, medication_id: int, user_id: int) -> None:
+        """
+        복약 기록 삭제 (Hard Delete)
+        - 본인 소유의 기록만 삭제 가능
+        """
+        medication = await MedicationLog.get_or_none(id=medication_id)
+        if not medication:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="해당 복약 기록을 찾을 수 없습니다.",
+            )
+        if medication.user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="삭제 권한이 없습니다.",
+            )
+        await medication.delete()

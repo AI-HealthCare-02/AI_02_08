@@ -1,29 +1,31 @@
 import asyncio
 import os
-import sys
+
 import httpx
 from tortoise import Tortoise
+
+from app.db.databases import TORTOISE_ORM
 from app.models.users import User
 from app.services.jwt import JwtService
-from app.db.databases import TORTOISE_ORM
 
 BASE_URL = "http://localhost:8001"
 TEST_IMAGE_PATH = "/Users/admin/PycharmProjects/8_project/backend/ocr_test_image/rx_01_design_A.png"
 
+
 async def test_ocr_01_backend():
     print("🚀 [OCR-01] 처방전 이미지 업로드 (Backend) QA 테스트 시작")
     await Tortoise.init(config=TORTOISE_ORM)
-    
+
     # 1. 토큰 생성
     user = await User.filter(email="new_qa_test@example.com").first()
     if not user:
         print("❌ 테스트용 사용자가 없습니다. 먼저 회원가입 QA를 완료해주세요.")
         await Tortoise.close_connections()
         return
-        
+
     token_obj = JwtService().create_access_token(user)
     headers = {"Authorization": f"Bearer {token_obj}"}
-    
+
     async with httpx.AsyncClient(headers=headers, timeout=60.0) as client:
         # 2. PNG 파일 업로드 (AUTH-01-1)
         print(f"\n[OCR-01-1] PNG 파일 업로드 테스트 ({os.path.basename(TEST_IMAGE_PATH)})")
@@ -33,7 +35,7 @@ async def test_ocr_01_backend():
             with open(TEST_IMAGE_PATH, "rb") as f:
                 files = {"image": (os.path.basename(TEST_IMAGE_PATH), f, "image/png")}
                 resp = await client.post(f"{BASE_URL}/api/v1/ai/ocr/prescription", files=files)
-                
+
                 if resp.status_code == 200:
                     data = resp.json()
                     print(f"✅ 결과: 업로드 성공 (Status: {data.get('status')})")
@@ -69,6 +71,7 @@ async def test_ocr_01_backend():
 
     await Tortoise.close_connections()
     print("\n✨ 모든 [OCR-01] Backend QA 테스트 완료")
+
 
 if __name__ == "__main__":
     asyncio.run(test_ocr_01_backend())
