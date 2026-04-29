@@ -1056,3 +1056,81 @@
     transform: none;
   }
 }
+
+/* 생활습관 가이드 스타일 */
+.mypage__lifestyle-guide {
+  padding: 1.5rem;
+}
+
+.mypage__lifestyle-intro {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.mypage__lifestyle-chips {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.mypage__lifestyle-chip {
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.mypage__lifestyle-chip:hover {
+  background: #fff;
+  border-color: #007bff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+}
+
+.mypage__lifestyle-content {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.mypage__lifestyle-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #007bff;
+}
+
+.mypage__lifestyle-text {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #555;
+  white-space: pre-wrap;
+}
+
+.mypage__lifestyle-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  font-size: 0.95rem;
+}
+
+.mypage__lifestyle-chip--active {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
