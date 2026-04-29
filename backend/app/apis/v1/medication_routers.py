@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, status
 
 from app.dependencies.security import get_request_user
-from app.dtos.medications import MedicationHistoryResponse
+from app.dtos.medications import MedicationHistoryItem
 from app.models.users import User
 from app.services.medication_service import MedicationService
 
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/medications", tags=["Medications"])
 # ──────────────────────────────────────────────
 @router.get(
     "/history",
-    response_model=MedicationHistoryResponse,
+    response_model=list[MedicationHistoryItem],
     status_code=status.HTTP_200_OK,
     summary="특정 날짜의 복약 히스토리 조회",
     description="사용자가 선택한 특정 날짜에 등록된 모든 복약 기록(약품명, 용량, 횟수 등)을 리스트 형태로 조회합니다.",
@@ -34,4 +34,4 @@ async def get_medication_history(
     """
     service = MedicationService()
     history_data = await service.get_medication_history_by_date(current_user.id, date)
-    return MedicationHistoryResponse(history=history_data)
+    return history_data

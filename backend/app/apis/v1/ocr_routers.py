@@ -141,6 +141,12 @@ async def confirm_prescription(
     body: OcrConfirmRequest,
     user: Annotated[User, Depends(get_request_user)] = None,
 ):
+    print(f"\n{'=' * 50}")
+    print("📋 OCR 확정 시작")
+    print(f"   - ocr_id: {ocr_id}")
+    print(f"   - user_id: {user.id}")
+    print(f"   - 약물 개수: {len(body.medications)}")
+
     ocr_record = await OcrPrescription.get_or_none(ocr_id=ocr_id)
     if not ocr_record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="해당 OCR 기록을 찾을 수 없습니다.")
@@ -150,14 +156,19 @@ async def confirm_prescription(
 
     created_ids: list[int] = []
     for med in body.medications:
+        print(f"   - 약물 등록: {med.name}")
         medication = await MedicationLog.create(
             user_id=user.id,
-            ocr_prescription_id=ocr_id,
+            ocr_prescription=ocr_record,
             name=med.name,
             dosage=med.dosage,
             frequency=med.frequency,
             timing=med.timing,
         )
+        print(f"✅ OCR 확정 완료: {len(created_ids)}개 등록")
+        print(f"   - medication_ids: {created_ids}")
+        print(f"{'=' * 50}\n")
+
         created_ids.append(medication.id)
 
     return OcrConfirmResponse(
