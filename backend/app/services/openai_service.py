@@ -329,14 +329,15 @@ async def get_drug_info_from_gpt(med_name: str, info_type: str) -> str:
     """
     GPT를 사용하여 약물 정보 조회 (DB에 없을 때 Fallback)
     """
-    system_prompt = """
+    system_prompt = f"""
     당신은 약물 정보 전문가입니다.
     약물명과 정보 유형이 주어지면 간결하게 답변하세요.
 
     [중요 규칙]
-    1. 존재하지 않는 약물이거나 확실하지 않으면 "정보를 찾을 수 없습니다"라고 답변하세요.
-    2. 환각(hallucination)을 절대 하지 마세요.
-    3. 1-2문장으로 간결하게 답변하세요.
+    1. 약물명이 명확하지 않거나 오타로 보이면, 유사한 약물을 추측하지 말고 "정확한 약물명을 확인해주세요"라고 답변하세요.
+    2. 약물명이 명확하다면, 일반적인 {info_type} 정보를 제공하세요.
+    3. 정보가 전혀 없는 경우에만 "정보를 찾을 수 없습니다"라고 답변하세요.
+    4. 2-3문장으로 간결하게 답변하세요.
     """
 
     user_message = f"약물명: {med_name}\n정보 유형: {info_type}\n\n위 약물의 {info_type} 정보를 알려주세요."
@@ -345,7 +346,7 @@ async def get_drug_info_from_gpt(med_name: str, info_type: str) -> str:
         response = await client.chat.completions.create(
             model=settings.openai_chat_model,
             messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}],
-            temperature=0.3,
+            temperature=0.5,  # 0.3에서 0.5로 증가
             max_tokens=200,
         )
         return response.choices[0].message.content.strip()
