@@ -176,23 +176,33 @@ const OcrProgressModal = ({ ocrStatus, onClose }: { ocrStatus: string; onClose: 
   );
 };
 
-const ChatMessageItem = memo(({ msg }: { msg: ChatMessage }) => (
-  <div className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}>
-    {msg.sender === 'user' ? (
-      <div style={{ userSelect: 'text', WebkitUserSelect: 'text' }}>{msg.content}</div>
-    ) : (
-      parseCollapsibleContent(msg.content).map((item, idx) => (
-        <React.Fragment key={idx}>
-          {item.type === 'text' ? (
-            <div style={{ whiteSpace: 'pre-wrap', userSelect: 'text', WebkitUserSelect: 'text' }}>{item.content}</div>
-          ) : (
-            <CollapsibleItem title={item.title!} content={item.content} />
-          )}
-        </React.Fragment>
-      ))
-    )}
-  </div>
-));
+const ChatMessageItem = memo(({ msg }: { msg: ChatMessage }) => {
+  // 디버깅: 메시지 내용 확인
+  if (msg.sender === 'assistant') {
+    console.log('=== ChatMessageItem 렌더링 ===');
+    console.log('content:', msg.content);
+    console.log('content length:', msg.content.length);
+    console.log('includes ▼:', msg.content.includes('▼'));
+  }
+
+  return (
+    <div className={`home-page__chat-message home-page__chat-message--${msg.sender === 'user' ? 'user' : 'bot'}`}>
+      {msg.sender === 'user' ? (
+        <div style={{ userSelect: 'text', WebkitUserSelect: 'text' }}>{msg.content}</div>
+      ) : (
+        parseCollapsibleContent(msg.content).map((item, idx) => (
+          <React.Fragment key={idx}>
+            {item.type === 'text' ? (
+              <div style={{ whiteSpace: 'pre-wrap', userSelect: 'text', WebkitUserSelect: 'text' }}>{item.content}</div>
+            ) : (
+              <CollapsibleItem title={item.title!} content={item.content} />
+            )}
+          </React.Fragment>
+        ))
+      )}
+    </div>
+  );
+});
 
 const HomePage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
