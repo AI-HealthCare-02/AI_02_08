@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useToast } from '../../contexts/ToastContext';
 import { changePassword, deleteAccount, updateUserInfo } from '../../api/authApi';
 import './MyPage.css';
-import { getMedicationHistory, MedicationHistory } from '../../api/medicationApi';
+import { getMedicationHistory, deleteMedication, MedicationHistory } from '../../api/medicationApi';
 import { createChatSession, sendMessageAndGetAIResponse } from '../../api/chatApi';
 
 type TabType = 'profile' | 'history' | 'lifestyle' | 'account';
@@ -18,8 +18,9 @@ const MyPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showProfileEditModal, setShowProfileEditModal] = useState(false);
 
-  // 캠린더 state
+  // 캘린더 state
   const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarView, setCalendarView] = useState<'week' | 'month'>('month');
   const [selectedDate, setSelectedDate] = useState<string>(() => {
   const today = new Date();
   const year = today.getFullYear();
@@ -53,6 +54,7 @@ const MyPage: React.FC = () => {
   const [activeGuide, setActiveGuide] = useState<string | null>(null);  // 현재 열린 가이드
   const [lifestyleGuideContent, setLifestyleGuideContent] = useState<string>('');
   const [isLoadingGuide, setIsLoadingGuide] = useState(false);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(true);
 
   // URL 쿼리 파라미터로 탭 전환
   useEffect(() => {
@@ -63,34 +65,42 @@ const MyPage: React.FC = () => {
     window.scrollTo(0, 0);
   }, [searchParams]);
 
-  // 날짜 선택 시 복약 히스토리 조회
+  // 월 변경 또는 히스토리 탭 진입 시 해당 월 전체 복약 데이터 조회
   useEffect(() => {
-  const fetchHistory = async () => {
-    if (!selectedDate || activeTab !== 'history') return;  // activeTab 체크 추가
+    const fetchMonthHistory = async () => {
+      if (activeTab !== 'history') return;
 
-    // 이미 로드된 데이터가 있으면 스킵
-    if (medicationsByDate[selectedDate] !== undefined) return;
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+      const lastDate = new Date(year, month + 1, 0).getDate();
 
-    setIsLoadingHistory(true);
-    try {
-      const history = await getMedicationHistory(selectedDate);
-      setMedicationsByDate(prev => ({
-        ...prev,
-        [selectedDate]: history
-      }));
-    } catch (error) {
-      console.error('복약 히스토리 조회 실패:', error);
-      setMedicationsByDate(prev => ({
-        ...prev,
-        [selectedDate]: []
-      }));
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  };
+      const datesToFetch: string[] = [];
+      for (let d = 1; d <= lastDate; d++) {
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        if (medicationsByDate[dateKey] === undefined) {
+          datesToFetch.push(dateKey);
+        }
+      }
 
-  fetchHistory();
-}, [selectedDate, activeTab]);  // activeTab 의존성 추가
+      if (datesToFetch.length === 0) return;
+
+      setIsLoadingHistory(true);
+      try {
+        const results = await Promise.all(
+          datesToFetch.map(date => getMedicationHistory(date).then(history => ({ date, history })).catch(() => ({ date, history: [] as MedicationHistory[] })))
+        );
+        setMedicationsByDate(prev => {
+          const updated = { ...prev };
+          results.forEach(({ date, history }) => { updated[date] = history; });
+          return updated;
+        });
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+
+    fetchMonthHistory();
+  }, [activeTab, calendarDate]);
 
 
   const [passwordData, setPasswordData] = useState({
@@ -312,7 +322,28 @@ const MyPage: React.FC = () => {
         );
 
 
-      case 'history':
+      case 'history': {
+        // 주간 뷰: 선택된 날짜 기준 해당 주의 일~토
+        const getWeekDays = () => {
+          const selected = new Date(selectedDate || `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-01`);
+          const dayOfWeek = selected.getDay();
+          const weekStart = new Date(selected);
+          weekStart.setDate(selected.getDate() - dayOfWeek);
+          const days: (number | null)[] = [];
+          for (let i = 0; i < 7; i++) {
+            const d = new Date(weekStart);
+            d.setDate(weekStart.getDate() + i);
+            if (d.getMonth() === calendarMonth && d.getFullYear() === calendarYear) {
+              days.push(d.getDate());
+            } else {
+              days.push(null);
+            }
+          }
+          return days;
+        };
+
+        const displayDays = calendarView === 'week' ? getWeekDays() : calendarDays;
+
         return (
           <div className="mypage__tab-content">
             <div className="mypage__calendar">
@@ -320,6 +351,12 @@ const MyPage: React.FC = () => {
                 <button className="mypage__calendar-nav" onClick={goToPrevMonth}>◀</button>
                 <span className="mypage__calendar-title">{calendarYear}년 {calendarMonth + 1}월</span>
                 <button className="mypage__calendar-nav" onClick={goToNextMonth}>▶</button>
+                <button
+                  className="mypage__calendar-toggle"
+                  onClick={() => setCalendarView(calendarView === 'month' ? 'week' : 'month')}
+                >
+                  {calendarView === 'month' ? '1주일' : '한달 전체'}
+                </button>
               </div>
               <div className="mypage__calendar-weekdays">
                 {'일월화수목금토'.split('').map(d => (
@@ -327,10 +364,10 @@ const MyPage: React.FC = () => {
                 ))}
               </div>
               <div className="mypage__calendar-grid">
-                {calendarDays.map((day, i) => {
+                {displayDays.map((day, i) => {
                   if (day === null) return <span key={`empty-${i}`} className="mypage__calendar-day mypage__calendar-day--empty" />;
                   const dateKey = formatDateKey(day);
-                  const hasMeds = medicationsByDate[dateKey] && medicationsByDate[dateKey].length > 0;  // 수정!
+                  const hasMeds = medicationsByDate[dateKey] && medicationsByDate[dateKey].length > 0;
                   const isSelected = selectedDate === dateKey;
                   return (
                     <button
@@ -346,28 +383,61 @@ const MyPage: React.FC = () => {
               </div>
             </div>
             <div className="mypage__history-detail">
-              <h4 className="mypage__history-detail-title">{selectedDate} 복약 내역</h4>
-              {isLoadingHistory ? (
-                <p className="mypage__history-empty">불러오는 중...</p>
-              ) : medicationsByDate[selectedDate] && medicationsByDate[selectedDate].length > 0 ? (
-                <div className="mypage__history-list">
-                  {medicationsByDate[selectedDate].map((med, idx) => (
-                    <div key={idx} className="mypage__history-item">
-                      <div className="mypage__history-info">
-                        <h4>{med.name}</h4>
-                        <span className="mypage__history-date">
-                          {med.dosage || '-'} · {med.frequency || '-'} · {med.timing || '-'}
-                        </span>
-                      </div>
+              <h4
+                className="mypage__history-detail-title mypage__history-detail-title--toggle"
+                onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+              >
+                <span>{selectedDate} 복약 내역
+                  {medicationsByDate[selectedDate] && medicationsByDate[selectedDate].length > 0 &&
+                    ` (${medicationsByDate[selectedDate].length}건)`
+                  }
+                </span>
+                <span className="mypage__history-toggle-icon">{isHistoryExpanded ? '▲' : '▼'}</span>
+              </h4>
+              {isHistoryExpanded && (
+                <>
+                  {isLoadingHistory ? (
+                    <p className="mypage__history-empty">불러오는 중...</p>
+                  ) : medicationsByDate[selectedDate] && medicationsByDate[selectedDate].length > 0 ? (
+                    <div className="mypage__history-list">
+                      {medicationsByDate[selectedDate].map((med) => (
+                        <div key={med.id} className="mypage__history-item">
+                          <div className="mypage__history-info">
+                            <h4>{med.name}</h4>
+                            <span className="mypage__history-date">
+                              {med.dosage || '-'} · {med.frequency || '-'} · {med.timing || '-'}
+                            </span>
+                          </div>
+                          <button
+                            className="mypage__history-delete-btn"
+                            onClick={async () => {
+                              if (!confirm(`'${med.name}' 복약 기록을 삭제하시겠습니까?`)) return;
+                              try {
+                                await deleteMedication(med.id);
+                                setMedicationsByDate(prev => ({
+                                  ...prev,
+                                  [selectedDate]: prev[selectedDate].filter(m => m.id !== med.id)
+                                }));
+                                showToast({ type: 'success', title: '삭제 완료', message: `${med.name} 기록이 삭제되었습니다.` });
+                              } catch {
+                                showToast({ type: 'error', title: '삭제 실패', message: '복약 기록 삭제에 실패했습니다.' });
+                              }
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mypage__history-empty">해당 날짜에 복약 내역이 없습니다.</p>
+                  ) : (
+                    <p className="mypage__history-empty">해당 날짜에 복약 내역이 없습니다.</p>
+                  )}
+                </>
               )}
             </div>
           </div>
         );
+      }
 
         case 'lifestyle':
           return (

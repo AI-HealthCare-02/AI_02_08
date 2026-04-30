@@ -203,6 +203,7 @@ const HomePage: React.FC = () => {
   const [ocrId, setOcrId] = useState<string | null>(loadOcrId());
   const [addedToMedication, setAddedToMedication] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -477,18 +478,17 @@ const HomePage: React.FC = () => {
   const handleAddToMedication = async () => {
     if (!ocrResults?.length || !ocrId) return;
 
-    try {
-      const result = await confirmPrescription(ocrId, ocrResults);
-      console.log(`${result.registeredCount}개 약물 등록 완료`);
-      const existing = loadMedications();
-      const newMeds = ocrResults.map(ocrToMedication);
-      saveMedications([...existing, ...newMeds]);
-      setAddedToMedication(true);
-      setShowConfirmModal(true);
-    } catch (error) {
+    // UI 즉시 반영
+    setAddedToMedication(true);
+    setShowConfirmModal(true);
+    const existing = loadMedications();
+    const newMeds = ocrResults.map(ocrToMedication);
+    saveMedications([...existing, ...newMeds]);
+
+    // API는 백그라운드로
+    confirmPrescription(ocrId, ocrResults).catch((error) => {
       console.error('복약관리 추가 실패:', error);
-      alert('복약관리 추가 중 오류가 발생했습니다.');
-    }
+    });
   };
 
   const openCameraModal = () => {
@@ -647,7 +647,23 @@ const HomePage: React.FC = () => {
               </p>
             </div>
 
-            <div className="home-page__upload-area">
+            <div
+              className={`home-page__upload-area ${isDragging ? 'home-page__upload-area--dragging' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const file = e.dataTransfer.files?.[0];
+                if (file) {
+                  const input = document.getElementById('prescription-upload') as HTMLInputElement;
+                  const dt = new DataTransfer();
+                  dt.items.add(file);
+                  input.files = dt.files;
+                  input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+              }}
+            >
               <input
                 type="file"
                 id="prescription-upload"
@@ -815,10 +831,7 @@ const HomePage: React.FC = () => {
                 className={`home-page__faq-bubble ${showFaq ? 'home-page__faq-bubble--active' : ''}`}
                 onClick={() => setShowFaq(!showFaq)}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <ellipse cx="12" cy="11" rx="9" ry="8"/>
-                  <path d="M17 17.5C17 17.5 19.5 19.5 21 20c-1-0.5-2.5-1-3.5-3"/>
-                </svg>
+                <img src="/talk.png" alt="자주 묻는 질문" className="home-page__faq-icon" />
                 <span className="home-page__faq-tooltip">자주 묻는 질문</span>
               </button>
               {showFaq && (
@@ -1005,6 +1018,8 @@ const HomePage: React.FC = () => {
         </div>
       )}
 
+
+
       {/* 복약 등록 완료 모달 */}
       {showConfirmModal && (
         <div className="home-page__modal-overlay">
@@ -1016,7 +1031,7 @@ const HomePage: React.FC = () => {
             </p>
             <div className="home-page__modal-buttons" style={{ justifyContent: 'center' }}>
               <button
-                onClick={() => { setShowConfirmModal(false); navigate('/mypage?tab=history'); }}
+                onClick={() => { setShowConfirmModal(false); window.location.href = '/mypage?tab=history'; }}
                 className="home-page__modal-btn"
                 style={{ backgroundColor: '#8B7355', color: 'white', flex: 'none', width: '80%' }}
               >

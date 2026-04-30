@@ -47,7 +47,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   max-width: 100vw;
-  cursor: url('/yakssori_cursor_32.png') 4 0, auto !important;
+  cursor: url('/yakssori_cursor_32.png') 4 15, auto !important;
   color-scheme: light !important;
 }
 
@@ -57,10 +57,20 @@ body {
     background-color: #F5F0E8;
     color: #2C2416;
   }
+
+  input, textarea, select, button {
+    background-color: #F5F0E8;
+    color: #2C2416;
+    border-color: #C4B49A;
+  }
+
+  img, svg {
+    filter: none;
+  }
 }
 
 *, *::before, *::after {
-  cursor: url('/yakssori_cursor_32.png') 4 0, auto !important;
+  cursor: url('/yakssori_cursor_32.png') 4 15, auto !important;
 }
 
 /* 이서윤체 강제 적용 */
