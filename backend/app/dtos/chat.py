@@ -37,6 +37,7 @@ class ChatMessageResponse(BaseModel):
     sender: SenderType
     content: str
     is_faq: bool
+    faq_buttons: list[dict] = []  # 추가!
     created_at: datetime
 
 
