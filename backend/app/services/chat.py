@@ -131,7 +131,7 @@ class ChatService:
             session_id=session_id,
             user_id=user_id,
             user_message=content,
-            is_faq=is_faq,  # 추가!
+            is_faq=is_faq,
             background_tasks=background_tasks,
         )
 
@@ -142,7 +142,7 @@ class ChatService:
         session_id: int,
         user_id: int,
         user_message: str,
-        is_faq: bool,  # 추가!
+        is_faq: bool,
         background_tasks: BackgroundTasks,
     ) -> ChatMessage:
         from app.services.openai_service import (
@@ -174,7 +174,7 @@ class ChatService:
                 medications = await self._get_ocr_medications(session.ocr_id)
                 # 템플릿 + 약물 정보로 답변 생성
                 ai_content = await self._build_faq_answer(
-                    template=faq_item.answer,  # 수정!
+                    template=faq_item.answer,
                     medications=medications,
                     question=user_message,
                     user_id=user_id,
@@ -266,27 +266,36 @@ class ChatService:
             if drug and drug.side_effects and drug.side_effects.strip():
                 return f"  {drug.side_effects}"
             try:
+                print(f"     → GPT 호출 시작: {med_name}")  # 디버깅 추가!
                 gpt_info = await get_drug_info_from_gpt(med_name, "부작용")
+                print(f"     → GPT 응답 성공: {gpt_info[:50]}...")  # 디버깅 추가!
                 return f"  {gpt_info}"
-            except Exception:
+            except Exception as e:
+                print(f"     → GPT 호출 실패: {e}")  # 에러 로그 추가!
                 return "  부작용 정보를 찾을 수 없습니다. 의사 또는 약사와 상담하세요."
 
         elif "주의사항" in question:
             if drug and drug.precautions and drug.precautions.strip():
                 return f"  {drug.precautions}"
             try:
+                print(f"     → GPT 호출 시작: {med_name}")
                 gpt_info = await get_drug_info_from_gpt(med_name, "주의사항")
+                print(f"     → GPT 응답 성공: {gpt_info[:50]}...")
                 return f"  {gpt_info}"
-            except Exception:
+            except Exception as e:
+                print(f"     → GPT 호출 실패: {e}")
                 return "  주의사항 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
 
         elif "상호작용" in question or "같이 먹" in question:
             if drug and drug.interactions and drug.interactions.strip():
                 return f"  {drug.interactions}"
             try:
+                print(f"     → GPT 호출 시작: {med_name}")
                 gpt_info = await get_drug_info_from_gpt(med_name, "다른 약과의 상호작용")
+                print(f"     → GPT 응답 성공: {gpt_info[:50]}...")
                 return f"  {gpt_info}"
-            except Exception:
+            except Exception as e:
+                print(f"     → GPT 호출 실패: {e}")
                 return "  상호작용 정보를 찾을 수 없습니다. 복용 전 의사 또는 약사와 상담하세요."
 
         return "  정보를 찾을 수 없습니다."

@@ -279,7 +279,6 @@ This project is licensed under the MIT License.
 - **e약은요**: 식품의약품안전처 의약품개요정보
 - **Naver Clova OCR**: 이미지 텍스트 인식
 - **OpenAI**: GPT-4o mini API
-- **멘토**: [Radiata Backend](https://github.com/autumn-radiata/radiata-backend) 참고
 
 ---
 
