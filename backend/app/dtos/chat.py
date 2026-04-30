@@ -37,7 +37,12 @@ class ChatMessageResponse(BaseModel):
     sender: SenderType
     content: str
     is_faq: bool
+    faq_buttons: list[dict] = []  # 추가!
     created_at: datetime
+
+
+class AiResponseRequest(BaseModel):
+    user_message: Annotated[str, Field(..., description="사용자 메시지")]
 
 
 class FaqItemResponse(BaseModel):

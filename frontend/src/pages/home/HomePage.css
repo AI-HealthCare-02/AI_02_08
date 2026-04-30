@@ -131,6 +131,13 @@
   padding: 3rem 2rem;
   text-align: center;
   background: #F5F0E8;
+  transition: all 0.2s;
+}
+
+.home-page__upload-area--dragging {
+  border-color: #5B8C7A;
+  background: #EAF2EF;
+  box-shadow: inset 0 0 20px rgba(91, 140, 122, 0.15);
 }
 
 .home-page__file-input {
@@ -1364,7 +1371,7 @@
     border-radius: 12px;
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .home-page__chatbot-section:hover {
@@ -1382,12 +1389,29 @@
   }
 
   .home-page__chat-input-area {
-    padding: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .home-page__chat-input-wrapper {
+    gap: 0.4rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .home-page__chat-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.85rem;
+    max-width: calc(100% - 60px);
   }
 
   .home-page__send-btn {
-    padding: 0.8rem 1rem;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.8rem;
     flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .home-page__faq-popup {
@@ -1636,6 +1660,14 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   flex-shrink: 0;
   position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+
+.home-page__faq-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .home-page__faq-tooltip {
@@ -1744,5 +1776,18 @@
     z-index: 999;
     max-width: 100%;
     margin: 0 auto;
+  }
+
+  .home-page__chat-input-area {
+    padding: 0.5rem;
+    position: sticky;
+    bottom: 0;
+    background: #EDE5D8;
+  }
+
+  .home-page__send-btn {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
+    min-width: 50px;
   }
 }

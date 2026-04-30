@@ -36,10 +36,7 @@ async def create_session(
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
 ):
-    session = await chat_service.create_session(
-        user_id=user.id,
-        ocr_id=request.ocr_id,
-    )
+    session = await chat_service.create_session(user_id=user.id, ocr_id=request.ocr_id)
     return ChatSessionResponse(
         session_id=session.id,
         user_id=session.user_id,
@@ -70,11 +67,7 @@ async def update_session(
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
 ):
-    session = await chat_service.update_session_ocr_id(
-        session_id=session_id,
-        user_id=user.id,
-        ocr_id=request.ocr_id,
-    )
+    session = await chat_service.update_session_ocr_id(session_id=session_id, user_id=user.id, ocr_id=request.ocr_id)
     return ChatSessionResponse(
         session_id=session.id,
         user_id=session.user_id,
@@ -132,10 +125,7 @@ async def get_session(
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
 ):
-    session = await chat_service.get_session(
-        session_id=session_id,
-        user_id=user.id,
-    )
+    session = await chat_service.get_session(session_id=session_id, user_id=user.id)
     return ChatSessionResponse(
         session_id=session.id,
         user_id=session.user_id,
@@ -164,10 +154,7 @@ async def delete_session(
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
 ):
-    await chat_service.delete_session(
-        session_id=session_id,
-        user_id=user.id,
-    )
+    await chat_service.delete_session(session_id=session_id, user_id=user.id)
     return {"message": "세션이 삭제되었습니다.", "session_id": session_id}
 
 
@@ -190,10 +177,7 @@ async def get_messages(
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
 ):
-    messages = await chat_service.get_messages(
-        session_id=session_id,
-        user_id=user.id,
-    )
+    messages = await chat_service.get_messages(session_id=session_id, user_id=user.id)
     return [
         ChatMessageResponse(
             message_id=m.id,
@@ -226,23 +210,29 @@ async def process_chat_message(
     user: Annotated[User, Depends(get_request_user)],
     chat_service: Annotated[ChatService, Depends(ChatService)],
     background_tasks: BackgroundTasks,
-    x_idempotency_key: Annotated[
-        str | None, Header(description="동일 요청 중복 처리 방지를 위한 멱등성 키", alias="X-Idempotency-Key")
-    ] = None,
+    x_idempotency_key: str = Header(..., alias="X-Idempotency-Key"),  # noqa: B008
 ):
-    message = await chat_service.process_chat_message(
+    message = await chat_service.process_chat(
         session_id=session_id,
         user_id=user.id,
         content=request.content,
+        is_faq=request.is_faq,
         idempotency_key=x_idempotency_key,
         background_tasks=background_tasks,
-        is_faq=request.is_faq,
     )
+
+    # FAQ 버튼 추가 (Assistant 응답일 때만)
+    faq_buttons = []
+    if message.sender == "assistant":
+        faqs = await chat_service.get_faqs()
+        faq_buttons = [{"id": faq.id, "question": faq.question} for faq in faqs]
+
     return ChatMessageResponse(
         message_id=message.id,
         session_id=message.session_id,
         sender=message.sender,
         content=message.content,
         is_faq=message.is_faq,
+        faq_buttons=faq_buttons,  # 추가!
         created_at=message.created_at,
     )

@@ -2,8 +2,7 @@ import json
 from datetime import UTC, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Query, status
-from starlette.responses import Response
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Query, Response, status
 
 from app.core.config import Config, Env
 from app.dependencies.security import get_request_user
@@ -51,15 +50,12 @@ def set_refresh_cookie(response: Response, refresh_token) -> None:
     summary="회원가입",
     description="""
 이메일과 비밀번호로 회원가입합니다.
-
 - 회원가입 완료 후 입력한 이메일로 **6자리 인증 코드**가 발송됩니다.
 - 이메일 인증 완료 후 로그인이 가능합니다.
-- 비밀번호는 **대소문자, 숫자, 특수문자를 각 1개 이상 포함한 8자 이상**이어야 합니다.
     """,
     responses={
         201: {"description": "회원가입 성공 및 인증 이메일 발송 완료"},
         409: {"description": "이미 사용중인 이메일 또는 전화번호"},
-        422: {"description": "입력값 유효성 검증 실패"},
     },
 )
 async def signup(
@@ -74,16 +70,10 @@ async def signup(
     "/verify-email",
     status_code=status.HTTP_200_OK,
     summary="이메일 인증",
-    description="""
-회원가입 시 발송된 인증 코드로 이메일을 인증합니다.
-
-- 인증 코드는 발송 후 **24시간** 동안 유효합니다.
-- 인증 완료 후 로그인이 가능합니다.
-    """,
+    description="회원가입 시 발송된 인증 코드로 이메일을 인증합니다.",
     responses={
         200: {"description": "이메일 인증 완료"},
         400: {"description": "인증 코드 불일치 또는 만료"},
-        404: {"description": "인증 코드를 찾을 수 없음"},
     },
 )
 async def verify_email(
@@ -99,17 +89,7 @@ async def verify_email(
     "/resend-verification",
     status_code=status.HTTP_200_OK,
     summary="인증 이메일 재발송",
-    description="""
-이메일 인증 코드를 재발송합니다.
-
-- 이미 인증된 이메일은 재발송이 불가합니다.
-- 기존 인증 코드는 무효화되고 새 코드가 발송됩니다.
-    """,
-    responses={
-        200: {"description": "인증 이메일 재발송 완료"},
-        400: {"description": "이미 인증된 이메일"},
-        404: {"description": "존재하지 않는 이메일"},
-    },
+    description="이메일 인증 코드를 재발송합니다.",
 )
 async def resend_verification(
     request: ResendVerificationRequest,
@@ -123,15 +103,7 @@ async def resend_verification(
     "/check-email",
     status_code=status.HTTP_200_OK,
     summary="이메일 중복 확인",
-    description="""
-회원가입 전 이메일 중복 여부를 확인합니다.
-
-- 현재 활성화된 계정의 이메일만 중복으로 처리됩니다.
-- 탈퇴한 계정의 이메일은 중복으로 처리되지 않아 재가입이 가능합니다.
-    """,
-    responses={
-        200: {"description": "중복 여부 반환 (is_duplicate: true/false)"},
-    },
+    description="회원가입 전 이메일 중복 여부를 확인합니다.",
 )
 async def check_email(
     email: Annotated[str, Query(description="중복 확인할 이메일")],
@@ -153,17 +125,12 @@ async def check_email(
     status_code=status.HTTP_200_OK,
     summary="로그인",
     description="""
-이메일과 비밀번호로 로그인합니다.
-
-- 로그인 성공 시 **Access Token**이 응답 바디로 반환됩니다.
-- **Refresh Token**은 HttpOnly 쿠키로 자동 저장됩니다.
-- 이메일 인증이 완료된 계정만 로그인이 가능합니다.
+이메일과 비밀번호로 로그인하여 Access Token을 발급받습니다.
+- **Refresh Token**은 보안을 위해 HttpOnly 쿠키로 자동 설정됩니다.
     """,
     responses={
-        200: {"description": "로그인 성공, Access Token 반환 및 Refresh Token 쿠키 설정"},
+        200: {"description": "로그인 성공"},
         400: {"description": "이메일 또는 비밀번호 불일치"},
-        403: {"description": "이메일 인증 미완료"},
-        423: {"description": "비활성화된 계정 (탈퇴 처리된 계정)"},
     },
 )
 async def login(
@@ -186,16 +153,7 @@ async def login(
     response_model=TokenRefreshResponse,
     status_code=status.HTTP_200_OK,
     summary="Access Token 갱신",
-    description="""
-Refresh Token으로 새로운 Access Token을 발급합니다.
-
-- Refresh Token은 쿠키에서 자동으로 읽어옵니다.
-- Refresh Token의 유효기간은 **14일**입니다.
-    """,
-    responses={
-        200: {"description": "새로운 Access Token 반환"},
-        401: {"description": "Refresh Token 누락 또는 만료"},
-    },
+    description="쿠키에 저장된 Refresh Token을 사용하여 새로운 Access Token을 발급합니다.",
 )
 async def token_refresh(
     jwt_service: Annotated[JwtService, Depends(JwtService)],
@@ -211,15 +169,7 @@ async def token_refresh(
     "/logout",
     status_code=status.HTTP_200_OK,
     summary="로그아웃",
-    description="""
-로그아웃합니다.
-
-- Refresh Token을 DB에서 삭제하고 쿠키에서 제거합니다.
-- 이후 해당 Refresh Token으로 Access Token 갱신이 불가합니다.
-    """,
-    responses={
-        200: {"description": "로그아웃 성공"},
-    },
+    description="세션을 종료하고 보관된 Refresh Token을 무효화합니다.",
 )
 async def logout(
     auth_service: Annotated[AuthService, Depends(AuthService)],
@@ -243,16 +193,7 @@ async def logout(
     "/password/reset-request",
     status_code=status.HTTP_200_OK,
     summary="비밀번호 재설정 이메일 발송",
-    description="""
-비밀번호를 잊어버린 경우 이메일로 인증 코드를 발송합니다.
-
-- 발송된 인증 코드는 **5분** 동안 유효합니다.
-- 인증 코드 확인은 `/auth/password/reset` API에서 진행합니다.
-- 존재하지 않는 이메일로 요청해도 보안상 동일하게 성공 응답을 반환합니다.
-    """,
-    responses={
-        200: {"description": "비밀번호 재설정 이메일 발송 완료"},
-    },
+    description="비밀번호 재설정을 위한 인증 코드를 이메일로 전송합니다.",
 )
 async def password_reset_request(
     request: PasswordResetEmailRequest,
@@ -265,21 +206,8 @@ async def password_reset_request(
 @auth_router.post(
     "/password/reset",
     status_code=status.HTTP_200_OK,
-    summary="비밀번호 재설정",
-    description="""
-비밀번호를 잊어버린 사용자가 이메일 인증을 통해 비밀번호를 재설정하는 첫 번째 단계입니다.
-(로그인 상태에서 비밀번호를 변경하려면 `/auth/password/change` API를 사용하세요.)
-
-- 이메일 주소를 입력하면 **6자리 인증 코드**를 발송합니다.
-- 발송된 인증 코드는 **5분** 동안 유효합니다.
-- 인증 코드 확인 및 새 비밀번호 설정은 `/auth/password/reset` API에서 진행합니다.
-- 존재하지 않는 이메일로 요청해도 보안상 동일하게 성공 응답을 반환합니다.
-    """,
-    responses={
-        200: {"description": "비밀번호 재설정 완료"},
-        400: {"description": "인증 코드 불일치 또는 만료"},
-        404: {"description": "인증 코드를 찾을 수 없음"},
-    },
+    summary="비밀번호 재설정 완료",
+    description="이메일로 받은 인증 코드를 확인하여 새 비밀번호를 설정합니다.",
 )
 async def password_reset(
     request: PasswordResetRequest,
@@ -296,19 +224,11 @@ async def password_reset(
 @auth_router.patch(
     "/password/change",
     status_code=status.HTTP_200_OK,
-    summary="비밀번호 변경",
-    description="""
-로그인 상태에서 현재 비밀번호를 확인 후 새 비밀번호로 변경합니다.
-(비밀번호를 잊어버린 경우 `/auth/password/reset-request` API를 사용하세요.)
-
-- 현재 비밀번호와 동일한 비밀번호로는 변경이 불가합니다.
-- 변경 완료 후 기존 모든 Refresh Token이 무효화됩니다.
-- **Authorization 헤더에 Access Token이 필요합니다.**
-    """,
+    summary="비밀번호 변경 (로그인 상태)",
+    description="현재 비밀번호를 확인한 후 새 비밀번호로 교체합니다.",
     responses={
         200: {"description": "비밀번호 변경 완료"},
-        400: {"description": "현재 비밀번호 불일치 또는 동일한 비밀번호로 변경 시도"},
-        401: {"description": "인증 실패 (토큰 누락 또는 만료)"},
+        400: {"description": "현재 비밀번호 불일치"},
     },
 )
 async def change_password(
@@ -331,20 +251,7 @@ async def change_password(
     "/kakao/callback",
     status_code=status.HTTP_200_OK,
     summary="카카오 로그인 콜백",
-    description="""
-카카오 OAuth 로그인 콜백을 처리합니다.
-
-1. 카카오 인증 코드로 카카오 액세스 토큰 발급
-2. 카카오 액세스 토큰으로 유저 정보 조회
-3. DB에 없으면 **자동 회원가입**, 있으면 **바로 로그인**
-4. JWT 발급 (Access Token 응답, Refresh Token 쿠키 설정)
-5. 약관 미동의 시 requires_terms_agreement=true 반환
-6. 추가 정보 미입력 시 requires_additional_info=true 반환
-    """,
-    responses={
-        200: {"description": "카카오 로그인 성공"},
-        400: {"description": "카카오 인증 실패"},
-    },
+    description="카카오 인증 후 자동으로 회원가입 또는 로그인을 처리합니다.",
 )
 async def kakao_callback(
     code: Annotated[str, Query(description="카카오 인증 코드")],
@@ -359,10 +266,7 @@ async def kakao_callback(
     user, is_new = await auth_service.kakao_login(kakao_user_info)
     tokens = await auth_service.login(user)
 
-    # 약관 동의 여부 체크
     requires_terms = not (user.agree_terms and user.agree_privacy)
-
-    # 추가 정보 입력 필요 여부 체크
     requires_additional_info = not all([user.gender, user.birthday, user.phone_number])
 
     resp = Response(
@@ -371,7 +275,7 @@ async def kakao_callback(
                 **LoginResponse(access_token=str(tokens["access_token"])).model_dump(),
                 "is_new": is_new,
                 "requires_terms_agreement": requires_terms,
-                "requires_additional_info": requires_additional_info,  # 추가
+                "requires_additional_info": requires_additional_info,
                 "user_id": user.id,
             }
         ),
@@ -389,17 +293,7 @@ async def kakao_callback(
     "/terms/agree",
     status_code=status.HTTP_200_OK,
     summary="약관 동의 처리",
-    description="""
-카카오 로그인 후 약관 동의를 처리합니다.
-
-- 신규 가입 또는 탈퇴 후 재가입 시 호출됩니다.
-- **Authorization 헤더에 Access Token이 필요합니다.**
-    """,
-    responses={
-        200: {"description": "약관 동의 완료"},
-        400: {"description": "필수 약관 미동의"},
-        401: {"description": "인증 실패"},
-    },
+    description="소셜 로그인 후 필수 약관에 대한 동의를 저장합니다.",
 )
 async def agree_terms(
     request: TermsAgreementRequest,
@@ -414,24 +308,13 @@ async def agree_terms(
     "/kakao/additional-info",
     status_code=status.HTTP_200_OK,
     summary="카카오 로그인 추가 정보 입력",
-    description="""
-카카오 로그인 후 추가 정보를 입력합니다.
-
-- 신규 가입 또는 탈퇴 후 재가입 시 호출됩니다.
-- **Authorization 헤더에 Access Token이 필요합니다.**
-    """,
-    responses={
-        200: {"description": "추가 정보 저장 완료"},
-        401: {"description": "인증 실패"},
-        422: {"description": "입력값 유효성 검증 실패"},
-    },
+    description="성별, 생년월일 등 필수 추가 정보를 저장하여 가입을 완료합니다.",
 )
 async def kakao_additional_info(
     request: KakaoAdditionalInfoRequest,
     user: Annotated[User, Depends(get_request_user)],
     user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
 ):
-    # 추가 정보 업데이트
     await user_manage_service.update_user(
         user=user,
         data=UserUpdateRequest(
@@ -440,5 +323,4 @@ async def kakao_additional_info(
             phone_number=request.phone_number,
         ),
     )
-
     return {"detail": "추가 정보가 저장되었습니다."}

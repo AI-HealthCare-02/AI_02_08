@@ -222,43 +222,105 @@
 
 /* 반응형 */
 @media (max-width: 768px) {
+  .about {
+    margin-top: -1rem;
+    overflow-x: hidden;
+  }
+
   .about__img-section {
     height: 150px;
   }
 
   .about__body {
-    padding: 2rem 1.5rem 2.5rem;
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .about__title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
   }
 
   .about__title {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
+    margin: 0;
   }
 
-  .about__mascot-img {
-    width: 140px;
-    height: 140px;
+  .about__title-badge {
+    position: static;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
   }
 
   .about__meaning {
-    gap: 1.5rem;
+    gap: 1.2rem;
   }
 
   .about__word-kr {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
+  }
+
+  .about__word-desc {
+    font-size: 0.8rem;
+  }
+
+  .about__plus {
+    font-size: 1.1rem;
+  }
+
+  .about__summary {
+    font-size: 0.9rem;
+  }
+
+  .about__features {
+    padding: 2rem 1rem;
+  }
+
+  .about__section-title {
+    font-size: 1.1rem;
   }
 
   .about__feature-grid {
     grid-template-columns: 1fr;
-    max-width: 320px;
+    max-width: 100%;
+    gap: 1rem;
+  }
+
+  .about__feature {
+    padding: 1.2rem 1rem;
+  }
+
+  .about__feature-num {
+    font-size: 1.3rem;
+  }
+
+  .about__feature-name {
+    font-size: 0.9rem;
+  }
+
+  .about__feature-desc {
+    font-size: 0.8rem;
   }
 
   .about__mascot {
     flex-direction: column;
     text-align: center;
-    gap: 1.5rem;
+    gap: 1rem;
+    padding: 2rem 1rem;
+  }
+
+  .about__mascot-img {
+    width: 120px;
+    height: 120px;
   }
 
   .about__mascot-text {
     text-align: center;
+  }
+
+  .about__mascot-desc {
+    font-size: 0.85rem;
   }
 }
