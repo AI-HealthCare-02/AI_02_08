@@ -470,7 +470,7 @@ const MyPage: React.FC = () => {
           </div>
           <div className="mypage__user-info">
             <h3 className="mypage__username">{user?.name || '사용자'}</h3>
-            <p className="mypage__user-email">{user?.email || 'user@example.com'}</p>
+            {user?.email && <p className="mypage__user-email">{user.email}</p>}
           </div>
         </div>
 
