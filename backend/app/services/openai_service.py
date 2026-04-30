@@ -329,7 +329,7 @@ async def get_drug_info_from_gpt(med_name: str, info_type: str) -> str:
     """
     GPT를 사용하여 약물 정보 조회 (DB에 없을 때 Fallback)
     """
-    system_prompt = f"""
+    system_prompt = """
     당신은 약물 정보 전문가입니다.
     약물명과 정보 유형이 주어지면 간결하게 답변하세요.
 
@@ -344,10 +344,7 @@ async def get_drug_info_from_gpt(med_name: str, info_type: str) -> str:
     try:
         response = await client.chat.completions.create(
             model=settings.openai_chat_model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_message}
-            ],
+            messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}],
             temperature=0.3,
             max_tokens=200,
         )
