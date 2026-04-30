@@ -131,6 +131,7 @@ class ChatService:
             session_id=session_id,
             user_id=user_id,
             user_message=content,
+            is_faq=is_faq,  # 추가!
             background_tasks=background_tasks,
         )
 
@@ -141,6 +142,7 @@ class ChatService:
         session_id: int,
         user_id: int,
         user_message: str,
+        is_faq: bool,  # 추가!
         background_tasks: BackgroundTasks,
     ) -> ChatMessage:
         from app.services.openai_service import (
@@ -163,13 +165,30 @@ class ChatService:
             for m in recent_chat_messages
         ]
 
-        # 1. AI 응답 생성
-        ai_content = await generate_chat_answer(
-            user_message=user_message,
-            ocr_context=ocr_context,
-            summary=session.summary or "",
-            recent_messages=recent_dicts,
-        )
+        # FAQ 질문인 경우 템플릿 기반 답변 생성
+        if is_faq:
+            # FAQ 아이템 조회
+            faq_item = await FaqItem.get_or_none(question=user_message)
+            if faq_item:
+                # OCR 약물 목록 가져오기
+                medications = await self._get_ocr_medications(session.ocr_id)
+                # 템플릿 + 약물 정보로 답변 생성
+                ai_content = await self._build_faq_answer(
+                    template=faq_item.answer,  # 수정!
+                    medications=medications,
+                    question=user_message,
+                    user_id=user_id,
+                )
+            else:
+                ai_content = "질문을 찾을 수 없습니다."
+        else:
+            # 일반 질문인 경우 GPT 호출
+            ai_content = await generate_chat_answer(
+                user_message=user_message,
+                ocr_context=ocr_context,
+                summary=session.summary or "",
+                recent_messages=recent_dicts,
+            )
 
         # 2. 메시지 저장 및 횟수 증가
         async with in_transaction():

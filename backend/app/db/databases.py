@@ -15,6 +15,7 @@ TORTOISE_APP_MODELS = [
     "app.models.refresh_token",
     "app.models.chat_session",
     "app.models.chat_message",
+    "app.models.chat_idempotency",  # 추가!
     "app.models.faq_item",
 ]
 

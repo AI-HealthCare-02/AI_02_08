@@ -220,11 +220,19 @@ async def process_chat_message(
         idempotency_key=x_idempotency_key,
         background_tasks=background_tasks,
     )
+
+    # FAQ 버튼 추가 (Assistant 응답일 때만)
+    faq_buttons = []
+    if message.sender == "assistant":
+        faqs = await chat_service.get_faqs()
+        faq_buttons = [{"id": faq.id, "question": faq.question} for faq in faqs]
+
     return ChatMessageResponse(
         message_id=message.id,
         session_id=message.session_id,
         sender=message.sender,
         content=message.content,
         is_faq=message.is_faq,
+        faq_buttons=faq_buttons,  # 추가!
         created_at=message.created_at,
     )

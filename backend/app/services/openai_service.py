@@ -265,7 +265,7 @@ async def generate_chat_answer(user_message: str, ocr_context: str, summary: str
 1. 사용자가 "부작용", "주의사항", "복용법", "몇 번", "언제" 등을 물으면, 아래 제공된 처방전 분석 결과나 현재 복용 중인 약물 목록의 모든 약물에 대해 답변하세요.
 2. 구체적인 약 이름을 언급하지 않았다면, 처방전에 있는 약물 전체를 대상으로 설명하세요.
 3. 처방전 속 약품과 음식/음료(커피, 홍차, 우유, 자몽주스, 술 등)의 상호작용 질문도 복약 관련 질문으로 간주하고 답변하세요.
-4. 처방전이나 복용 목록에 없는 약품에 대한 질문은 다음과 같이 안내하세요: "현재는 인식된 처방전 속 약품 정보만 답변해 드릴 수 있습니다. 질문하신 약품이 처방전에 포함되어 있는지 다시 한번 확인해 주세요."
+4. 처방전이나 복용 목록에 없는 약품에 대한 질문은 다음과 같이 안내하세요: "죄송합니다. 현재는 처방전에서 인식된 약물 정보만 답변해 드릴 수 있어요. 질문하신 약물이 처방전에 포함되어 있는지 다시 확인해 주세요."
 5. 약학 및 복약 관련 질문에만 답변하고, 그 외 질문은 정중히 거절하세요.
 6. 답변 시 처방전의 약물 정보를 참조한 경우 끝에 '[출처: 식품의약품안전처 e약은요]'를 추가하세요.
 
@@ -287,7 +287,7 @@ async def generate_chat_answer(user_message: str, ocr_context: str, summary: str
         response = await client.chat.completions.create(
             model=settings.openai_chat_model,
             messages=messages,
-            temperature=0.5,  # 정보성 문서는 조금 낮게
+            temperature=0.5,
             max_tokens=500,
         )
         return response.choices[0].message.content.strip()
@@ -323,3 +323,35 @@ async def summarize_and_deidentify_chat(messages: list[dict]) -> str:
     except Exception as e:
         print(f"OpenAI 요약 에러: {e}")
         return ""
+
+
+async def get_drug_info_from_gpt(med_name: str, info_type: str) -> str:
+    """
+    GPT를 사용하여 약물 정보 조회 (DB에 없을 때 Fallback)
+    """
+    system_prompt = f"""
+    당신은 약물 정보 전문가입니다.
+    약물명과 정보 유형이 주어지면 간결하게 답변하세요.
+
+    [중요 규칙]
+    1. 존재하지 않는 약물이거나 확실하지 않으면 "정보를 찾을 수 없습니다"라고 답변하세요.
+    2. 환각(hallucination)을 절대 하지 마세요.
+    3. 1-2문장으로 간결하게 답변하세요.
+    """
+
+    user_message = f"약물명: {med_name}\n정보 유형: {info_type}\n\n위 약물의 {info_type} 정보를 알려주세요."
+
+    try:
+        response = await client.chat.completions.create(
+            model=settings.openai_chat_model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            temperature=0.3,
+            max_tokens=200,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"GPT 약물 정보 조회 에러: {e}")
+        return "정보를 찾을 수 없습니다."
