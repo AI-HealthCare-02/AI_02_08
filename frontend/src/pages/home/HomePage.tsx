@@ -116,9 +116,10 @@ const OcrProgressModal = ({ ocrStatus, onClose }: { ocrStatus: string; onClose: 
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 90) { clearInterval(interval); return 90; }
-        return prev + (prev < 30 ? 3 : prev < 60 ? 2 : 1);
+        const step = prev < 30 ? 2 : prev < 60 ? 1.5 : prev < 80 ? 0.8 : 0.3;
+        return Math.min(prev + step, 90);
       });
-    }, 200);
+    }, 350);
     return () => clearInterval(interval);
   }, []);
 
@@ -146,7 +147,7 @@ const OcrProgressModal = ({ ocrStatus, onClose }: { ocrStatus: string; onClose: 
               src="/pill.png"
               alt="알약"
               className={`ocr-progress__pill ${done ? 'ocr-progress__pill--done' : ''}`}
-              style={{ left: `${Math.min(progress, 92)}%` }}
+              style={{ left: `${Math.min(progress, 97)}%` }}
             />
           </div>
           <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -169,7 +170,7 @@ const OcrProgressModal = ({ ocrStatus, onClose }: { ocrStatus: string; onClose: 
             ? '약물 정보 추출이 완료되었습니다 ✨'
             : ocrStatus === 'uploading'
               ? '잠시만 기다려주세요.'
-              : `약물 정보를 추출하고 있습니다... ${progress}%`}
+              : `약물 정보를 추출하고 있습니다... ${Math.round(progress)}%`}
         </p>
       </div>
     </div>
@@ -234,7 +235,42 @@ const HomePage: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showFaq, setShowFaq] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // OCR 결과 인라인 편집 모드
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingMeds, setEditingMeds] = useState<OcrMedicationItem[]>([]);
+
+  const handleStartEdit = () => {
+    if (!ocrResults) return;
+    setEditingMeds(ocrResults.map(m => ({ ...m })));
+    setIsEditMode(true);
+  };
+
+  const handleFinishEdit = () => {
+    const validMeds = editingMeds.filter(m => m.name.trim() !== '');
+    if (validMeds.length === 0) return;
+    setOcrResults(validMeds);
+    saveOcrResults(validMeds);
+    setIsEditMode(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMeds([]);
+    setIsEditMode(false);
+  };
+
+  const handleEditMedField = (index: number, field: keyof OcrMedicationItem, value: string) => {
+    setEditingMeds(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
+  };
+
+  const handleDeleteEditMed = (index: number) => {
+    if (editingMeds.length <= 1) return;
+    setEditingMeds(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddEditMed = () => {
+    setEditingMeds(prev => [{ name: '', dosage: '', frequency: '', timing: '' }, ...prev]);
+  };
 
   // 채팅 메시지 변경 시 자동 스크롤
   useEffect(() => {
@@ -485,20 +521,27 @@ const HomePage: React.FC = () => {
     openCameraModal();
   };
 
+  const [isSavingMedication, setIsSavingMedication] = useState(false);
+  const [showSavingModal, setShowSavingModal] = useState(false);
+
   const handleAddToMedication = async () => {
     if (!ocrResults?.length || !ocrId) return;
 
-    // UI 즉시 반영
     setAddedToMedication(true);
-    setShowConfirmModal(true);
+    setIsSavingMedication(true);
+    setShowSavingModal(true);
     const existing = loadMedications();
     const newMeds = ocrResults.map(ocrToMedication);
     saveMedications([...existing, ...newMeds]);
 
-    // API는 백그라운드로
-    confirmPrescription(ocrId, ocrResults).catch((error) => {
+    try {
+      await confirmPrescription(ocrId, ocrResults);
+    } catch (error) {
       console.error('복약관리 추가 실패:', error);
-    });
+    }
+
+    setShowSavingModal(false);
+    window.location.href = '/mypage?tab=history';
   };
 
   const openCameraModal = () => {
@@ -730,56 +773,100 @@ const HomePage: React.FC = () => {
           <div className="home-page__ocr-results">
             <div className="home-page__ocr-results-header">
               <h2 className="home-page__section-title">
-                처방전 인식 결과 {ocrResults ? '✓' : ''}
+                처방전 인식 결과 {isEditMode ? '(수정 중)' : ocrResults ? '✓' : ''}
               </h2>
-              {ocrResults && ocrResults.length > 0 && (
-                <button
-                  onClick={handleAddToMedication}
-                  className={`home-page__add-medication-btn-sm ${addedToMedication ? 'home-page__add-medication-btn-sm--done' : ''}`}
-                  disabled={addedToMedication}
-                >
-                  {addedToMedication ? '✓ 추가됨' : '복약관리에 추가'}
-                </button>
-              )}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {isEditMode ? (
+                  <>
+                    <button onClick={handleCancelEdit} className="home-page__add-medication-btn-sm">↩ 취소</button>
+                    <button onClick={handleAddEditMed} className="home-page__add-medication-btn-sm">➕ 추가</button>
+                    <button onClick={handleFinishEdit} className="home-page__add-medication-btn-sm" style={{ backgroundColor: '#5B8C7A', color: 'white', borderColor: '#5B8C7A' }}>✓ 수정 완료</button>
+                  </>
+                ) : (
+                  <>
+                    {ocrResults && ocrResults.length > 0 && !addedToMedication && (
+                      <button onClick={handleStartEdit} className="home-page__add-medication-btn-sm">✏️ 수정</button>
+                    )}
+                    {ocrResults && ocrResults.length > 0 && (
+                      <button
+                        onClick={handleAddToMedication}
+                        className={`home-page__add-medication-btn-sm ${addedToMedication ? 'home-page__add-medication-btn-sm--done' : ''}`}
+                        disabled={addedToMedication}
+                      >
+                        {isSavingMedication ? '등록 중...' : addedToMedication ? '✓ 추가됨' : '복약관리에 추가'}
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className="home-page__medicine-categories">
-              {/* 약 목록 */}
-              <div className="home-page__medicine-category">
-                <h3 className="home-page__category-title home-page__category-title--blue">약 목록</h3>
-                <div className="home-page__medicine-tags">
-                  {ocrResults && ocrResults.length > 0 ? (
-                    <>
-                      {ocrResults.map((med, index) => (
+            {isEditMode ? (
+              /* 편집 모드: 인라인 입력 필드 */
+              <div className="home-page__edit-list">
+                {editingMeds.map((med, index) => (
+                  <div key={index} className="home-page__edit-card">
+                    <div className="home-page__edit-card-header">
+                      <span className="home-page__edit-card-num">{index + 1}</span>
+                      {editingMeds.length > 1 && (
+                        <button className="home-page__edit-card-delete" onClick={() => handleDeleteEditMed(index)}>✕</button>
+                      )}
+                    </div>
+                    <div className="home-page__edit-fields">
+                      <div className="home-page__edit-field">
+                        <label>약품명</label>
+                        <input type="text" value={med.name} onChange={(e) => handleEditMedField(index, 'name', e.target.value)} className="home-page__form-input" placeholder="약품명 (필수)" />
+                      </div>
+                      <div className="home-page__edit-field">
+                        <label>용량</label>
+                        <input type="text" value={med.dosage || ''} onChange={(e) => handleEditMedField(index, 'dosage', e.target.value)} className="home-page__form-input" placeholder="ex) 500mg" />
+                      </div>
+                      <div className="home-page__edit-field">
+                        <label>횟수</label>
+                        <input type="text" value={med.frequency || ''} onChange={(e) => handleEditMedField(index, 'frequency', e.target.value)} className="home-page__form-input" placeholder="ex) 1일 3회" />
+                      </div>
+                      <div className="home-page__edit-field">
+                        <label>복용시점</label>
+                        <input type="text" value={med.timing || ''} onChange={(e) => handleEditMedField(index, 'timing', e.target.value)} className="home-page__form-input" placeholder="ex) 식후 30분" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button className="home-page__edit-add-btn" onClick={handleAddEditMed}>➕ 약물 수동 추가</button>
+              </div>
+            ) : (
+              /* 기본 모드: 태그 표시 */
+              <div className="home-page__medicine-categories">
+                <div className="home-page__medicine-category">
+                  <h3 className="home-page__category-title home-page__category-title--blue">약 목록</h3>
+                  <div className="home-page__medicine-tags">
+                    {ocrResults && ocrResults.length > 0 ? (
+                      ocrResults.map((med, index) => (
                         <span key={index} className="home-page__medicine-tag home-page__medicine-tag--blue">
                           {med.name}{med.dosage ? ` ${med.dosage}` : ''}
                         </span>
-                      ))}
-                    </>
-                  ) : (
-                    <div className="home-page__empty-state">처방전을 업로드하면 약 목록이 표시됩니다</div>
-                  )}
+                      ))
+                    ) : (
+                      <div className="home-page__empty-state">처방전을 업로드하면 약 목록이 표시됩니다</div>
+                    )}
+                  </div>
+                </div>
+                <div className="home-page__medicine-category">
+                  <h3 className="home-page__category-title home-page__category-title--orange">복용법</h3>
+                  <div className="home-page__medicine-tags">
+                    {ocrResults && ocrResults.length > 0 ? (
+                      ocrResults.map((med, index) => (
+                        <span key={index} className="home-page__medicine-tag home-page__medicine-tag--orange">
+                          {med.name}: {med.frequency}{med.timing ? ` (${med.timing})` : ''}
+                        </span>
+                      ))
+                    ) : (
+                      <div className="home-page__empty-state">복용법이 표시됩니다</div>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              {/* 복용법 */}
-              <div className="home-page__medicine-category">
-                <h3 className="home-page__category-title home-page__category-title--orange">복용법</h3>
-                <div className="home-page__medicine-tags">
-                  {ocrResults && ocrResults.length > 0 ? (
-                    ocrResults.map((med, index) => (
-                      <span key={index} className="home-page__medicine-tag home-page__medicine-tag--orange">
-                        {med.name}: {med.frequency}{med.timing ? ` (${med.timing})` : ''}
-                      </span>
-                    ))
-                  ) : (
-                    <div className="home-page__empty-state">복용법이 표시됩니다</div>
-                  )}
-                </div>
-              </div>
-
-
-            </div>
+            )}
           </div>
         </div>
 
@@ -1030,24 +1117,13 @@ const HomePage: React.FC = () => {
 
 
 
-      {/* 복약 등록 완료 모달 */}
-      {showConfirmModal && (
+      {/* 복약 등록 중 모달 */}
+      {showSavingModal && (
         <div className="home-page__modal-overlay">
-          <div className="home-page__modal" style={{ padding: '3.5rem 2rem 1.5rem' }}>
-            <h3 className="home-page__modal-title" style={{ textAlign: 'center' }}>✅ 복약 등록 완료</h3>
-            <p className="home-page__modal-subtitle" style={{ textAlign: 'center' }}>
-              복약 일정이 등록되었습니다.<br />
-              마이페이지에서 복약 히스토리를 확인하세요.
-            </p>
-            <div className="home-page__modal-buttons" style={{ justifyContent: 'center' }}>
-              <button
-                onClick={() => { setShowConfirmModal(false); window.location.href = '/mypage?tab=history'; }}
-                className="home-page__modal-btn"
-                style={{ backgroundColor: '#8B7355', color: 'white', flex: 'none', width: '80%' }}
-              >
-                확인
-              </button>
-            </div>
+          <div className="home-page__modal">
+            <h3 className="home-page__modal-title">복약 등록 중...</h3>
+            <div className="home-page__loading-spinner" />
+            <p className="home-page__modal-subtitle">약물 정보를 저장하고 있습니다.<br/>잠시만 기다려주세요.</p>
           </div>
         </div>
       )}
