@@ -50,11 +50,91 @@ const MyPage: React.FC = () => {
   const [medicationsByDate, setMedicationsByDate] = useState<Record<string, MedicationHistory[]>>({});
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
+  // 복용 체크 state (localStorage 연동)
+  const [checkedMeds, setCheckedMeds] = useState<Record<string, number[]>>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('checkedMeds') || '{}');
+    } catch { return {}; }
+  });
+
+  const toggleMedCheck = (dateKey: string, medId: number) => {
+    setCheckedMeds(prev => {
+      const ids = prev[dateKey] || [];
+      const updated = ids.includes(medId) ? ids.filter(id => id !== medId) : [...ids, medId];
+      const next = { ...prev, [dateKey]: updated };
+      localStorage.setItem('checkedMeds', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const getTakenRate = (dateKey: string): number => {
+    const meds = medicationsByDate[dateKey];
+    if (!meds || meds.length === 0) return 0;
+    const checked = (checkedMeds[dateKey] || []).filter(id => meds.some(m => m.id === id));
+    return checked.length / meds.length;
+  };
+
+  const getDotColor = (rate: number): string => {
+    if (rate >= 1) return '#2E7D32';
+    if (rate >= 0.75) return '#66BB6A';
+    if (rate >= 0.5) return '#FFA726';
+    if (rate > 0) return '#EF5350';
+    return '#A89880';
+  };
+
+  // 마이페이지 복약 내역 인라인 편집
+  const [isHistoryEditMode, setIsHistoryEditMode] = useState(false);
+  const [editingHistoryMeds, setEditingHistoryMeds] = useState<MedicationHistory[]>([]);
+
+  const handleStartHistoryEdit = () => {
+    const meds = medicationsByDate[selectedDate];
+    if (!meds) return;
+    setEditingHistoryMeds(meds.map(m => ({ ...m })));
+    setIsHistoryEditMode(true);
+  };
+
+  const handleCancelHistoryEdit = () => {
+    setEditingHistoryMeds([]);
+    setIsHistoryEditMode(false);
+  };
+
+  const handleFinishHistoryEdit = async () => {
+    // 삭제된 항목 처리
+    const originalMeds = medicationsByDate[selectedDate] || [];
+    const editIds = new Set(editingHistoryMeds.filter(m => m.id > 0).map(m => m.id));
+    for (const orig of originalMeds) {
+      if (!editIds.has(orig.id)) {
+        try { await deleteMedication(orig.id); } catch {}
+      }
+    }
+    // 로컬 state 업데이트 (새로 추가된 항목은 id가 음수)
+    setMedicationsByDate(prev => ({ ...prev, [selectedDate]: editingHistoryMeds }));
+    setIsHistoryEditMode(false);
+    showToast({ type: 'success', title: '수정 완료', message: '복약 내역이 수정되었습니다.' });
+  };
+
+  const handleEditHistoryField = (index: number, field: keyof MedicationHistory, value: string) => {
+    setEditingHistoryMeds(prev => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
+  };
+
+  const handleDeleteHistoryEditMed = (index: number) => {
+    setEditingHistoryMeds(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddHistoryMed = () => {
+    setEditingHistoryMeds(prev => [{ id: -(Date.now()), name: '', dosage: '', frequency: '', timing: '', date: selectedDate }, ...prev]);
+  };
+
   // 생활습관 가이드 state 추가
   const [activeGuide, setActiveGuide] = useState<string | null>(null);  // 현재 열린 가이드
   const [lifestyleGuideContent, setLifestyleGuideContent] = useState<string>('');
   const [isLoadingGuide, setIsLoadingGuide] = useState(false);
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(true);
+
+  // 커스텀 confirm 모달
+  const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
+
+
 
   // URL 쿼리 파라미터로 탭 전환
   useEffect(() => {
@@ -278,10 +358,10 @@ const MyPage: React.FC = () => {
   };
 
   const handleLogout = () => {
-    if (confirm('정말 로그아웃하시겠습니까?')) {
-      logout();
-      window.location.href = '/';
-    }
+    setConfirmModal({
+      message: '정말 로그아웃하시겠습니까?',
+      onConfirm: () => { logout(); window.location.href = '/'; }
+    });
   };
 
 
@@ -369,6 +449,7 @@ const MyPage: React.FC = () => {
                   const dateKey = formatDateKey(day);
                   const hasMeds = medicationsByDate[dateKey] && medicationsByDate[dateKey].length > 0;
                   const isSelected = selectedDate === dateKey;
+                  const rate = getTakenRate(dateKey);
                   return (
                     <button
                       key={dateKey}
@@ -376,32 +457,89 @@ const MyPage: React.FC = () => {
                       onClick={() => setSelectedDate(dateKey)}
                     >
                       {day}
-                      {hasMeds && <span className="mypage__calendar-dot" />}
+                      {hasMeds && <span className="mypage__calendar-dot" style={{ backgroundColor: isSelected ? 'white' : getDotColor(rate) }} />}
                     </button>
                   );
                 })}
               </div>
             </div>
             <div className="mypage__history-detail">
-              <h4
-                className="mypage__history-detail-title mypage__history-detail-title--toggle"
-                onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-              >
-                <span>{selectedDate} 복약 내역
-                  {medicationsByDate[selectedDate] && medicationsByDate[selectedDate].length > 0 &&
-                    ` (${medicationsByDate[selectedDate].length}건)`
-                  }
-                </span>
-                <span className="mypage__history-toggle-icon">{isHistoryExpanded ? '▲' : '▼'}</span>
-              </h4>
+              <div className="mypage__history-detail-header">
+                <h4
+                  className="mypage__history-detail-title mypage__history-detail-title--toggle"
+                  onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                  style={{ flex: 1 }}
+                >
+                  <span>{selectedDate} 복약 내역
+                    {medicationsByDate[selectedDate] && medicationsByDate[selectedDate].length > 0 &&
+                      ` (${medicationsByDate[selectedDate].length}건)`
+                    }
+                  </span>
+                  <span className="mypage__history-toggle-icon">{isHistoryExpanded ? '▲' : '▼'}</span>
+                </h4>
+                {isHistoryExpanded && !isHistoryEditMode && (
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    {medicationsByDate[selectedDate]?.length > 0 && (
+                      <button className="mypage__history-edit-btn" onClick={handleStartHistoryEdit}>✏️ 수정</button>
+                    )}
+                    <button className="mypage__history-edit-btn" onClick={() => { if (!isHistoryEditMode) { setEditingHistoryMeds([...(medicationsByDate[selectedDate] || []).map(m => ({...m}))]); setIsHistoryEditMode(true); } handleAddHistoryMed(); }}>➕ 추가</button>
+                  </div>
+                )}
+                {isHistoryEditMode && (
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button className="mypage__history-edit-btn" onClick={handleCancelHistoryEdit}>↩ 취소</button>
+                    <button className="mypage__history-edit-btn mypage__history-edit-btn--save" onClick={handleFinishHistoryEdit}>✓ 완료</button>
+                  </div>
+                )}
+              </div>
               {isHistoryExpanded && (
                 <>
                   {isLoadingHistory ? (
                     <p className="mypage__history-empty">불러오는 중...</p>
+                  ) : isHistoryEditMode ? (
+                    <div className="mypage__history-edit-list">
+                      {editingHistoryMeds.map((med, index) => (
+                        <div key={med.id} className="mypage__history-edit-card">
+                          <div className="mypage__history-edit-card-header">
+                            <span className="mypage__history-edit-card-num">{index + 1}</span>
+                            <button className="mypage__history-edit-card-delete" onClick={() => handleDeleteHistoryEditMed(index)}>✕</button>
+                          </div>
+                          <div className="mypage__history-edit-fields">
+                            <div className="mypage__history-edit-field">
+                              <label>약품명</label>
+                              <input type="text" value={med.name} onChange={(e) => handleEditHistoryField(index, 'name', e.target.value)} placeholder="약품명" />
+                            </div>
+                            <div className="mypage__history-edit-field">
+                              <label>용량</label>
+                              <input type="text" value={med.dosage || ''} onChange={(e) => handleEditHistoryField(index, 'dosage', e.target.value)} placeholder="ex) 500mg" />
+                            </div>
+                            <div className="mypage__history-edit-field">
+                              <label>횟수</label>
+                              <input type="text" value={med.frequency || ''} onChange={(e) => handleEditHistoryField(index, 'frequency', e.target.value)} placeholder="ex) 1일 2회" />
+                            </div>
+                            <div className="mypage__history-edit-field">
+                              <label>시점</label>
+                              <input type="text" value={med.timing || ''} onChange={(e) => handleEditHistoryField(index, 'timing', e.target.value)} placeholder="ex) 식후" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <button className="mypage__history-add-btn" onClick={handleAddHistoryMed}>➕ 약물 추가</button>
+                    </div>
                   ) : medicationsByDate[selectedDate] && medicationsByDate[selectedDate].length > 0 ? (
                     <div className="mypage__history-list">
                       {medicationsByDate[selectedDate].map((med) => (
                         <div key={med.id} className="mypage__history-item">
+                          <label className="mypage__history-check">
+                            <input
+                              type="checkbox"
+                              checked={(checkedMeds[selectedDate] || []).includes(med.id)}
+                              onChange={() => toggleMedCheck(selectedDate, med.id)}
+                            />
+                            <span className="mypage__history-check-label">
+                              {(checkedMeds[selectedDate] || []).includes(med.id) ? '복용' : '미복용'}
+                            </span>
+                          </label>
                           <div className="mypage__history-info">
                             <h4>{med.name}</h4>
                             <span className="mypage__history-date">
@@ -411,17 +549,21 @@ const MyPage: React.FC = () => {
                           <button
                             className="mypage__history-delete-btn"
                             onClick={async () => {
-                              if (!confirm(`'${med.name}' 복약 기록을 삭제하시겠습니까?`)) return;
-                              try {
-                                await deleteMedication(med.id);
-                                setMedicationsByDate(prev => ({
-                                  ...prev,
-                                  [selectedDate]: prev[selectedDate].filter(m => m.id !== med.id)
-                                }));
-                                showToast({ type: 'success', title: '삭제 완료', message: `${med.name} 기록이 삭제되었습니다.` });
-                              } catch {
-                                showToast({ type: 'error', title: '삭제 실패', message: '복약 기록 삭제에 실패했습니다.' });
-                              }
+                              setConfirmModal({
+                                message: `'${med.name}' 복약 기록을 삭제할까요?`,
+                                onConfirm: async () => {
+                                  try {
+                                    await deleteMedication(med.id);
+                                    setMedicationsByDate(prev => ({
+                                      ...prev,
+                                      [selectedDate]: prev[selectedDate].filter(m => m.id !== med.id)
+                                    }));
+                                    showToast({ type: 'success', title: '삭제 완료', message: `${med.name} 기록이 삭제되었습니다.` });
+                                  } catch {
+                                    showToast({ type: 'error', title: '삭제 실패', message: '복약 기록 삭제에 실패했습니다.' });
+                                  }
+                                }
+                              });
                             }}
                           >
                             ✕
@@ -560,7 +702,17 @@ const MyPage: React.FC = () => {
         <div className="mypage__header">
           <h2 className="mypage__page-title">
             {activeTab === 'profile' && '프로필'}
-            {activeTab === 'history' && '복약 히스토리'}
+            {activeTab === 'history' && (
+              <>
+                복약 히스토리
+                <span className="mypage__calendar-legend">
+                  <span className="mypage__legend-item"><span className="mypage__legend-dot" style={{ backgroundColor: '#EF5350' }} />~25%</span>
+                  <span className="mypage__legend-item"><span className="mypage__legend-dot" style={{ backgroundColor: '#FFA726' }} />~50%</span>
+                  <span className="mypage__legend-item"><span className="mypage__legend-dot" style={{ backgroundColor: '#66BB6A' }} />~75%</span>
+                  <span className="mypage__legend-item"><span className="mypage__legend-dot" style={{ backgroundColor: '#2E7D32' }} />100%</span>
+                </span>
+              </>
+            )}
             {activeTab === 'lifestyle' && '생활습관 가이드'}
             {activeTab === 'account' && '보안 / 계정'}
           </h2>
@@ -580,27 +732,6 @@ const MyPage: React.FC = () => {
               <button onClick={() => setShowProfileEditModal(false)} className="mypage__modal-close">✕</button>
             </div>
             <div className="mypage__modal-form">
-              <div className="mypage__form-group">
-                <label>프로필 사진</label>
-                <div className="mypage__profile-image-section">
-                  <div className="mypage__profile-image-preview">
-                    {profileData.profileImage ? (
-                      <img src={profileData.profileImage} alt="프로필 미리보기" className="mypage__profile-image" />
-                    ) : (
-                      <div className="mypage__profile-image-placeholder">
-                        {profileData.name?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                    )}
-                  </div>
-                  <div className="mypage__profile-image-actions">
-                    <input type="file" accept="image/*" onChange={handleImageUpload} className="mypage__file-input" id="profile-image-upload" />
-                    <label htmlFor="profile-image-upload" className="mypage__image-btn mypage__image-btn--upload">사진 선택</label>
-                    {profileData.profileImage && (
-                      <button type="button" onClick={handleImageRemove} className="mypage__image-btn mypage__image-btn--remove">사진 제거</button>
-                    )}
-                  </div>
-                </div>
-              </div>
               <div className="mypage__form-group">
                 <label>이름</label>
                 <input type="text" value={profileData.name} onChange={(e) => setProfileData({...profileData, name: e.target.value})} className="mypage__form-input" />
@@ -694,6 +825,19 @@ const MyPage: React.FC = () => {
             <div className="mypage__modal-buttons">
               <button onClick={() => setShowDeleteModal(false)} className="mypage__modal-btn mypage__modal-btn--secondary">취소</button>
               <button onClick={handleDeleteAccount} className="mypage__modal-btn mypage__modal-btn--danger">탈퇴하기</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 커스텀 confirm 모달 */}
+      {confirmModal && (
+        <div className="mypage__modal-overlay">
+          <div className="mypage__confirm-modal">
+            <p className="mypage__confirm-message">{confirmModal.message}</p>
+            <div className="mypage__confirm-buttons">
+              <button onClick={() => setConfirmModal(null)} className="mypage__modal-btn mypage__modal-btn--secondary">취소</button>
+              <button onClick={async () => { await confirmModal.onConfirm(); setConfirmModal(null); }} className="mypage__modal-btn mypage__modal-btn--primary">확인</button>
             </div>
           </div>
         </div>

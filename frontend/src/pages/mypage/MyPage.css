@@ -507,14 +507,170 @@
   bottom: 3px;
   left: 50%;
   transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background-color: #5B8C7A;
+  transition: background-color 0.2s;
 }
 
 .mypage__calendar-day--selected .mypage__calendar-dot {
   background-color: white;
+}
+
+/* 캘린더 범례 */
+.mypage__calendar-legend {
+  display: inline-flex;
+  gap: 0.6rem;
+  margin-left: 0.8rem;
+  vertical-align: middle;
+}
+
+.mypage__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: #6B5E4E;
+  font-weight: 400;
+}
+
+.mypage__legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* 히스토리 상세 헤더 */
+.mypage__history-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mypage__history-detail-header .mypage__history-detail-title {
+  margin: 0;
+  flex: 1;
+}
+
+.mypage__history-edit-btn {
+  background: transparent;
+  border: 1.5px solid #8B7355;
+  color: #8B7355;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mypage__history-edit-btn:hover {
+  background: #8B7355;
+  color: white;
+}
+
+.mypage__history-edit-btn--save {
+  background: #5B8C7A;
+  color: white;
+  border-color: #5B8C7A;
+}
+
+.mypage__history-edit-btn--save:hover {
+  background: #4a7566;
+}
+
+/* 히스토리 인라인 편집 */
+.mypage__history-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.mypage__history-edit-card {
+  background: #F5F0E8;
+  border: 1px solid #C4B49A;
+  border-radius: 10px;
+  padding: 0.8rem;
+}
+
+.mypage__history-edit-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.mypage__history-edit-card-num {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #5B8C7A;
+}
+
+.mypage__history-edit-card-delete {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.mypage__history-edit-card-delete:hover {
+  background: #F5E6E0;
+}
+
+.mypage__history-edit-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.mypage__history-edit-field label {
+  display: block;
+  font-size: 0.7rem;
+  color: #8B7355;
+  margin-bottom: 0.15rem;
+}
+
+.mypage__history-edit-field input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #C4B49A;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: #EDE5D8;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.mypage__history-edit-field input:focus {
+  outline: none;
+  border-color: #5B8C7A;
+}
+
+.mypage__history-add-btn {
+  width: 100%;
+  padding: 0.6rem;
+  border: 2px dashed #C4B49A;
+  border-radius: 10px;
+  background: none;
+  color: #8B7355;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.mypage__history-add-btn:hover {
+  border-color: #5B8C7A;
+  color: #5B8C7A;
+  background: #EAF2EF;
 }
 
 .mypage__history-detail {
@@ -552,16 +708,45 @@
   margin: 0;
 }
 
+/* 복용 체크박스 */
+.mypage__history-check {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.mypage__history-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #5B8C7A;
+  cursor: pointer;
+}
+
+.mypage__history-check-label {
+  font-size: 0.65rem;
+  color: #A89880;
+  white-space: nowrap;
+}
+
+.mypage__history-check input:checked + .mypage__history-check-label {
+  color: #5B8C7A;
+  font-weight: 600;
+}
+
 /* 히스토리 탭 - 목록 */
 .mypage__history-list {
   padding: 0;
 }
 
 .mypage__history-item {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 50px 1fr 32px;
   align-items: center;
-  padding: 1.5rem 2rem;
+  gap: 0.8rem;
+  padding: 1.2rem 1.5rem;
   border-bottom: 1px solid #C4B49A;
   transition: all 0.3s ease;
   position: relative;
@@ -581,8 +766,6 @@
 
 .mypage__history-item:hover {
   background-color: #F5F0E8;
-  transform: translateX(8px);
-  border-left: 4px solid #5B8C7A;
 }
 
 .mypage__history-item:hover::before {
@@ -741,7 +924,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .mypage__modal {
@@ -1116,6 +1299,82 @@
     padding: 1rem;
   }
 
+  .mypage__history-edit-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .mypage__calendar-legend {
+    display: flex;
+    margin-left: 0;
+    margin-top: 0.3rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .mypage__history-detail-header {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .mypage__history-edit-btn {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .mypage__history-edit-card {
+    padding: 0.6rem;
+  }
+
+  .mypage__history-edit-field label {
+    font-size: 0.65rem;
+  }
+
+  .mypage__history-edit-field input {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .mypage__history-add-btn {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+
+  .mypage__history-item {
+    grid-template-columns: 44px 1fr 28px;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .mypage__history-info h4 {
+    font-size: 0.9rem;
+  }
+
+  .mypage__history-date {
+    font-size: 0.8rem;
+  }
+
+  .mypage__history-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mypage__history-check-label {
+    font-size: 0.6rem;
+  }
+
+  .mypage__page-title {
+    font-size: 1rem;
+  }
+
+  .mypage__legend-item {
+    font-size: 0.6rem;
+  }
+
+  .mypage__legend-dot {
+    width: 6px;
+    height: 6px;
+  }
+
   .mypage__modal {
     width: 95%;
   }
@@ -1208,4 +1467,55 @@
   background: #5B8C7A;
   color: #fff;
   border-color: #5B8C7A;
+}
+
+/* 커스텀 confirm 모달 */
+.mypage__confirm-modal {
+  background: #EDE5D8;
+  border-radius: 16px;
+  max-width: 340px;
+  width: 85%;
+  padding: 2rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mypage__confirm-message {
+  font-size: 0.95rem;
+  color: #2C2416;
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+  word-break: keep-all;
+}
+
+.mypage__confirm-buttons {
+  display: flex;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.mypage__confirm-buttons .mypage__modal-btn {
+  flex: 1;
+  padding: 0.7rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .mypage__confirm-modal {
+    max-width: 300px;
+    width: 88%;
+    padding: 1.5rem 1.2rem 1.2rem;
+  }
+
+  .mypage__confirm-message {
+    font-size: 0.85rem;
+  }
+
+  .mypage__confirm-buttons .mypage__modal-btn {
+    padding: 0.65rem;
+    font-size: 0.85rem;
+  }
 }
