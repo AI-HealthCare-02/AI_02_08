@@ -13,6 +13,14 @@
 - **Package Manager** - uv
 - **Infra** - Docker, Docker Compose
 
+## 아키텍처
+
+### ERD (Entity Relationship Diagram)
+![ERD](docs/erd.png)
+
+### 인프라 구조
+![Infrastructure](docs/infrastructure.png)
+
 ## 프로젝트 구조
 
 ```text
@@ -31,8 +39,11 @@ backend/
 │   └── main.py              # 앱 진입점 (Lifespan, Middleware, Router)
 ├── db/
 │   └── migrations/          # Aerich를 통한 DB 마이그레이션 히스토리
-├── docs/                    # S3 등 인프라 아키텍처 및 설정 가이드
-├── scripts/                 # 스크립트 모음 (데이터 시딩 등)
+├── docs/                    # ERD, 인프라 다이어그램, S3 설정 가이드
+│   ├── erd.png
+│   ├── infrastructure.png
+│   └── S3_LIFECYCLE_SETUP.md
+├── scripts/                 # 데이터 시딩 스크립트 (FAQ, 약물 DB)
 ├── tests/                   # 단위 및 통합 테스트 코드 (Pytest)
 ├── .env.example             # 환경 변수 참조 템플릿
 ├── pyproject.toml           # 의존성 및 프로젝트 환경 관리
@@ -49,14 +60,31 @@ backend/
 ### 복약 관리 챗봇 (AI Chatbot)
 - OpenAI API와의 통신을 통해 부작용 우려, 복약 방법 등 의료 질의 응답 챗봇 수행
 - 사용자 과거 대화 내역 및 DB에 저장된 실제 투약 데이터를 프롬프트로 제공하여 개인화 응답 제공
+- e약은요 공공데이터 4,695건 연동으로 정확한 약물 정보 제공
+- DB에 없는 약물은 GPT Fallback으로 일반 정보 제공
 
 ### 처방전 OCR 분석 (OCR & AI Structuring)
 - **AWS S3** 인프라를 활용하여 분석할 처방전 및 약 봉투 이미지를 비동기 업로드로 안전하게 관리
-- 추출된 문자 텍스트를 파싱하여, 약품명, 1일 투약량, 제조사 정보 등을 정형화된 JSON 트리로 변환 및 DB 적재
+- Naver Clova OCR API로 처방전 텍스트 추출
+- 추출된 문자 텍스트를 GPT-4o mini로 파싱하여, 약품명, 1일 투약량, 제조사 정보 등을 정형화된 JSON 트리로 변환 및 DB 적재
 
 ### 사용자 맞춤형 레포트 (Personalized Report)
 - 실 투약 기록, 복약 순응도를 취합하여 사용자의 의료 상태 패턴 분석 로직 마련
 - 사용자의 주간/월간 등 주기적인 건강 및 약물 분석 정보를 OpenAI를 활용한 최신 리포트로 자동 생성
+
+## 데이터베이스 시딩
+
+### e약은요 공공데이터
+```bash
+uv run python scripts/seed_drugs.py
+```
+4,695건의 약물 정보를 DB에 적재합니다.
+
+### FAQ 데이터
+```bash
+uv run python scripts/insert_faq_data.py
+```
+약물 FAQ 3건 + 생활습관 가이드 4건을 DB에 적재합니다.
 
 ## 스크립트 안내
 
@@ -68,7 +96,11 @@ backend/
 
 ## API 문서
 
-해당 서버가 환경 안에서 실행 중일 때, 다음 경로에 접속하면 대화형 API 검증 및 문서를 확인할 수 있습니다:
+서버 실행 후, 다음 경로에서 대화형 API 문서를 확인할 수 있습니다:
 
 - **Swagger UI**: `/api/docs`
 - **ReDoc**: `/api/redoc`
+
+## AWS S3 설정
+
+S3 버킷 생명주기 정책 및 CORS 설정은 [S3_LIFECYCLE_SETUP.md](docs/S3_LIFECYCLE_SETUP.md)를 참고하세요.
