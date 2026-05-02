@@ -173,8 +173,8 @@ uv run uvicorn app.main:app --reload
 
 ### 4️⃣ 접속
 
-- **Frontend**: http://localhost:3000
-- **Backend API Docs**: http://localhost:8000/api/docs
+- **Frontend**: https://ai0208.xyz/
+- **Backend API Docs**: https://ai0208.xyz/api/docs
 
 <br>
 
@@ -260,11 +260,11 @@ exit
 
 ## 👥 팀
 
-| 역할 | 이름 | GitHub |
-|------|------|--------|
-| Frontend | OOO | [@username](https://github.com/username) |
-| Backend | OOO | [@username](https://github.com/username) |
-| Backend | OOO | [@username](https://github.com/username) |
+| 역할 | 이름  | 구분 | GitHub |
+|------|-----|------|--------|
+| Backend | 임채현 | 팀장 | [@clialim](https://github.com/clialim) |
+| Frontend | 곽지은 | 팀원 | [@wjdtor2-design](https://github.com/wjdtor2-design) |
+| Backend | 홍석현 | 팀원 | [@SurfingDuck81](https://github.com/SurfingDuck81) |
 
 <br>
 
