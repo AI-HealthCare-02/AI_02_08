@@ -1,10 +1,5 @@
 /* Navbar.css - 피그마 디자인 기준 */
 
-.navbar,
-.navbar * {
-  color-scheme: light;
-}
-
 .navbar {
   width: 100%;
   max-width: 100%;
