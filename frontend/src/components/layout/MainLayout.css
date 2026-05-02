@@ -10,15 +10,16 @@
 .main-layout__content {
   flex: 1;
   width: 100%;
-  max-width: var(--layout-content-max-w);
+  max-width: 100%;
   margin: 0 auto;
-  padding: var(--layout-page-padding-y) var(--layout-page-padding-x);
+  padding: 0;
+  overflow-x: hidden;
 }
 
 /* 반응형 - 데스크톱 */
 @media (min-width: 768px) {
   .main-layout__content {
-    max-width: 1440px;
-    padding: var(--spacing-8) var(--spacing-6);
+    max-width: 100%;
+    padding: 0;
   }
 }
